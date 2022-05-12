@@ -167,7 +167,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/12/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E5%9D%802/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/12/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%993/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -181,7 +181,110 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2022/05/12/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E5%9D%802/" class="post-title-link" itemprop="url">自动登录学校网站（续）</a>
+            <a href="/2022/05/12/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%993/" class="post-title-link" itemprop="url">自动登录学校网站（终：优化）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-05-12 15:56:47 / 修改时间：16:43:02" itemprop="dateCreated datePublished" datetime="2022-05-12T15:56:47+08:00">2022-05-12</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="程序优化"><a href="#程序优化" class="headerlink" title="程序优化"></a>程序优化</h1><p>对于原来的代码，尽管能够成功登录学校的网站，但依旧有很多地方可以优化。</p>
+<ul>
+<li><p>模型加载较慢，python加载本地训练好的模型还是太慢了，并且要打包成exe文件的话，torch这个库太大了，不可能再用自己的模型来完成项目。所以这里可以再用到之前的验证码识别库ddddocr来代替自己的识别模型。</p>
+</li>
+<li><p>考虑到项目迁移的方便，每次都下载一个chromedriver.exe文件是比较麻烦的，禁用谷歌浏览器自动升级是个好的选择，但是有更好的替代方法。可以使用<code>webdriver-manager</code>这个库，它会自动下载对应的driver到缓存里。具体的使用方式是</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> webdriver_manager.chrome <span class="keyword">import</span> ChromeDriverManager</span><br><span class="line">options = webdriver.ChromeOptions()</span><br><span class="line">options.add_experimental_option(<span class="string">&#x27;excludeSwitches&#x27;</span>, [<span class="string">&#x27;enable-logging&#x27;</span>])<span class="comment">#忽略dirver的信息打印</span></span><br><span class="line">driver = webdriver.Chrome(ChromeDriverManager().install(),options=options)<span class="comment">#可以在缓存里下载最新的driver</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>上面两个解决方式分别能够优化程序的<strong>运行速度</strong>和<strong>项目迁移性</strong>，但直接打包成.exe文件还是会产生其他的问题。</p>
+</li>
+</ul>
+<h1 id="可执行文件优化"><a href="#可执行文件优化" class="headerlink" title="可执行文件优化"></a>可执行文件优化</h1><ul>
+<li><p>程序正常运行的情况下会在结束时关闭浏览器，除非我们在程序末尾sleep一个很长的时间等待。然而我们希望程序进程在打开浏览器后就可以退出，而不必等待我们将浏览器关闭。可以使用<code>options.add_experimental_option(&quot;detach&quot;, True)</code>，这个语句使程序结束后浏览器不会关闭，不需要程序一直等待。</p>
+</li>
+<li><p>我们打包的文件会调用chromedriver.exe，尽管我们可以设置我们的可执行文件（.exe）运行时不出现cmd窗口，但chromedriver.exe依然会出现自己的窗口展示运行信息，而这会影响简结，我们希望这个窗口不出现。解决方法是修改<strong>selenium</strong>包中的<strong>service.py</strong>（selenium-&gt;webdriver-&gt;common-&gt;service.py）源码。如下图，注意数字必须相同。</p>
+<img src="C:\Users\14242\AppData\Roaming\Typora\typora-user-images\image-20220512161629179.png" alt="image-20220512161629179" style="zoom:80%;" />
+</li>
+<li><p>最后的问题是，我们的程序自动退出了，因为不将浏览器关掉，所以chromedriver.exe这个进程会一直留在内存里。如果我们多次打开我们的.exe文件，就会有很多个chromedriver.exe进程，尽管占用的空间很小，我们也希望能在程序结束后终止掉这个进程，这并不会导致我们的网页关闭。</p>
+<ul>
+<li><p>我们可以用<code>&quot;taskkill /im chromedriver.exe /F&quot;</code>这个命令来杀死这个进程，一种容易想到的方式是用os.system(command)来执行这条命令，但是这个方式会在执行时闪现出cmd执行窗口，不是我们希望的方式。</p>
+</li>
+<li><p>更好的方式是使用python的另一个标准库<strong>subprocess</strong>的subprocess.call(command, creationflags&#x3D;0x08000000)。因此就可以写成</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">subprocess.call(<span class="string">&quot;taskkill /im chromedriver.exe /F&quot;</span>, creationflags=<span class="number">0x08000000</span>)</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<p>以上就把代码优化完毕了，两个代码文件如下。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#captcha_fast.py</span></span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"><span class="keyword">from</span> selenium.webdriver.common.by <span class="keyword">import</span> By</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_snap</span>(<span class="params">driver</span>):  <span class="comment"># 对目标网页进行截屏。这里截的是全屏</span></span><br><span class="line">    driver.save_screenshot(<span class="string">&#x27;full_snap.png&#x27;</span>)</span><br><span class="line">    page_snap_obj=Image.<span class="built_in">open</span>(<span class="string">&#x27;full_snap.png&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> page_snap_obj</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_image</span>(<span class="params">driver</span>): <span class="comment"># 对验证码所在位置进行定位，然后截取验证码图片</span></span><br><span class="line">    scaling_ratio=<span class="number">1</span><span class="comment">#系统显示的缩放比例</span></span><br><span class="line">    img = driver.find_element(By.XPATH, <span class="string">&#x27;//*[@id=&quot;captcha-img&quot;]&#x27;</span>)</span><br><span class="line">    time.sleep(<span class="number">0.10</span>)</span><br><span class="line">    location = img.location</span><br><span class="line">    size = img.size</span><br><span class="line">    left = location[<span class="string">&#x27;x&#x27;</span>]*scaling_ratio</span><br><span class="line">    top = location[<span class="string">&#x27;y&#x27;</span>]*scaling_ratio</span><br><span class="line">    right = left + size[<span class="string">&#x27;width&#x27;</span>]*scaling_ratio</span><br><span class="line">    bottom = top + size[<span class="string">&#x27;height&#x27;</span>]*scaling_ratio</span><br><span class="line">    page_snap_obj = get_snap(driver)</span><br><span class="line">    image_obj = page_snap_obj.crop((left, top, right, bottom))</span><br><span class="line">    image_obj.save(<span class="string">&#x27;captcha.png&#x27;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#login_oc.py</span></span><br><span class="line"><span class="keyword">from</span> captcha_fast <span class="keyword">import</span> get_image</span><br><span class="line"><span class="keyword">from</span> selenium <span class="keyword">import</span> webdriver</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> subprocess</span><br><span class="line"><span class="keyword">from</span> selenium.webdriver.common.by <span class="keyword">import</span> By</span><br><span class="line"><span class="keyword">import</span> ddddocr</span><br><span class="line"></span><br><span class="line">ocr = ddddocr.DdddOcr(use_gpu=<span class="literal">True</span>)</span><br><span class="line"><span class="keyword">from</span> webdriver_manager.chrome <span class="keyword">import</span> ChromeDriverManager</span><br><span class="line">options = webdriver.ChromeOptions()</span><br><span class="line">options.add_experimental_option(<span class="string">&quot;detach&quot;</span>, <span class="literal">True</span>)</span><br><span class="line">options.add_experimental_option(<span class="string">&#x27;excludeSwitches&#x27;</span>, [<span class="string">&#x27;enable-logging&#x27;</span>])</span><br><span class="line">driver = webdriver.Chrome(ChromeDriverManager().install(),options=options)</span><br><span class="line">driver.maximize_window()<span class="comment">#最大化</span></span><br><span class="line"></span><br><span class="line">captcha_path=<span class="string">&#x27;./captcha.png&#x27;</span></span><br><span class="line">snap_path=<span class="string">&#x27;./full_snap.png&#x27;</span></span><br><span class="line">url=<span class="string">&#x27;https://oc.sjtu.edu.cn/login/openid_connect&#x27;</span></span><br><span class="line"><span class="comment"># 构造请求头</span></span><br><span class="line"></span><br><span class="line">driver.get(url) <span class="comment">#打开网页</span></span><br><span class="line"></span><br><span class="line">cur_title=driver.title</span><br><span class="line"><span class="keyword">while</span>(driver.title==cur_title):<span class="comment">#失败则一直试</span></span><br><span class="line">    time.sleep(<span class="number">0.10</span>)  <span class="comment"># 加载等待</span></span><br><span class="line">    get_image(driver)</span><br><span class="line">    <span class="comment">#print(&quot;推理验证码......&quot;)</span></span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(captcha_path, <span class="string">&#x27;rb&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">        img_bytes = f.read()</span><br><span class="line">    captcha_res = ocr.classification(img_bytes)</span><br><span class="line">    driver.find_element(By.NAME, <span class="string">&#x27;user&#x27;</span>).send_keys(<span class="string">&#x27;username&#x27;</span>)  <span class="comment"># 填入用户名</span></span><br><span class="line">    driver.find_element(By.NAME, <span class="string">&#x27;pass&#x27;</span>).send_keys(<span class="string">&#x27;password&#x27;</span>)  <span class="comment"># 填入密码</span></span><br><span class="line">    driver.find_element(By.NAME,<span class="string">&#x27;captcha&#x27;</span>).send_keys(captcha_res)  <span class="comment"># 填入验证码</span></span><br><span class="line">    driver.find_element(By.ID,<span class="string">&quot;submit-button&quot;</span>).click()</span><br><span class="line"></span><br><span class="line">os.remove(captcha_path)</span><br><span class="line">os.remove(snap_path)</span><br><span class="line">subprocess.call(<span class="string">&quot;taskkill /im chromedriver.exe /F&quot;</span>, creationflags=<span class="number">0x08000000</span>)<span class="comment">#杀死进程，用os.system会有黑窗口闪现</span></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;ending......&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h1 id="项目打包"><a href="#项目打包" class="headerlink" title="项目打包"></a>项目打包</h1><p>最后进行项目的打包，我使用<strong>pyinstaller</strong>库来打包项目，用得比较习惯。首先在cmd窗口切换目录到python文件的目录，打包的命令为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pyinstaller -w -i icon.ico login_oc.py</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><strong>-w</strong>表明取消程序执行的命令行窗口</li>
+<li><strong>-i</strong> 表示添加打包文件的图标，后面的icon.ico就是我们使用的图标，要放在目录下，或者把路径写全。注意不能用其他后缀的图片，可以先去在线转换网站把图片转换成.ico格式，还需要注意的是，这个icon大小必须是<strong>16×16</strong>的。</li>
+<li>最后想说这里不使用 <strong>-F</strong> 这个参数打包的原因。<ul>
+<li>我们希望程序响应快一些，-F会把所有的项目依赖的文件打包在一起，获得一个比较大的.exe文件，这会导致文件的加载速度变慢。而不用 -F 会导出一个文件夹，放置项目依赖的文件。</li>
+<li>ddddocr这个库在打包的过程中，没有被打包进去。因此不使用 -F 恰好能让我们手动把这个库添加到工作目录下（所有的库和我们的.exe文件都在这个文件夹中，还包括很多其他的.dll文件等）。</li>
+<li>如果我们想做多个.exe文件登录不同的网站（我做了两个），程序使用的库基本都是一样的，仅仅是代码有一些修改，甚至只是url修改了以下。因此我们可以把多个.exe文件都放到一个工作目录下，共享这些项目依赖文件，这样就能很大地降低内存开销。</li>
+</ul>
+</li>
+</ul>
+<h1 id="项目使用"><a href="#项目使用" class="headerlink" title="项目使用"></a>项目使用</h1><p>在项目打包后，注意.exe文件不能移动到别的地方，要创建一个<strong>快捷方式</strong>，把这个快捷方式移动就可以在桌面或者其他地方使用了。</p>
+<p>整个项目到此就结束了，有任何问题欢迎评论</p>
+<img src="https://cdn.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/c9c18708aa8dfc229d8d89615e8adff.jpg" style="zoom: 25%;" />
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/12/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%992/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/05/12/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%992/" class="post-title-link" itemprop="url">自动登录学校网站（续）</a>
         </h2>
 
         <div class="post-meta">
@@ -500,7 +603,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">3</span>
+          <span class="site-state-item-count">4</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
