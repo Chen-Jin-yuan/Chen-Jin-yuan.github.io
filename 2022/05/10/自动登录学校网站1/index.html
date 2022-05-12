@@ -17,13 +17,13 @@
 
 <script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+    var CONFIG = {"hostname":"jysama.cn","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="简介前段时间打算用谷歌driver自动登录学校的网站，方便后面继续开发脚本，主要还是想着以后也许会用到爬虫爬取图像等数据用来训练。 这个项目从最开始使用 pytorch 搭模型、爬验证码数据、以及训练改进，到后来觉得登录学校网站不用手打验证码挺方便的，就不断优化程序最后完成了一个快速登录的可执行文件，下面是一个demo演示。 这里打算开个坑写写训练的过程和用谷歌driver登录网站的设计思路，以及">
 <meta property="og:type" content="article">
 <meta property="og:title" content="验证码识别+自动登录学校网站">
-<meta property="og:url" content="http://example.com/2022/05/10/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%991/index.html">
+<meta property="og:url" content="https://jysama.cn/2022/05/10/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%991/index.html">
 <meta property="og:site_name" content="JySama">
 <meta property="og:description" content="简介前段时间打算用谷歌driver自动登录学校的网站，方便后面继续开发脚本，主要还是想着以后也许会用到爬虫爬取图像等数据用来训练。 这个项目从最开始使用 pytorch 搭模型、爬验证码数据、以及训练改进，到后来觉得登录学校网站不用手打验证码挺方便的，就不断优化程序最后完成了一个快速登录的可执行文件，下面是一个demo演示。 这里打算开个坑写写训练的过程和用谷歌driver登录网站的设计思路，以及">
 <meta property="og:locale" content="zh_CN">
@@ -40,7 +40,7 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E9%AA%8C%E8%AF%81%E7%A0%81%E8%A7%A3%E6%9E%901.png">
 
-<link rel="canonical" href="http://example.com/2022/05/10/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%991/">
+<link rel="canonical" href="https://jysama.cn/2022/05/10/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%991/">
 
 
 <script id="page-configurations">
@@ -178,7 +178,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/05/10/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%991/">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/05/10/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%991/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.png">
@@ -278,6 +278,23 @@
     
     
     
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Jy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jysama.cn/2022/05/10/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%991/" title="验证码识别+自动登录学校网站">https://jysama.cn/2022/05/10/自动登录学校网站1/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
 
       <footer class="post-footer">
 
