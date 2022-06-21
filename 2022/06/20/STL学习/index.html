@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jysama.cn","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="重返C++，先STL入手。这里会记录一些重点，但是不会记录得很全面。 follow 侯捷大师的《STL源码剖析》 1.概念与基础STL六大组件**1.**容器（containers）：各种数据结构，如vector, list, deque, set, map，用来存放数据。从实作的角度看，STL 容器是一种 class template。就体积而言，这一部份很像冰山在海面下的比率。 **2.**算">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《STL源码剖析》学习">
+<meta property="og:url" content="https://jysama.cn/2022/06/20/STL%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="JySama">
+<meta property="og:description" content="重返C++，先STL入手。这里会记录一些重点，但是不会记录得很全面。 follow 侯捷大师的《STL源码剖析》 1.概念与基础STL六大组件**1.**容器（containers）：各种数据结构，如vector, list, deque, set, map，用来存放数据。从实作的角度看，STL 容器是一种 class template。就体积而言，这一部份很像冰山在海面下的比率。 **2.**算">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/STL%E5%85%AD%E5%A4%A7%E7%BB%84%E4%BB%B6%E7%9A%84%E4%BA%A4%E4%BA%92%E5%85%B3%E7%B3%BB.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/STL_memory%E5%A4%B4%E6%96%87%E4%BB%B6.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/construct()%E5%92%8Cdrestroy()%E7%A4%BA%E6%84%8F.png">
+<meta property="article:published_time" content="2022-06-20T06:32:28.710Z">
+<meta property="article:modified_time" content="2022-06-21T13:36:20.978Z">
+<meta property="article:author" content="Jy">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/STL%E5%85%AD%E5%A4%A7%E7%BB%84%E4%BB%B6%E7%9A%84%E4%BA%A4%E4%BA%92%E5%85%B3%E7%B3%BB.png">
+
+<link rel="canonical" href="https://jysama.cn/2022/06/20/STL%E5%AD%A6%E4%B9%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>《STL源码剖析》学习 | JySama</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JySama</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/06/20/STL%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《STL源码剖析》学习
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-06-20 14:32:28" itemprop="dateCreated datePublished" datetime="2022-06-20T14:32:28+08:00">2022-06-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-06-21 21:36:20" itemprop="dateModified" datetime="2022-06-21T21:36:20+08:00">2022-06-21</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>重返C++，先STL入手。这里会记录一些重点，但是不会记录得很全面。</p>
+<p>follow 侯捷大师的《STL源码剖析》</p>
+<h1 id="1-概念与基础"><a href="#1-概念与基础" class="headerlink" title="1.概念与基础"></a>1.概念与基础</h1><h2 id="STL六大组件"><a href="#STL六大组件" class="headerlink" title="STL六大组件"></a>STL六大组件</h2><p>**1.**容器（containers）：各种数据结构，如vector, list, deque, set, map，用来存放数据。从实作的角度看，STL 容器是一种 class template。就体积而言，这一部份很像冰山在海面下的比率。</p>
+<p>**2.**算法（algorithms）：各种常用算法如sort, search, copy, erase…。从实作的角度看，STL 算法是一种 function template。</p>
+<p>**3.*<em>迭代器（iterators）：扮演容器与算法之间的胶着剂，是所谓的「泛型指标」。共有五种类型，以及其它衍生变化。从实作的角度看，迭代器是一种将operator</em>, operator-&gt;, operator++, operator–等指标相关操作予以多载化的 class template。所有STL容器都附带有自己专属的迭代器—是的，只有容器设计者才知道如何巡访自己的元素。原生指标（native pointer）也是一种迭代器。</p>
+<p>**4.**仿函式（functors）：行为类似函式，可做为算法的某种策略（policy）。从实作的角度看，仿函式是一种重载了 operator()的 class 或class template。一般函式指标可视为狭义的仿函式。</p>
+<p>**5.**配接器（adapters）：一种用来修饰容器（containers）或仿函式（functors）或迭代器（iterators）接口的东西。例如 STL 提供的 queue 和stack，虽然看似容器，其实只能算是一种容器配接器，因为它们的底部完全借重 deque，所有动作都由底层的 deque供应。改变functor接口者，称为function adapter，改变container接口者，称为container adapter，改变iterator界面者，称为iterator adapter。配接器的实作技术很难一言以蔽之，必须逐一分析。</p>
+<p>**6.**配置器（allocators）：负责空间配置与管理，详见第 2 章。从实作的角度看，配置器是一个实现了动态空间配置、空间管理、空间释放的 class template。 </p>
+<p><strong>STL六大组件的交互关系：</strong>Container透过Allocator取得数据储存空间，Algorithm透过Iterator存取Container内容，Functor可以协助 Algorithm完成不同的策略变化，Adapter可以修饰或套接 Functor。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/STL%E5%85%AD%E5%A4%A7%E7%BB%84%E4%BB%B6%E7%9A%84%E4%BA%A4%E4%BA%92%E5%85%B3%E7%B3%BB.png" alt="image-20220620143742620"></p>
+<h2 id="SGI-STL文件分布与简介"><a href="#SGI-STL文件分布与简介" class="headerlink" title="SGI STL文件分布与简介"></a>SGI STL文件分布与简介</h2><p>概略可分为五组： </p>
+<ul>
+<li><p>C++标准规范下的 C 头文件（无扩展名），例如cstdio, cstdlib, cstring… </p>
+</li>
+<li><p>C++标准链接库中不属于 STL范畴者，例如 stream, string…相关文件。</p>
+</li>
+<li><p>STL标准头文件（无扩展名），例如vector, deque, list, map, algorithm, functional… </p>
+</li>
+<li><p><em>C++ Standard</em> 定案前，HP 所规范的 STL 头文件，例如vector.h, deque.h, list.h, map.h, algo.h, function.h… </p>
+</li>
+<li><p>SGI STL 内部文件（STL 真正实作于此），例如stl_vector.h, stl_deque.h, stl_list.h, stl_map.h, stl_algo.h, stl_function.h…</p>
+</li>
+</ul>
+<h2 id="SGI-STL-的编译器组态设定-configuration"><a href="#SGI-STL-的编译器组态设定-configuration" class="headerlink" title="SGI STL 的编译器组态设定(configuration)"></a>SGI STL 的编译器组态设定(configuration)</h2><p>不同的<strong>编译器</strong>对C++语言的支持程度不尽相同。做为一个希望具备广泛移植能力的链接库，SGI STL 准备了一个环境组态文件&lt;stl_config.h&gt;，其中定义许多常数，标示某些状态的成立与否。所有 STL 头文件都会直接或间接含入这个组态文件，并以条件式写法，让前处理器（pre-processor）根据各个常数决定取舍哪一段程序码。</p>
+<p>&lt;stl_config.h&gt;文件起始处有一份常数定义说明，然后即针对各家不同的编译器以及可能的不同版ᴀ，给予常数设定。</p>
+<p>这里先介绍&lt;stl_config.h&gt;中的预定义<strong>组态配置项</strong>：</p>
+<ul>
+<li><p><strong>__STL_STATIC_TEMPLATE_MEMBER_BUG</strong></p>
+<p>如果编译器无法处理static member of template classes(模板类静态成员)就定义</p>
+</li>
+<li><p><strong>__STL_CLASS_PARTIAL_SPECIALIZATION</strong></p>
+<p>如果编译器支持 partial specialization of class templates(模板类偏特化)就定义。</p>
+<p><strong>偏特化</strong>：模板为什么要特化，因为编译器认为，对于特定的类型，如果你能对某一功能更好的实现，那么就该听你的。</p>
+<p>模板分为<strong>类模板</strong>与<strong>函数模板</strong>，特化分为全特化与偏特化。全特化就是限定死模板实现的具体类型，偏特化就是如果这个模板有多个类型，那么只限定其中的一部分。</p>
+<p>使用template定义类时可以使用const *等做特殊设计。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">test</span>&lt;T*, <span class="type">const</span> T* &gt; &#123;....&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>__STL_FUNCTION_TMPL_PARTIAL_ORDER</strong></p>
+<p>如果编译器支持partial ordering of function templates或者说partial specialization of function templates就定义，可以理解为对<strong>函数模板的重载</strong>的支持</p>
+<p>对于一个函数模板，如果定义了另一个函数模板且函数名相同，会根据template的参数表进行调用，要注意的是，第二个函数模板需要知道参数，可以在函数后面加上例如，max&lt;T,T&gt;或者函数之前声明类struct&lt;T,T&gt;。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T1, <span class="keyword">typename</span> T2&gt;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Bar</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="function"><span class="type">void</span> <span class="title">operator</span><span class="params">()</span><span class="params">(T1 <span class="type">const</span>&amp; t1, T2 <span class="type">const</span>&amp; t2)</span></span></span><br><span class="line"><span class="function"> </span>&#123;</span><br><span class="line">    std::cerr &lt;&lt; <span class="string">&quot;In Bar&lt;T1, T2&gt;(&quot;</span> &lt;&lt; t1 &lt;&lt; <span class="string">&quot;, &quot;</span> &lt;&lt; t2 &lt;&lt; <span class="string">&quot;)\n&quot;</span>;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T2&gt;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Bar</span>&lt;<span class="type">int</span>, T2&gt;<span class="comment">//声明&lt;T1,T2&gt;</span></span><br><span class="line">&#123;</span><br><span class="line"> <span class="function"><span class="type">void</span> <span class="title">operator</span><span class="params">()</span><span class="params">(<span class="type">int</span> t1, T2 <span class="type">const</span>&amp; t2)</span></span></span><br><span class="line"><span class="function"> </span>&#123;</span><br><span class="line">    std::cerr &lt;&lt; <span class="string">&quot;In Bar&lt;int, T2&gt;(&quot;</span> &lt;&lt; t1 &lt;&lt; <span class="string">&quot;, &quot;</span> &lt;&lt; t2 &lt;&lt; <span class="string">&quot;)\n&quot;</span>;</span><br><span class="line"> &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">/* 下列代码也可以</span></span><br><span class="line"><span class="comment">template&lt;typename T2&gt;</span></span><br><span class="line"><span class="comment">void operator()&lt;int, T2&gt;(int t1, T2 const&amp; t2)</span></span><br><span class="line"><span class="comment"> &#123;</span></span><br><span class="line"><span class="comment">    std::cerr &lt;&lt; &quot;In Bar&lt;int, T2&gt;(&quot; &lt;&lt; t1 &lt;&lt; &quot;, &quot; &lt;&lt; t2 &lt;&lt; &quot;)\n&quot;;</span></span><br><span class="line"><span class="comment"> &#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T1, <span class="keyword">typename</span> T2&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">bar</span><span class="params">(T1 <span class="type">const</span>&amp; t1, T2 <span class="type">const</span>&amp; t2)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   Bar&lt;T1, T2&gt; b;</span><br><span class="line">   <span class="built_in">b</span>(t1, t2);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>__STL_MEMBER_TEMPLATES</strong></p>
+<p>如果编译器支持template members of classes 就定义，看英文就知道，模板类中<strong>嵌套模板</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">vector</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">TT</span>&gt; </span><br><span class="line">	<span class="function"><span class="type">void</span> <span class="title">test</span><span class="params">(TT a,TT b)</span> </span>&#123;</span><br><span class="line">		cout &lt;&lt; a &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; b &lt;&lt; endl; </span><br><span class="line">	&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>__STL_LIMITED_DEFAULT_TEMPLAES</strong></p>
+<p>用到前一个模板的模板形参的某一个具现体作为当前模板的模板形参的默认值</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>, <span class="keyword">class</span> <span class="title class_">Se</span> = queue&lt;T&gt; &gt;</span><br><span class="line"><span class="keyword">class</span> test &#123;....&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>__STL_NON_TYPE_TMPL_PARAM_BUG</strong></p>
+<p>测试类模板是否使用非类型模板参数（non-type template parameters），或着是否template 可以使用无参数类型模板</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="type">int</span> size&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">CTest</span></span><br><span class="line">&#123;</span><br><span class="line">        <span class="type">int</span> m_data[size];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">        CTest&lt;<span class="number">10</span>&gt; obj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>非类型模板</strong>：非类型模板参数(nontype template parameters), 可以使用<strong>整型类型</strong>(integral type)，<strong>指针</strong>(pointer)或者是<strong>引用</strong>(reference);绑定非类型整数形参(nontype integral parameter) 的 实参(argument) 必须是<strong>常量表达式(constant expression, constexpr)<strong>；不能把</strong>普通的局部对象</strong>或者<strong>动态对象</strong> 绑定指针或引用的非类型形参, 可以使用<strong>全局类型</strong>进行绑定。</p>
+</li>
+<li><p><strong>__STL_NULL_TMPL_ARGS</strong></p>
+<p>友元约束模板：可以依据之前对非友元函数的定义来对友元函数进行约束</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">T</span>,<span class="keyword">class</span> <span class="title class_">Sequence</span>&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">stack</span>;</span><br><span class="line"> </span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">T</span>,<span class="keyword">class</span> <span class="title class_">Sequence</span>&gt;</span><br><span class="line"><span class="type">bool</span> <span class="keyword">operator</span>==(<span class="type">const</span> stack&lt;T,Sequence&gt;&amp; x,<span class="type">const</span> stack&lt;T,Sequence&gt;&amp; y);</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">T</span>,<span class="keyword">class</span> <span class="title class_">Sequence</span>=deque&lt;T&gt; &gt;</span><br><span class="line"><span class="keyword">class</span> stack</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//friend bool operator==&lt;T&gt;(const stack&lt;T&gt;&amp;,const stack&lt;T&gt;&amp;);</span></span><br><span class="line">    <span class="comment">//下面的都是等价于上面的</span></span><br><span class="line">    <span class="comment">//friend bool operator== &lt;T&gt;(const stack&amp;,const stack&amp;);</span></span><br><span class="line">    <span class="keyword">friend</span> <span class="type">bool</span> <span class="keyword">operator</span>== &lt;&gt;(<span class="type">const</span> stack&amp;,<span class="type">const</span> stack&amp;);</span><br><span class="line">    Sequence c;</span><br><span class="line">&#125;;</span><br><span class="line"> <span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">T</span>,<span class="keyword">class</span> <span class="title class_">Sequence</span>&gt;</span><br><span class="line"><span class="type">bool</span> <span class="keyword">operator</span>==(<span class="type">const</span> stack&lt;T,Sequence&gt; &amp;x,<span class="type">const</span> stack&lt;T,Sequence&gt; &amp;y)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> cout&lt;&lt;<span class="string">&quot;operator==&quot;</span>&lt;&lt;<span class="string">&#x27;\t&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    stack&lt;<span class="type">int</span>&gt; x;</span><br><span class="line">    stack&lt;<span class="type">int</span>&gt; y;</span><br><span class="line">    cout&lt;&lt;(x==y)&lt;&lt;endl;</span><br><span class="line">    </span><br><span class="line">    stack&lt;<span class="type">char</span>&gt; y1;</span><br><span class="line"><span class="comment">//    cout&lt;&lt;(x==y1)&lt;&lt;endl;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><strong>__STL_TEMPLATE_NULL</strong></p>
+<p>即 template &lt;&gt; 显示的模板特化，对template进行具体化，在定义参数时就可以使用具体化的定义。函数同理。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt; <span class="keyword">struct</span> <span class="title class_">test</span> &#123;....&#125;;</span><br><span class="line"><span class="keyword">template</span>&lt;&gt; <span class="keyword">struct</span> <span class="title class_">test</span>&lt;<span class="type">int</span>&gt;&#123;.....&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">class</span> Any&gt;</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">swap</span><span class="params">(Any &amp;,Any &amp;b)</span></span>&#123;......;&#125; </span><br><span class="line"><span class="keyword">template</span> &lt;&gt; <span class="type">void</span> <span class="built_in">swap</span>&lt;<span class="type">int</span>&gt;(<span class="type">int</span> &amp;,<span class="type">int</span> &amp;)&#123;......;&#125; </span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>以下是 GNU C++ 2.91.57 &lt;stl_config.h&gt;的完整内容：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifndef</span> __STL_CONFIG_H </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_CONFIG_H </span></span><br><span class="line"><span class="comment">//文件所做的事情：</span></span><br><span class="line"><span class="comment">// (1) 如果编译器没有定义 bool, true, false，就定义它们</span></span><br><span class="line"><span class="comment">// (2) 如果编译器的标准链接库᳾支持 drand48()函式，就定义 __STL_NO_DRAND48 </span></span><br><span class="line"><span class="comment">// (3) 如果编译器无法处理 static members of template classes，就定义</span></span><br><span class="line"><span class="comment">// 		__STL_STATIC_TEMPLATE_MEMBER_BUG</span></span><br><span class="line"><span class="comment">// (4) 如果编译器᳾支持关键词 typename，就将&#x27;typename&#x27;定义为一个 null macro. </span></span><br><span class="line"><span class="comment">// (5) 如果编译器支持 partial specialization of class templates，就定义</span></span><br><span class="line"><span class="comment">// 		__STL_CLASS_PARTIAL_SPECIALIZATION. </span></span><br><span class="line"><span class="comment">// (6) 如果编译器支持 partial ordering of function templates（亦称为</span></span><br><span class="line"><span class="comment">// 		partial specialization of function templates），就定义</span></span><br><span class="line"><span class="comment">// 		__STL_FUNCTION_TMPL_PARTIAL_ORDER</span></span><br><span class="line"><span class="comment">// (7) 如果编译器允许我们在呼叫一个 function template时可以明白指定其</span></span><br><span class="line"><span class="comment">// 		template arguments，就定义__STL_EXPLICIT_FUNCTION_TMPL_ARGS</span></span><br><span class="line"><span class="comment">// (8) 如果编译器支持 template members of classes，就定义</span></span><br><span class="line"><span class="comment">// 		__STL_MEMBER_TEMPLATES. </span></span><br><span class="line"><span class="comment">// (9) 如果编译器不支持关键词 explicit，就定义&#x27;explicit&#x27;为一个 null macro. </span></span><br><span class="line"><span class="comment">// (10) 如果编译器无法根据前一个 template parameters设定下一个 template </span></span><br><span class="line"><span class="comment">// 		parameters 的默认值，就定义__STL_LIMITED_DEFAULT_TEMPLATES</span></span><br><span class="line"><span class="comment">// (11) 如果编译器针对 non-type template parameters 执行 function template </span></span><br><span class="line"><span class="comment">// 		的自变量推导（argument deduction）时有问题，就定义</span></span><br><span class="line"><span class="comment">// 		__STL_NON_TYPE_TMPL_PARAM_BUG. </span></span><br><span class="line"><span class="comment">// (12) 如果编译器无法支持迭代器的 operator-&gt;，就定义</span></span><br><span class="line"><span class="comment">// 		__SGI_STL_NO_ARROW_OPERATOR</span></span><br><span class="line"><span class="comment">// (13) 如果编译器（在你所选择的模式中）支持 exceptions，就定义</span></span><br><span class="line"><span class="comment">// 		__STL_USE_EXCEPTIONS</span></span><br><span class="line"><span class="comment">// (14) 定义__STL_USE_NAMESPACES 可使我们自动获得 using std::list;之类的叙句</span></span><br><span class="line"><span class="comment">// (15) 如果本链接库由 SGI编译器来编译，而且使用者并未选择 pthreads </span></span><br><span class="line"><span class="comment">// 		或其它 threads，就定义__STL_SGI_THREADS. </span></span><br><span class="line"><span class="comment">// (16) 如果ᴀ链接库由一个 WIN32 编译器编译，并且在多绪模式下，就定义</span></span><br><span class="line"><span class="comment">// 		__STL_WIN32THREADS</span></span><br><span class="line"><span class="comment">// (17) 适当地定义与 namespace相关的 macros 如 __STD, __STL_BEGIN_NAMESPACE。</span></span><br><span class="line"><span class="comment">// (18) 适当地定义 exception 相关的 macros 如 __STL_TRY, __STL_UNWIND。</span></span><br><span class="line"><span class="comment">// (19) 根据__STL_ASSERTIONS是否定义，将 __stl_assert 定义为一个</span></span><br><span class="line"><span class="comment">// 		测试动作或一个 null macro。</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> _PTHREADS </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_PTHREADS </span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> defined(__sgi) &amp;&amp; !defined(__GNUC__) </span></span><br><span class="line"><span class="comment">//使用 SGI STL但却不是使用 GNU C++ </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> !defined(_BOOL) <span class="comment">//没有BOOL就定义</span></span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NEED_BOOL </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> !defined(_TYPENAME_IS_KEYWORD) </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NEED_TYPENAME </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">ifdef</span> _PARTIAL_SPECIALIZATION_OF_CLASS_TEMPLATES </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_CLASS_PARTIAL_SPECIALIZATION </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">ifdef</span> _MEMBER_TEMPLATES </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_MEMBER_TEMPLATES </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> !defined(_EXPLICIT_IS_KEYWORD) </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NEED_EXPLICIT </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">ifdef</span> __EXCEPTIONS </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_USE_EXCEPTIONS </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> (_COMPILER_VERSION &gt;= 721) &amp;&amp; defined(_NAMESPACES)</span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_USE_NAMESPACES </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> !defined(_NOTHREADS) &amp;&amp; !defined(__STL_PTHREADS) </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_SGI_THREADS </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"># ifdef__GNUC__</span><br><span class="line"><span class="meta"># <span class="keyword">include</span> <span class="string">&lt;_G_config.h&gt;</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> __GNUC__ &lt; 2 || (__GNUC__ == 2 &amp;&amp; __GNUC_MINOR__ &lt; 8) </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_STATIC_TEMPLATE_MEMBER_BUG </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NEED_TYPENAME </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NEED_EXPLICIT </span></span><br><span class="line"><span class="meta"># <span class="keyword">else</span> <span class="comment">// 这里可看出 GNUC 2.8+ 的能力</span></span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_CLASS_PARTIAL_SPECIALIZATION</span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_FUNCTION_TMPL_PARTIAL_ORDER</span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_EXPLICIT_FUNCTION_TMPL_ARGS</span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_MEMBER_TEMPLATES</span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="comment">/* glibc pre 2.0 is very buggy. We have to disable thread for it. </span></span><br><span class="line"><span class="comment"> It should be upgraded to glibc 2.0 or later. */</span> </span><br><span class="line"><span class="meta"># <span class="keyword">if</span> !defined(_NOTHREADS) &amp;&amp; __GLIBC__ &gt;= 2 &amp;&amp; defined(_G_USING_THUNKS) </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_PTHREADS </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">ifdef</span> __EXCEPTIONS </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_USE_EXCEPTIONS </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> defined(__SUNPRO_CC) </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NEED_BOOL </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NEED_TYPENAME </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NEED_EXPLICIT </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_USE_EXCEPTIONS </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> defined(__COMO__) </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_MEMBER_TEMPLATES </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_CLASS_PARTIAL_SPECIALIZATION </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_USE_EXCEPTIONS </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_USE_NAMESPACES </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="comment">//侯捷注：VC6的版ᴀ号码是 1200 </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> defined(_MSC_VER) </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> _MSC_VER &gt; 1000 </span></span><br><span class="line"><span class="meta"># <span class="keyword">include</span> <span class="string">&lt;yvals.h&gt;</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">else</span> </span></span><br><span class="line"><span class="comment">//此文件在 MSDEV\VC98\INCLUDE </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NEED_BOOL</span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NO_DRAND48 </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NEED_TYPENAME </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> _MSC_VER &lt; 1100 </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NEED_EXPLICIT </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NON_TYPE_TMPL_PARAM_BUG</span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __SGI_STL_NO_ARROW_OPERATOR</span></span><br><span class="line"><span class="meta"># <span class="keyword">ifdef</span> _CPPUNWIND </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_USE_EXCEPTIONS </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">ifdef</span> _MT </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_WIN32THREADS </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="comment">//侯捷注：Inprise Borland C++builder也定义有此常数。</span></span><br><span class="line"><span class="comment">// C++Builder 的表现岂有如下所示这般差劲？</span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> defined(__BORLANDC__) </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NO_DRAND48 </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NEED_TYPENAME </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_LIMITED_DEFAULT_TEMPLATES</span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __SGI_STL_NO_ARROW_OPERATOR</span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NON_TYPE_TMPL_PARAM_BUG</span></span><br><span class="line"><span class="meta"># <span class="keyword">ifdef</span> _CPPUNWIND </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_USE_EXCEPTIONS </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">ifdef</span> __MT__ </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_WIN32THREADS </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> defined(__STL_NEED_BOOL) </span></span><br><span class="line"> <span class="keyword">typedef</span> <span class="type">int</span> <span class="type">bool</span>; </span><br><span class="line"><span class="meta"># <span class="keyword">define</span> true 1 </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> false 0 </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">ifdef</span> __STL_NEED_TYPENAME </span></span><br><span class="line"><span class="number">23</span> </span><br><span class="line"><span class="meta"># <span class="keyword">define</span> typename<span class="comment">//侯捷：难道不该 #define typename class 吗？</span></span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">ifdef</span> __STL_NEED_EXPLICIT </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> explicit</span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"># ifdef__STL_EXPLICIT_FUNCTION_TMPL_ARGS</span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NULL_TMPL_ARGS<span class="string">&lt;&gt;</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">else</span></span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NULL_TMPL_ARGS </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line">第 <span class="number">1</span> 章 STL 概论与版ᴀ简介</span><br><span class="line"># ifdef__STL_CLASS_PARTIAL_SPECIALIZATION</span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_TEMPLATE_NULLtemplate<span class="string">&lt;&gt;</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">else</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_TEMPLATE_NULL </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="comment">// __STL_NO_NAMESPACES is a hook so that users can disable namespaces </span></span><br><span class="line"><span class="comment">// without having to edit library headers. </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> defined(__STL_USE_NAMESPACES) &amp;&amp; !defined(__STL_NO_NAMESPACES) </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STD std </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_BEGIN_NAMESPACE namespacestd &#123; </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_END_NAMESPACE &#125; </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_USE_NAMESPACE_FOR_RELOPS </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_BEGIN_RELOPS_NAMESPACE namespace std &#123; </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_END_RELOPS_NAMESPACE &#125; </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STD_RELOPS std </span></span><br><span class="line"><span class="meta"># <span class="keyword">else</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STD </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_BEGIN_NAMESPACE </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_END_NAMESPACE </span></span><br><span class="line"><span class="meta"># <span class="keyword">undef</span> __STL_USE_NAMESPACE_FOR_RELOPS </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_BEGIN_RELOPS_NAMESPACE </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_END_RELOPS_NAMESPACE </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STD_RELOPS </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">ifdef</span> __STL_USE_EXCEPTIONS </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_TRY try </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_CATCH_ALL catch(...) </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_RETHROWthrow </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NOTHROWthrow() </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_UNWIND(action) catch(...) &#123; action; throw; &#125; </span></span><br><span class="line"><span class="meta"># <span class="keyword">else</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_TRY </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_CATCH_ALL <span class="keyword">if</span> (false) </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_RETHROW </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_NOTHROW </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __STL_UNWIND(action) </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __STL_ASSERTIONS </span></span><br><span class="line"><span class="meta"># <span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __stl_assert(expr) \ </span></span><br><span class="line"> <span class="keyword">if</span> (!(expr)) &#123;<span class="built_in">fprintf</span>(stderr, <span class="string">&quot;%s:%d STL assertion failure: %s\n&quot;</span>, \ </span><br><span class="line"> __FILE__, __LINE__,<span class="meta"># expr);abort(); &#125;</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">define</span> __stl_assert(expr) </span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* __STL_CONFIG_H */</span> </span></span><br><span class="line"><span class="comment">// Local Variables: </span></span><br><span class="line"><span class="comment">// mode:C++ </span></span><br><span class="line"><span class="comment">// End:</span></span><br></pre></td></tr></table></figure>
+
+<p>下面这个小程序，用来测试 <strong>GCC</strong> 的常数设定：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// file: 1config.cpp </span></span><br><span class="line"><span class="comment">// test configurations defined in &lt;stl_config.h&gt; </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span> <span class="comment">// which included &lt;stl_algobase.h&gt;, </span></span></span><br><span class="line"><span class="comment">// and then &lt;stl_config.h&gt; </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span> </span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std; </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line"><span class="meta"># <span class="keyword">if</span> defined(__sgi) </span></span><br><span class="line"> cout &lt;&lt; <span class="string">&quot;__sgi&quot;</span> &lt;&lt; endl; <span class="comment">// none! </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="meta"># <span class="keyword">if</span> defined(__GNUC__) </span></span><br><span class="line"> cout &lt;&lt; <span class="string">&quot;__GNUC__&quot;</span> &lt;&lt; endl; <span class="comment">// __GNUC__ </span></span><br><span class="line"> cout &lt;&lt; __GNUC__ &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; __GNUC_MINOR__ &lt;&lt; endl; <span class="comment">// 2 91 </span></span><br><span class="line"> <span class="comment">// cout &lt;&lt; __GLIBC__ &lt;&lt; endl; // __GLIBC__ undeclared </span></span><br><span class="line"><span class="meta"># <span class="keyword">endif</span> </span></span><br><span class="line"><span class="comment">// case 2 </span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __STL_NO_DRAND48 </span></span><br><span class="line"> cout &lt;&lt; <span class="string">&quot;__STL_NO_DRAND48 defined&quot;</span> &lt;&lt; endl; </span><br><span class="line"><span class="meta">#<span class="keyword">else</span> </span></span><br><span class="line"> cout &lt;&lt; <span class="string">&quot;__STL_NO_DRAND48 undefined&quot;</span> &lt;&lt; endl; </span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> </span></span><br><span class="line"><span class="comment">// case 3 </span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __STL_STATIC_TEMPLATE_MEMBER_BUG </span></span><br><span class="line"> cout &lt;&lt; <span class="string">&quot;__STL_STATIC_TEMPLATE_MEMBER_BUG defined&quot;</span> &lt;&lt; endl; </span><br><span class="line"><span class="meta">#<span class="keyword">else</span> </span></span><br><span class="line"> cout &lt;&lt; <span class="string">&quot;__STL_STATIC_TEMPLATE_MEMBER_BUG undefined&quot;</span> &lt;&lt; endl; </span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> </span></span><br><span class="line"><span class="comment">// case 5 </span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __STL_CLASS_PARTIAL_SPECIALIZATION </span></span><br><span class="line"> cout &lt;&lt; <span class="string">&quot;__STL_CLASS_PARTIAL_SPECIALIZATION defined&quot;</span> &lt;&lt; endl; </span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line">cout &lt;&lt; <span class="string">&quot;__STL_CLASS_PARTIAL_SPECIALIZATION undefined&quot;</span> &lt;&lt; endl; </span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> </span></span><br><span class="line"><span class="comment">// case 6 </span></span><br><span class="line">...以下写法类似。详见文件 config.cpp（可自侯捷网站下载）。</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行结果如下，由此可窥见 GCC 对各种 C++特性的支持程度：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">__GNUC__ </span><br><span class="line">2 91 </span><br><span class="line">__STL_NO_DRAND48 undefined </span><br><span class="line">__STL_STATIC_TEMPLATE_MEMBER_BUG undefined </span><br><span class="line">__STL_CLASS_PARTIAL_SPECIALIZATION defined </span><br><span class="line">__STL_FUNCTION_TMPL_PARTIAL_ORDER defined </span><br><span class="line">__STL_EXPLICIT_FUNCTION_TMPL_ARGS defined </span><br><span class="line">__STL_MEMBER_TEMPLATES defined </span><br><span class="line">__STL_LIMITED_DEFAULT_TEMPLATES undefined </span><br><span class="line">__STL_NON_TYPE_TMPL_PARAM_BUG undefined </span><br><span class="line">__SGI_STL_NO_ARROW_OPERATOR undefined </span><br><span class="line">__STL_USE_EXCEPTIONS defined </span><br><span class="line">__STL_USE_NAMESPACES undefined </span><br><span class="line">__STL_SGI_THREADS undefined </span><br><span class="line">__STL_WIN32THREADS undefined </span><br><span class="line">__STL_NO_NAMESPACES undefined </span><br><span class="line">__STL_NEED_TYPENAME undefined </span><br><span class="line">__STL_NEED_BOOL undefined </span><br><span class="line">__STL_NEED_EXPLICIT undefined </span><br><span class="line">__STL_ASSERTIONS undefined</span><br></pre></td></tr></table></figure>
+
+<h2 id="C-一些特殊语法"><a href="#C-一些特殊语法" class="headerlink" title="C++ 一些特殊语法"></a>C++ 一些特殊语法</h2><h3 id="暂时对象产生与运用"><a href="#暂时对象产生与运用" class="headerlink" title="暂时对象产生与运用"></a>暂时对象产生与运用</h3><p>所谓暂时对象（临时对象），就是一种无名对象（unnamed objects）。它的出现如果不在程序员的预期之下（例如任何pass by value动作都会引发copy动作，于是形成一个暂时对象），往往造成效率上的负担。</p>
+<p>有时候刻意制造一些暂时对象，却又是使程序干净清爽的技巧。刻意制造暂时对象的方法是，在型别名称之后直接加<strong>一对小括号</strong>，并可指定初值，例如Shape(3,5)或int(8)，其意义相当于<strong>唤起相应的constructor</strong>且<strong>不指定物件名称</strong> 。<br>STL 中将暂时对象技巧用于仿函式（functor）与算法搭配，例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// file: 1config-temporary-object.cpp </span></span><br><span class="line"><span class="comment">//ᴀ例测试仿函式用于 for_each() 的情形</span></span><br><span class="line"><span class="comment">// vc6[o] cb4[o] gcc[o] </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span> </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;algorithm&gt;</span> </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span> </span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std; </span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">print</span> </span><br><span class="line">&#123; </span><br><span class="line"><span class="keyword">public</span>: </span><br><span class="line"> <span class="function"><span class="type">void</span> <span class="title">operator</span><span class="params">()</span><span class="params">(<span class="type">const</span> T&amp; elem)</span> <span class="comment">// operator() 多载化</span></span></span><br><span class="line"><span class="function"> </span>&#123; cout &lt;&lt; elem &lt;&lt; <span class="string">&#x27; &#x27;</span>; &#125; </span><br><span class="line">&#125;; </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line"> <span class="type">int</span> ia[<span class="number">6</span>] = &#123; <span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span> &#125;; </span><br><span class="line"> <span class="function">vector&lt; <span class="type">int</span> &gt; <span class="title">iv</span><span class="params">(ia, ia+<span class="number">6</span>)</span></span>; </span><br><span class="line"> <span class="comment">// print&lt;int&gt;() 是一个暂时对象，不是一个函式呼叫动作</span></span><br><span class="line"> for_each(iv.<span class="built_in">begin</span>(), iv.<span class="built_in">end</span>(), <span class="built_in">print</span>&lt;<span class="type">int</span>&gt;()); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后一行便是产生「function template具现体」print<int>的一个暂时对象。这个对象将被传入for_each()之中起作用。当for_each()结束，这个暂时对象也就结束了它的生命。</p>
+<h3 id="静态常量整数成员在类内直接初始化"><a href="#静态常量整数成员在类内直接初始化" class="headerlink" title="静态常量整数成员在类内直接初始化"></a>静态常量整数成员在类内直接初始化</h3><p>如果 class内含 const static <em>integral</em> data member，那么根据 C++标准规格，可以在class之内直接给予初值。所谓<em>integral</em>泛指所有整数型别，不单只是指int</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// file: 1config-inclass-init.cpp </span></span><br><span class="line"><span class="comment">// test in-class initialization of static const integral members </span></span><br><span class="line"><span class="comment">// ref. C++ Primer 3/e, p.643 </span></span><br><span class="line"><span class="comment">// vc6[x] cb4[o] gcc[o] </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span> </span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std; </span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt; </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">testClass</span> &#123; </span><br><span class="line"><span class="keyword">public</span>: <span class="comment">// expedient </span></span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="type">int</span> _datai = <span class="number">5</span>; </span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="type">long</span> _datal = <span class="number">3L</span>; </span><br><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="type">char</span> _datac = <span class="string">&#x27;c&#x27;</span>; </span><br><span class="line">&#125;; </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line"> cout &lt;&lt; testClass&lt;<span class="type">int</span>&gt;::_datai &lt;&lt; endl; <span class="comment">// 5 </span></span><br><span class="line"> cout &lt;&lt; testClass&lt;<span class="type">int</span>&gt;::_datal &lt;&lt; endl; <span class="comment">// 3 </span></span><br><span class="line"> cout &lt;&lt; testClass&lt;<span class="type">int</span>&gt;::_datac &lt;&lt; endl; <span class="comment">// c </span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="increment-x2F-decrement-x2F-dereference运算子"><a href="#increment-x2F-decrement-x2F-dereference运算子" class="headerlink" title="increment&#x2F;decrement&#x2F;dereference运算子"></a>increment&#x2F;decrement&#x2F;dereference运算子</h3><p>increment &#x2F; dereference 运算子在迭代器的实作上占有非常重要的地位，因为任何一个迭代器都必须实作出前进（<em>increment</em>,operator++ ）和取值（<em>dereference</em>, operator*）功能，前者还分为前置式（prefix）和后置式（postfix）两种，有非常规律的写法。有些迭代器具备双向移动功能，那么就必须再提供 decrement 运算子（也分前置式和后置式两种）。</p>
+<h3 id="前闭后开区间表示法"><a href="#前闭后开区间表示法" class="headerlink" title="前闭后开区间表示法[)"></a>前闭后开区间表示法[)</h3><p>任何STL 算法都需要获得由一对迭代器（泛型指针）所表示的区间，表示操作范围，这一对所表示的区间是前闭后开的，[first ,lasr) 表示 first 到 last - 1。迭代器 last 所指的是「最后一个元素的下一位置」。这种<em>off by one</em>（偏移一格，或说 <em>pass the end</em>）的标示法，带来许多方便。</p>
+<h3 id="function-call-函数调用-运算子（operator-）"><a href="#function-call-函数调用-运算子（operator-）" class="headerlink" title="function call(函数调用) 运算子（operator()）"></a>function call(函数调用) 运算子（operator()）</h3><p>函式呼叫动作（C++ 语法中的左右小括号）也可以被多载化（重载）。许多STL算法都提供两个版本，一个用于<strong>一般状况</strong>（例如排序时以递增方式排列），一个用于<strong>特殊状况</strong>（例如排序时由使用者指定以何种特殊关系进行排列）。像这种情况，需要使用者指定某个条件或某个策略，而条件或策略的背后由一整组动作构成，便需要某种特殊的东西来代表这「一整组动作」。代表「一整组动作」的，当然是<strong>函式</strong>。过去 C语言时代，欲将函式当做参数传递，唯有透过函式指针（pointer to function，或称 function pointer）才能达成。<br>但是函数指针使用时有缺点：1. 无法持有自己的状态（所谓区域状态，local states）；2.无法达到组件技术中的可配接性（adaptability）—也就是无法再将某些修饰条件加诸于其上而改变其状态。</p>
+<p>STL 算法的特殊版本所接受的所谓「条件」或「策略」或「一整组动作」，都以仿函式形式呈现。所谓仿函式（functor）就是使用起来像函式一样的东西。如果你针对某个 class 进行operator() 多载化，它就成为一个仿函式。</p>
+<h3 id="仿函数"><a href="#仿函数" class="headerlink" title="仿函数"></a>仿函数</h3><p>仿函数（Functor）又称为函数对象（Function Object）是一个能行使函数功能的类。</p>
+<p>仿函数的语法几乎和我们普通的函数调用一样，不过作为仿函数的类，都必须<strong>重载 operator()</strong> 运算符。因为调用仿函数，实际上就是通过类对象调用重载后的 operator() 运算符。</p>
+<p>使用：对类进行operator() 进行重载，这个类就是仿函数，可以通过编码使仿函数变为可配接的，对象当做函数名</p>
+<p>优点：</p>
+<ul>
+<li>仿函数是对象，可以拥有成员函数和成员变量，即仿函数拥有状态(states)</li>
+<li>每个仿函数都有自己的类型</li>
+<li>仿函数通常比一般函数快（很多信息编译期确定）</li>
+</ul>
+<p>仿函数与函数指针相比的优势</p>
+<ul>
+<li>仿函数是一个类，是数据以及对数据操作的行为的集合，要成为仿函数必须重载<code>()</code>。函数指针是无法保存数据的，所以仿函数比函数指针功能更强，因为它<strong>可以保存数据</strong>，这一特性，是函数指针无法比拟的优势。</li>
+</ul>
+<h1 id="2-空间配置器"><a href="#2-空间配置器" class="headerlink" title="2.空间配置器"></a>2.空间配置器</h1><p><em>以STL 的运用角度而言，空间配置器是最不需要介绍的东西，它总是隐藏在一切组件（更具体地说是指容器，container）的背后，默默工作默默付出。但若以STL 的实作角度而言，第一个需要介绍的就是空间配置器，因为整个STL的操作对象（所有的数值）都存放在容器之内，而容器一定需要配置空间以置放数据。不先掌握空间配置器的原理，难免在观察其它 STL 组件的实作时处处遇到挡路石。</em></p>
+<p><em>为什么不说allocator是内存配置器而说它是空间配置器呢？因为，空间不一定是内存，空间也可以是磁盘或其它辅助储存媒体。是的，你可以写一个 allocator，直接向硬盘取空间。以下介绍的是 SGI STL 提供的配置器，配置的对象，呃，是的，是内存 。</em></p>
+<h2 id="2-1空间配置器的标准接口"><a href="#2-1空间配置器的标准接口" class="headerlink" title="2.1空间配置器的标准接口"></a>2.1空间配置器的标准接口</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//各种type</span></span><br><span class="line">allocator::value_type </span><br><span class="line">allocator::pointer </span><br><span class="line">allocator::const_pointer </span><br><span class="line">allocator::reference </span><br><span class="line">allocator::const_reference </span><br><span class="line">allocator::size_type </span><br><span class="line">allocator::difference_type</span><br><span class="line">    </span><br><span class="line">allocator::rebind </span><br><span class="line"><span class="comment">//一个巢状的（nested）class template。class rebind&lt;U&gt;拥有唯一成员other，那是一个 typedef，代表allocator&lt;U&gt;。</span></span><br><span class="line">allocator::<span class="built_in">allocator</span>() </span><br><span class="line"><span class="comment">//default constructor。//默认构造函数</span></span><br><span class="line">allocator::<span class="built_in">allocator</span>(<span class="type">const</span> allocator&amp;) </span><br><span class="line"><span class="comment">//copy constructor。//拷贝构造函数</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">U</span>&gt;allocator::<span class="built_in">allocator</span>(<span class="type">const</span> allocator&lt;U&gt;&amp;) </span><br><span class="line"><span class="comment">//泛化的copy constructor。//泛化的拷贝构造</span></span><br><span class="line">allocator::~<span class="built_in">allocator</span>() </span><br><span class="line"><span class="comment">//default constructor。//析构函数</span></span><br><span class="line"><span class="function">pointer <span class="title">allocator::address</span><span class="params">(reference x)</span> <span class="type">const</span> </span></span><br><span class="line"><span class="function"><span class="comment">//传回某个对象的地址。算式a.address(x)等同于&amp;x。//返回某个对象的地址</span></span></span><br><span class="line"><span class="function">const_pointer <span class="title">allocator::address</span><span class="params">(const_reference x)</span> <span class="type">const</span> </span></span><br><span class="line"><span class="function"><span class="comment">//传回某个const对象的地址。算式a.address(x)等同于&amp;x。//返回某个const对象的地址</span></span></span><br><span class="line"><span class="function">pointer <span class="title">allocator::allocate</span><span class="params">(size_type n, cosnt <span class="type">void</span>* = <span class="number">0</span>)</span> </span></span><br><span class="line"><span class="function"><span class="comment">//配置空间，足以储存n个T对象。第二自变量是个提示。实作上可能会利用它来增进区域性（locality），或完全忽略之。</span></span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">allocator::deallocate</span><span class="params">(pointer p, size_type n)</span> </span></span><br><span class="line"><span class="function"><span class="comment">//归还先前配置的空间。</span></span></span><br><span class="line"><span class="function">size_type <span class="title">allocator::max_size</span><span class="params">()</span> <span class="type">const</span> </span></span><br><span class="line"><span class="function"><span class="comment">//传回可成功配置的最大量。</span></span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">allocator::construct</span><span class="params">(pointer p, <span class="type">const</span> T&amp; x)</span> </span></span><br><span class="line"><span class="function"><span class="comment">//等同于new(const void*) p) T(x)。//构造T对象</span></span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">allocator::destroy</span><span class="params">(pointer p)</span> </span></span><br><span class="line"><span class="function"><span class="comment">//等同于p-&gt;~T()。//对象T的析构</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-1设计一个简单的空间配置器JJ-allocator"><a href="#2-1-1设计一个简单的空间配置器JJ-allocator" class="headerlink" title="2.1.1设计一个简单的空间配置器	JJ::allocator"></a>2.1.1设计一个简单的空间配置器	JJ::allocator</h3><p>根据前述的标准介 面，我们可以自行完成一个 功能简单、介 面 不怎么齐全的allocator如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// file: 2jjalloc.h </span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> _JJALLOC_ </span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _JJALLOC_</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;new&gt;</span> <span class="comment">// for placement new. </span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstddef&gt;</span> <span class="comment">// for ptrdiff_t, size_t </span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdlib&gt;</span> <span class="comment">// for exit() </span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;climits&gt;</span> <span class="comment">// for UINT_MAX </span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span> <span class="comment">// for cerr </span></span></span><br><span class="line"><span class="keyword">namespace</span> JJ</span><br><span class="line">&#123; </span><br><span class="line">    <span class="comment">//使用operator new 分配空间</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt; </span><br><span class="line"><span class="keyword">inline</span> T* _allocate(<span class="type">ptrdiff_t</span> size, T*) &#123; </span><br><span class="line"> <span class="built_in">set_new_handler</span>(<span class="number">0</span>); <span class="comment">//注释1</span></span><br><span class="line"> T* tmp = (T*)(::<span class="keyword">operator</span> <span class="built_in">new</span>((<span class="type">size_t</span>)(size * <span class="built_in">sizeof</span>(T))));<span class="comment">//注释2 </span></span><br><span class="line"> <span class="keyword">if</span> (tmp == <span class="number">0</span>) &#123; </span><br><span class="line"> cerr &lt;&lt; <span class="string">&quot;out of memory&quot;</span> &lt;&lt; endl; </span><br><span class="line"> <span class="built_in">exit</span>(<span class="number">1</span>); </span><br><span class="line"> &#125; </span><br><span class="line"> <span class="keyword">return</span> tmp; </span><br><span class="line">&#125; </span><br><span class="line">    <span class="comment">//使用operator delete回收空间</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt; </span><br><span class="line"><span class="keyword">inline</span> <span class="type">void</span> _deallocate(T* buffer) &#123; </span><br><span class="line"> ::<span class="function"><span class="keyword">operator</span> <span class="title">delete</span><span class="params">(buffer)</span></span>; </span><br><span class="line">&#125; </span><br><span class="line">    <span class="comment">//在指定内存上构造一个对象</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T1</span>, <span class="keyword">class</span> <span class="title class_">T2</span>&gt; </span><br><span class="line"><span class="keyword">inline</span> <span class="type">void</span> _construct(T1* p, <span class="type">const</span> T2&amp; value) &#123; </span><br><span class="line"> <span class="keyword">new</span>(p) <span class="built_in">T1</span>(value); <span class="comment">// placement new. invoke ctor of T1. </span></span><br><span class="line">&#125; </span><br><span class="line">    <span class="comment">//析构一个对象</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt; </span><br><span class="line"><span class="keyword">inline</span> <span class="type">void</span> _destroy(T* ptr) &#123; </span><br><span class="line"> ptr-&gt;~<span class="built_in">T</span>(); </span><br><span class="line">&#125; </span><br><span class="line">    <span class="comment">//遵循allocator的标准定义相关结构</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt; </span><br><span class="line"><span class="keyword">class</span> <span class="title class_">allocator</span> &#123; </span><br><span class="line"><span class="keyword">public</span>: </span><br><span class="line"> <span class="keyword">typedef</span> Tvalue_type; </span><br><span class="line"> <span class="keyword">typedef</span> T* pointer; </span><br><span class="line"> <span class="keyword">typedef</span> <span class="type">const</span> T* const_pointer; </span><br><span class="line"> <span class="keyword">typedef</span> T&amp; reference; </span><br><span class="line"> <span class="keyword">typedef</span> <span class="type">const</span> T&amp; const_reference; </span><br><span class="line"> <span class="keyword">typedef</span> <span class="type">size_t</span> size_type; </span><br><span class="line"> <span class="keyword">typedef</span> ptrdiff_tdifference_type; </span><br><span class="line"><span class="comment">// rebind allocator of type U </span></span><br><span class="line"> <span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">U</span>&gt;</span><br><span class="line"> <span class="keyword">struct</span> <span class="title class_">rebind</span> &#123; </span><br><span class="line"> <span class="keyword">typedef</span> allocator&lt;U&gt; other; </span><br><span class="line"> &#125;; </span><br><span class="line"><span class="comment">// hint used for locality. ref.[Austern],p189 </span></span><br><span class="line"> <span class="built_in">pointerallocate</span>(size_type n, <span class="type">const</span> <span class="type">void</span>* hint=<span class="number">0</span>) &#123; </span><br><span class="line"> <span class="keyword">return</span> _allocate((difference_type)n, (pointer)<span class="number">0</span>); </span><br><span class="line"> &#125; </span><br><span class="line"> <span class="function"><span class="type">void</span> <span class="title">deallocate</span><span class="params">(pointer p, size_type n)</span> </span>&#123; _deallocate(p); &#125; </span><br><span class="line"> <span class="function"><span class="type">void</span> <span class="title">construct</span><span class="params">(pointer p, <span class="type">const</span> T&amp; value)</span> </span>&#123; </span><br><span class="line">_construct(p, value); </span><br><span class="line"> &#125; </span><br><span class="line"> <span class="function"><span class="type">void</span> <span class="title">destroy</span><span class="params">(pointer p)</span> </span>&#123;_destroy(p); &#125; </span><br><span class="line"> <span class="built_in">pointeraddress</span>(reference x) &#123; <span class="keyword">return</span> (pointer)&amp;x; &#125; </span><br><span class="line"> <span class="built_in">const_pointerconst_address</span>(const_reference x) &#123; </span><br><span class="line"> <span class="keyword">return</span> (const_pointer)&amp;x; </span><br><span class="line"> &#125; </span><br><span class="line"> <span class="built_in">size_typemax_size</span>() <span class="type">const</span> &#123; </span><br><span class="line"> <span class="keyword">return</span> <span class="built_in">size_type</span>(UINT_MAX/<span class="built_in">sizeof</span>(T)); </span><br><span class="line"> &#125; </span><br><span class="line">&#125;; </span><br><span class="line">&#125; <span class="comment">// end of namespace JJ </span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">// _JJALLOC_</span></span></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>注释1：<strong>set_new_handler(0);</strong></p>
+<p>new_handler，顾名思义就是一个处理程序，当程序向内存的分配请求无法满足时将有两种可能:</p>
+<ol>
+<li>抛出异常</li>
+<li>设置一个异常处理函数，这就是所谓的new_handler（类似于中断机制，本质上来说就是一个函数指针）</li>
+</ol>
+<p>当第二种情况发生以后，我们可以通过new_handler删除无用的内存，以及设置新的new_handler，而这个set_new_handler就是来进行设置的。</p>
+<p>set_new_handler(0)主要是为了卸载目前的内存分配异常处理函数，这样一来一旦分配内存失败的话，C++就会强制性抛出std:bad_alloc异常，而不是跑到处理某个异常处理函数去处理。</p>
+</li>
+<li><p>注释2：*<em>T <em>tmp&#x3D;(T</em>)(::operator new((size_t)(size</em>sizeof(T)))); **<code>::</code>访问符放到最前面的意思是使用全局版本，这个<code>operator new</code>就得好好说说。</p>
+<p><strong>new 的三种形式</strong></p>
+<ul>
+<li>1.new operator (就是我们常用的new)</li>
+<li>2.operator new</li>
+<li>3.placement new</li>
+</ul>
+<p>我们在程序中使用new的时候，实际上做了两件事情：<br>一、申请内存<br>二、构造对象<br>简单的理解，new完成了一套比较完备的服务，而<code>operator new</code>，只是申请内存，<code>placement new</code>是在申请的内存中进行构造对象，第2、3中形式就是对new的拆分。</p>
+</li>
+</ul>
+<p><strong>简单应用：</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// file: 2jjalloc.cpp </span></span><br><span class="line"><span class="comment">// VC6[o], BCB4[o], GCC2.9[x]. </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;jjalloc.h&quot;</span> </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span> </span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span> </span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std; </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span></span><br><span class="line"><span class="function"></span>&#123; </span><br><span class="line"> <span class="type">int</span> ia[<span class="number">5</span>] = &#123;<span class="number">0</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>&#125;; </span><br><span class="line"> <span class="type">unsigned</span> <span class="type">int</span> i; </span><br><span class="line"> vector&lt;<span class="type">int</span>,JJ::allocator&lt;<span class="type">int</span>&gt; &gt; <span class="built_in">iv</span>(ia, ia+<span class="number">5</span>);</span><br><span class="line"> <span class="keyword">for</span>(i=<span class="number">0</span>; i&lt;iv.<span class="built_in">size</span>(); i++) </span><br><span class="line"> cout &lt;&lt; iv[i] &lt;&lt; <span class="string">&#x27; &#x27;</span>; </span><br><span class="line"> cout &lt;&lt; endl; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2具备次配置力（sub-allocation）的-SGI-空间配置器"><a href="#2-2具备次配置力（sub-allocation）的-SGI-空间配置器" class="headerlink" title="2.2具备次配置力（sub-allocation）的 SGI 空间配置器"></a>2.2具备次配置力（sub-allocation）的 SGI 空间配置器</h2><p>SGI STL 的配置器与众不同 ， 也与标准规范不同，其名称是alloc而非allocator，而且不接受任何自变量。换句话说如果你要在程序中明白采用SGI 配置器，不能采用标准写法：<code>vector&lt;int,**std::allocator&lt;int&gt;** &gt; iv;// in VC or CB</code>。</p>
+<p>必须这么写：<code>vector&lt;int,**std::alloc**&lt;int&gt;&gt; iv; // in GCC </code></p>
+<p>SGI STL allocator᳾能符合标准规格，这个事实通常不会对我们带来困扰，因为通常我们使用预设的空间配置器，很少需要自行指定配置器名称，而SGI STL的每一个容器都已经指定其预设的空间配置器为alloc。</p>
+<h3 id="2-2-1-SGI-标准的空间配置器std-allocator"><a href="#2-2-1-SGI-标准的空间配置器std-allocator" class="headerlink" title="2.2.1 SGI 标准的空间配置器	std::allocator"></a>2.2.1 SGI 标准的空间配置器	std::allocator</h3><p>虽然 SGI 也定义有一个符合部份标准、名为allocator的配置器，但SGI自己从未用过它，也不建议我们使用。主要原因是效率不彰，只把 C++的::operator new和::operator delete做一层薄薄的包装而已。</p>
+<h3 id="2-2-2SGI-特殊的空间配置器std-alloc"><a href="#2-2-2SGI-特殊的空间配置器std-alloc" class="headerlink" title="2.2.2SGI 特殊的空间配置器	std::alloc"></a>2.2.2SGI 特殊的空间配置器	std::alloc</h3><p>allocator只是基层内存配置&#x2F;解放行为（也就是::operator new和::operator delete）的一层薄薄包装，并没有考虑到任何效率上的强化。SGI 另有法宝供本身内部使用。</p>
+<p>一般而言，我们所习惯的 C++ 内存配置动作和释放动作是这样：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Foo</span> &#123; ... &#125;; </span><br><span class="line">Foo* pf = <span class="keyword">new</span> Foo;<span class="comment">//配置内存，然后建构对象</span></span><br><span class="line"><span class="keyword">delete</span> pf; <span class="comment">//将对象解构，然后释放内存</span></span><br></pre></td></tr></table></figure>
+
+<p>这其中的 new算式内含两阶段动作：</p>
+<ul>
+<li><p>(1) 呼叫::operator new配置内存；</p>
+</li>
+<li><p>(2) 呼叫Foo::Foo()建构对象内容。</p>
+</li>
+</ul>
+<p>delete算式也内含两阶段动作：</p>
+<ul>
+<li><p>(1)呼叫 Foo::~Foo()将对象解构；</p>
+</li>
+<li><p>(2)呼叫::operator delete释放内存。</p>
+</li>
+</ul>
+<p>为了精密分工，STL allocator决定将这两阶段动作区分开来。内存配置动作由alloc:allocate()负责，内存释放动作由alloc::deallocate()负责；对象建构动作由::construct()负责，对象解构动作由::destroy()负责。</p>
+<p>STL标准规格告诉我们，配置器定义于<memory>之中，SGI <memory>内含以下两个文件：</p>
+<p>#include &lt;stl_alloc.h&gt; &#x2F;&#x2F;负责内存空间的配置与释放</p>
+<p>#include &lt;stl_construct.h&gt; &#x2F;&#x2F;负责对象内容的建构与解构</p>
+<p>内存空间的配置&#x2F;释放与对象内容的建构&#x2F;解构，分别着落在这两个文件身上。其中&lt;stl_construct.h&gt;定义有两个基本函数：建构用的 construct()和解构用的destroy()。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/STL_memory%E5%A4%B4%E6%96%87%E4%BB%B6.png" alt="image-20220621205109870"></p>
+<h3 id="2-2-3建构和解构基本工具：construct-和-destroy"><a href="#2-2-3建构和解构基本工具：construct-和-destroy" class="headerlink" title="2.2.3建构和解构基本工具：construct() 和 destroy()"></a>2.2.3建构和解构基本工具：construct() 和 destroy()</h3><p>下面是&lt;stl_construct.h&gt; 的部份内容</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;new.h&gt;</span> <span class="comment">//欲使用placement new，需先含入此文件</span></span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T1</span>, <span class="keyword">class</span> <span class="title class_">T2</span>&gt; </span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">construct</span><span class="params">(T1* p, <span class="type">const</span> T2&amp; value)</span> </span>&#123; </span><br><span class="line"><span class="keyword">new</span> (p) <span class="built_in">T1</span>(value); <span class="comment">//placement new;唤起 T1::T1(value); </span></span><br><span class="line">&#125; </span><br><span class="line"><span class="comment">//以下是 destroy()第一版本，接受一个指标。</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">T</span>&gt; </span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">destroy</span><span class="params">(T* pointer)</span> </span>&#123; </span><br><span class="line">&#125; </span><br><span class="line">pointer-&gt;~<span class="built_in">T</span>(); <span class="comment">//唤起 dtor ~T() </span></span><br><span class="line"><span class="comment">//以下是 destroy()第二版本，接受两个迭代器。此函式设法找出元素的数值型别，</span></span><br><span class="line"><span class="comment">//进而利用 __type_traits&lt;&gt;求取最适当措施。</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">ForwardIterator</span>&gt; </span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">destroy</span><span class="params">(ForwardIterator first, ForwardIterator last)</span> </span>&#123; </span><br><span class="line">__destroy(first, last, <span class="built_in">value_type</span>(first)); </span><br><span class="line">&#125; </span><br><span class="line"><span class="comment">//判断元素的数值型别（value type）是否有trivial destructor </span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">ForwardIterator</span>, <span class="keyword">class</span> <span class="title class_">T</span>&gt; </span><br><span class="line"><span class="keyword">inline</span> <span class="type">void</span> __destroy(ForwardIterator first, ForwardIterator last, T*) </span><br><span class="line">&#123; </span><br><span class="line"> <span class="keyword">typedef</span> <span class="keyword">typename</span> __type_traits&lt;T&gt;::has_trivial_destructor trivial_destructor; </span><br><span class="line">__destroy_aux(first, last, <span class="built_in">trivial_destructor</span>()); </span><br><span class="line">&#125; </span><br><span class="line"><span class="comment">//如果元素的数值型别（value type）有non-trivial destructor…</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">ForwardIterator</span>&gt; </span><br><span class="line"><span class="keyword">inline</span> <span class="type">void</span> __destroy_aux(ForwardIterator first, ForwardIterator last, __false_type) &#123; </span><br><span class="line"> <span class="keyword">for</span> ( ; first &lt; last; ++first) </span><br><span class="line"><span class="built_in">destroy</span>(&amp;*first); </span><br><span class="line">&#125; </span><br><span class="line"><span class="comment">//如果元素的数值型别（value type）有trivial destructor…</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">ForwardIterator</span>&gt; </span><br><span class="line"><span class="keyword">inline</span> <span class="type">void</span> __destroy_aux(ForwardIterator, ForwardIterator, __true_type) &#123;&#125; </span><br><span class="line"><span class="comment">//以下是 destroy()第二版本针对迭代器为 char*和 wchar_t*的特化版</span></span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">destroy</span><span class="params">(<span class="type">char</span>*, <span class="type">char</span>*)</span> </span>&#123;&#125; </span><br><span class="line"><span class="function"><span class="keyword">inline</span> <span class="type">void</span> <span class="title">destroy</span><span class="params">(<span class="type">wchar_t</span>*, <span class="type">wchar_t</span>*)</span> </span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/construct()%E5%92%8Cdrestroy()%E7%A4%BA%E6%84%8F.png" alt="image-20220621211422260"></p>
+<p>这两个做为建构、解构之用的函式被设计为全域函式，符合 STL 的规范。此外STL 还规定配置器必须拥有名为 construct()和destroy()的两个成员函式，然而真正在 SGI STL 中大显身手的那个名为 std::alloc 的配置器并未遵守此一规则。</p>
+<p>上述construct()接受一个指标p和一个初值value，此函式的用途就是将初值设定到指标所指的空间上。C++ 的placement new运算子可用来完成此一 任务。</p>
+<p>destroy()有两个版本，第一版本接受一个指标，准备将该指标所指之物解构掉。 这很简单，直接呼叫该对象的解构式即可。第二版本接受first和last两个迭代器（所谓迭代器，第三章有详细介绍），准备将[first,last)范围内的所有物件解构掉。我们不知道这个范围有多大，万一很大，而每个物件的解构式都无关痛痒（所谓 <em>trivial</em>destructor），那么一次次呼叫这些无关痛痒的解构式，对效率是一种蕲伤。</p>
+<p>因此，这里首先利用value_type()获得迭代器所指物件的型别， 再利用 <code>__type_traits&lt;T&gt;</code> 判别该型别的解构式是否无关痛痒 。若是（<code>__true_type</code>），什么也不做就结束；若否（<code>__false_type</code>），这才以循环方式巡访整个范围，并在循环中每经历一个对象就呼叫第一个版本的 destroy()。</p>
+<h3 id="2-2-4空间的配置与释放std-alloc"><a href="#2-2-4空间的配置与释放std-alloc" class="headerlink" title="2.2.4空间的配置与释放	std::alloc"></a>2.2.4空间的配置与释放	std::alloc</h3><p>看完了内存配置后的对象建构行为，和内存释放前的对象解构行为，现在我们来看看内存的配置和释放。</p>
+<p>对象建构前的空间配置，和对象解构后的空间释放，由&lt;stl_alloc.h&gt;负责，SGI 对此的设计哲学如下： </p>
+<ul>
+<li>向 system heap要求空间。</li>
+<li>考虑多绪（multi-threads）状态。</li>
+<li>考虑内存不足时的应变措施。</li>
+<li>考虑过多「小型区块」可能造成的内存破碎（fragment）问题。</li>
+</ul>
+<p><em>为了将问题控制在一定的复杂度内，以下的讨论以及所摘录的源码，皆排除多绪状态的处理。</em></p>
+<p>C++的记忆体配置基本动作是::operator new() ，记忆体释放基本动作是::operator delete()。这两个全域函式相当于 C 的 malloc()和 free() 函式。是的，正是如此，SGI 正是以malloc() 和free() 完成内存的配置与释放。</p>
+<p>考虑小型区块所可能造成的内存破碎问题，SGI 设计了双层级配置器，第一级配置器直接使用 malloc()和free()，第二级配置器则视情况采用不同的策略：</p>
+<ul>
+<li><p>当配置区块超过128bytes，视之为「足够大」，便呼叫第一级配置器；</p>
+</li>
+<li><p>当配置区块小于 128bytes，视之为「过小」，为了降低额外负担（overhead），便采用复杂的memory pool整理方式，而不再求助于第一级配置器。整个设计究竟只开放第一级配置器，或是同时开放第二级配置器，取决于<code>__USE_MALLOC</code>是否被定义（可以轻易测试出来，SGI STL 并未定义<code>__USE_MALLOC</code>）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta"># <span class="keyword">ifdef</span> __USE_MALLOC </span></span><br><span class="line">... </span><br><span class="line"><span class="keyword">typedef</span> __malloc_alloc_template&lt;<span class="number">0</span>&gt; malloc_alloc; </span><br><span class="line"><span class="keyword">typedef</span> malloc_alloc alloc; <span class="comment">//令 alloc为第一级配置器</span></span><br><span class="line"><span class="meta"># <span class="keyword">else</span> </span></span><br><span class="line">... </span><br><span class="line"><span class="comment">//令 alloc 为第二级配置器</span></span><br><span class="line"><span class="keyword">typedef</span> __default_alloc_template&lt;__NODE_ALLOCATOR_THREADS, <span class="number">0</span>&gt; alloc; </span><br><span class="line"><span class="meta">#<span class="keyword">endif</span> <span class="comment">/* ! __USE_MALLOC */</span></span></span><br></pre></td></tr></table></figure>
+
+<p>其 中 <code>__malloc_alloc_template</code>就 是 第 一 级 配 置 器 ，<code> __default_alloc__template</code>就是第二级配置器。再次提醒，<strong>alloc</strong>并不接受任何 template 型别参数。</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Jy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jysama.cn/2022/06/20/STL%E5%AD%A6%E4%B9%A0/" title="《STL源码剖析》学习">https://jysama.cn/2022/06/20/STL学习/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/05/13/2022%E6%98%A5%E6%9C%9F%E6%9C%AB%E5%A4%8D%E4%B9%A0%E5%B8%96/" rel="prev" title="期末复习帖">
+      <i class="fa fa-chevron-left"></i> 期末复习帖
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81NjM2Ny8zMjgzMA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E6%A6%82%E5%BF%B5%E4%B8%8E%E5%9F%BA%E7%A1%80"><span class="nav-number">1.</span> <span class="nav-text">1.概念与基础</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#STL%E5%85%AD%E5%A4%A7%E7%BB%84%E4%BB%B6"><span class="nav-number">1.1.</span> <span class="nav-text">STL六大组件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SGI-STL%E6%96%87%E4%BB%B6%E5%88%86%E5%B8%83%E4%B8%8E%E7%AE%80%E4%BB%8B"><span class="nav-number">1.2.</span> <span class="nav-text">SGI STL文件分布与简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#SGI-STL-%E7%9A%84%E7%BC%96%E8%AF%91%E5%99%A8%E7%BB%84%E6%80%81%E8%AE%BE%E5%AE%9A-configuration"><span class="nav-number">1.3.</span> <span class="nav-text">SGI STL 的编译器组态设定(configuration)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#C-%E4%B8%80%E4%BA%9B%E7%89%B9%E6%AE%8A%E8%AF%AD%E6%B3%95"><span class="nav-number">1.4.</span> <span class="nav-text">C++ 一些特殊语法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9A%82%E6%97%B6%E5%AF%B9%E8%B1%A1%E4%BA%A7%E7%94%9F%E4%B8%8E%E8%BF%90%E7%94%A8"><span class="nav-number">1.4.1.</span> <span class="nav-text">暂时对象产生与运用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%B8%B8%E9%87%8F%E6%95%B4%E6%95%B0%E6%88%90%E5%91%98%E5%9C%A8%E7%B1%BB%E5%86%85%E7%9B%B4%E6%8E%A5%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="nav-number">1.4.2.</span> <span class="nav-text">静态常量整数成员在类内直接初始化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#increment-x2F-decrement-x2F-dereference%E8%BF%90%E7%AE%97%E5%AD%90"><span class="nav-number">1.4.3.</span> <span class="nav-text">increment&#x2F;decrement&#x2F;dereference运算子</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E9%97%AD%E5%90%8E%E5%BC%80%E5%8C%BA%E9%97%B4%E8%A1%A8%E7%A4%BA%E6%B3%95"><span class="nav-number">1.4.4.</span> <span class="nav-text">前闭后开区间表示法[)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#function-call-%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8-%E8%BF%90%E7%AE%97%E5%AD%90%EF%BC%88operator-%EF%BC%89"><span class="nav-number">1.4.5.</span> <span class="nav-text">function call(函数调用) 运算子（operator()）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%BF%E5%87%BD%E6%95%B0"><span class="nav-number">1.4.6.</span> <span class="nav-text">仿函数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E7%A9%BA%E9%97%B4%E9%85%8D%E7%BD%AE%E5%99%A8"><span class="nav-number">2.</span> <span class="nav-text">2.空间配置器</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1%E7%A9%BA%E9%97%B4%E9%85%8D%E7%BD%AE%E5%99%A8%E7%9A%84%E6%A0%87%E5%87%86%E6%8E%A5%E5%8F%A3"><span class="nav-number">2.1.</span> <span class="nav-text">2.1空间配置器的标准接口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-1%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E7%A9%BA%E9%97%B4%E9%85%8D%E7%BD%AE%E5%99%A8JJ-allocator"><span class="nav-number">2.1.1.</span> <span class="nav-text">2.1.1设计一个简单的空间配置器	JJ::allocator</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2%E5%85%B7%E5%A4%87%E6%AC%A1%E9%85%8D%E7%BD%AE%E5%8A%9B%EF%BC%88sub-allocation%EF%BC%89%E7%9A%84-SGI-%E7%A9%BA%E9%97%B4%E9%85%8D%E7%BD%AE%E5%99%A8"><span class="nav-number">2.2.</span> <span class="nav-text">2.2具备次配置力（sub-allocation）的 SGI 空间配置器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-1-SGI-%E6%A0%87%E5%87%86%E7%9A%84%E7%A9%BA%E9%97%B4%E9%85%8D%E7%BD%AE%E5%99%A8std-allocator"><span class="nav-number">2.2.1.</span> <span class="nav-text">2.2.1 SGI 标准的空间配置器	std::allocator</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-2SGI-%E7%89%B9%E6%AE%8A%E7%9A%84%E7%A9%BA%E9%97%B4%E9%85%8D%E7%BD%AE%E5%99%A8std-alloc"><span class="nav-number">2.2.2.</span> <span class="nav-text">2.2.2SGI 特殊的空间配置器	std::alloc</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-3%E5%BB%BA%E6%9E%84%E5%92%8C%E8%A7%A3%E6%9E%84%E5%9F%BA%E6%9C%AC%E5%B7%A5%E5%85%B7%EF%BC%9Aconstruct-%E5%92%8C-destroy"><span class="nav-number">2.2.3.</span> <span class="nav-text">2.2.3建构和解构基本工具：construct() 和 destroy()</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-4%E7%A9%BA%E9%97%B4%E7%9A%84%E9%85%8D%E7%BD%AE%E4%B8%8E%E9%87%8A%E6%94%BEstd-alloc"><span class="nav-number">2.2.4.</span> <span class="nav-text">2.2.4空间的配置与释放	std::alloc</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jy"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Jy</p>
+  <div class="site-description" itemprop="description">Re：从零开始的写博客生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
