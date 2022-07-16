@@ -198,7 +198,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-09 22:46:35" itemprop="dateModified" datetime="2022-07-09T22:46:35+08:00">2022-07-09</time>
+                <time title="修改时间：2022-07-16 12:00:58" itemprop="dateModified" datetime="2022-07-16T12:00:58+08:00">2022-07-16</time>
               </span>
 
           
@@ -214,8 +214,9 @@
       
           <p>重返C++，先STL入手。这里会记录一些重点，但是不会记录得很全面。</p>
 <p>follow 侯捷大师的《STL源码剖析》</p>
-<h1 id="声明"><a href="#声明" class="headerlink" title="声明"></a>声明</h1><p>博客大部分内容都来源于《STL源码剖析》这本书（copy了个人认为重要的部分，包括代码），对于一些不容易明白的地方会查找其他资料进行补充。</p>
-<p>由于电子的文字版只有前四章，因此后面的章节只能截扫描版的图。(′⌒&#96;) </p>
+<p><strong>声明</strong></p>
+<p>博客大部分内容都来源于《STL源码剖析》这本书（copy了个人认为重要的部分，包括代码），对于一些不容易明白的地方会查找其他资料进行补充。</p>
+<p>由于电子的文字版只有前四章，因此后面的章节只能截扫描版的图。由于cdn加速不稳定，图片可能要用<code>魔法</code>才能加载(′⌒&#96;) </p>
 <h1 id="概念与基础"><a href="#概念与基础" class="headerlink" title="概念与基础"></a>概念与基础</h1><h2 id="STL六大组件"><a href="#STL六大组件" class="headerlink" title="STL六大组件"></a>STL六大组件</h2><p>1.容器（containers）：各种数据结构，如vector, list, deque, set, map，用来存放数据。从实作的角度看，STL 容器是一种 class template。就体积而言，这一部份很像冰山在海面下的比率。</p>
 <p>2.算法（algorithms）：各种常用算法如sort, search, copy, erase…。从实作的角度看，STL 算法是一种 function template。</p>
 <p>3.迭代器（iterators）：扮演容器与算法之间的胶着剂，是所谓的「泛型指标」。共有五种类型，以及其它衍生变化。从实作的角度看，迭代器是一种将operator*, operator-&gt;, operator++, operator–等指标相关操作予以多载化的 class template。所有STL容器都附带有自己专属的迭代器—是的，只有容器设计者才知道如何巡访自己的元素。原生指标（native pointer）也是一种迭代器。</p>
@@ -1091,6 +1092,307 @@
 <p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%85%83%E7%B4%A0%E6%93%8D%E4%BD%9C14.png" alt="image-20220709220450193"></p>
 <p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%85%83%E7%B4%A0%E6%93%8D%E4%BD%9C15.png" alt="image-20220709220520908"></p>
 <h5 id="元素搜寻"><a href="#元素搜寻" class="headerlink" title="元素搜寻"></a>元素搜寻</h5><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%BA%A2%E9%BB%91%E6%A0%91%E5%85%83%E7%B4%A0%E6%93%8D%E4%BD%9C13.png" alt="image-20220709220420450"></p>
+<h2 id="set（集合）"><a href="#set（集合）" class="headerlink" title="set（集合）"></a>set（集合）</h2><h3 id="实作"><a href="#实作" class="headerlink" title="实作"></a>实作</h3><p>集合的键值就是实值，实值就是键值。不允许两个元素有相同的键值。集合能自动排序，以红黑树作为底层机制。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/set1.png" alt="image-20220710214344791"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/set2.png" alt="image-20220710214627910"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/set3.png" alt="image-20220710214643208"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/set4.png" alt="image-20220710214656094"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/set5.png" alt="image-20220710214716430"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/set6.png" alt="image-20220710214740470"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/set7.png" alt="image-20220710214754310"></p>
+<h3 id="示例-1"><a href="#示例-1" class="headerlink" title="示例"></a>示例</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/set8.png" alt="image-20220710214813231"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/set9.png" alt="image-20220710214829559"></p>
+<h2 id="map（映射）"><a href="#map（映射）" class="headerlink" title="map（映射）"></a>map（映射）</h2><h3 id="实作-1"><a href="#实作-1" class="headerlink" title="实作"></a>实作</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map1.png" alt="image-20220710220207679"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map2.png" alt="image-20220710220222302"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map3.png" alt="image-20220710220238807"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map4.png" alt="image-20220710220255655"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map5.png" alt="image-20220710220313214"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map6.png" alt="image-20220710220334105"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map7.png" alt="image-20220710220406454"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map8.png" alt="image-20220710220423703"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map9.png" alt="image-20220710220449046"></p>
+<h3 id="示例-2"><a href="#示例-2" class="headerlink" title="示例"></a>示例</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map10.png" alt="image-20220710220507625"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map11.png" alt="image-20220710220526021"></p>
+<h3 id="特别说明"><a href="#特别说明" class="headerlink" title="特别说明"></a>特别说明</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map12.png" alt="image-20220710220540190"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map13.png" alt="image-20220710220554639"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/map14.png" alt="image-20220710220609537"></p>
+<h2 id="multiset"><a href="#multiset" class="headerlink" title="multiset"></a>multiset</h2><p>允许键值重复的set，底层使用红黑树的insert_equal()即可。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/multiset1.png" alt="image-20220710222720765"></p>
+<h2 id="multimap"><a href="#multimap" class="headerlink" title="multimap"></a>multimap</h2><p>允许键值重复的map，底层使用红黑树的insert_equal()即可。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/multimap1.png" alt="image-20220710222118863"></p>
+<h2 id="hashtable（哈希表）"><a href="#hashtable（哈希表）" class="headerlink" title="hashtable（哈希表）"></a>hashtable（哈希表）</h2><h3 id="概述"><a href="#概述" class="headerlink" title="概述"></a>概述</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A81.png" alt="image-20220711144731720"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A82.png" alt="image-20220711144908836"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A83.png" alt="image-20220711145042016"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A84.png" alt="image-20220711145057101"></p>
+<h3 id="线性探测"><a href="#线性探测" class="headerlink" title="线性探测"></a>线性探测</h3><p>平均插入成本太高了，平均情况下要线性寻访一半表格。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%BA%BF%E6%80%A7%E6%8E%A2%E6%B5%8B1.png" alt="image-20220711145149421"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%BA%BF%E6%80%A7%E6%8E%A2%E6%B5%8B2.png" alt="image-20220711145224861"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%BA%BF%E6%80%A7%E6%8E%A2%E6%B5%8B3.png" alt="image-20220711145325523"></p>
+<h3 id="二次探测"><a href="#二次探测" class="headerlink" title="二次探测"></a>二次探测</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E4%BA%8C%E6%AC%A1%E6%8E%A2%E6%B5%8B2.png" alt="image-20220711145523339"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E4%BA%8C%E6%AC%A1%E6%8E%A2%E6%B5%8B1.png" alt="image-20220711145609963"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E4%BA%8C%E6%AC%A1%E6%8E%A2%E6%B5%8B3.png" alt="image-20220711145724005"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E4%BA%8C%E6%AC%A1%E6%8E%A2%E6%B5%8B4.png" alt="image-20220711145848868"></p>
+<h4 id="开链"><a href="#开链" class="headerlink" title="开链"></a>开链</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E5%BC%80%E9%93%BE1.png" alt="image-20220711145946962"></p>
+<h3 id="桶与节点"><a href="#桶与节点" class="headerlink" title="桶与节点"></a>桶与节点</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%A1%B6%E4%B8%8E%E8%8A%82%E7%82%B91.png" alt="image-20220711150025546"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%A1%B6%E4%B8%8E%E8%8A%82%E7%82%B92.png" alt="image-20220711150109251"></p>
+<h3 id="迭代器-1"><a href="#迭代器-1" class="headerlink" title="迭代器"></a>迭代器</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E8%BF%AD%E4%BB%A3%E5%99%A81.png" alt="image-20220711150634444"></p>
+<img src="C:\Users\14242\AppData\Roaming\Typora\typora-user-images\image-20220711150730477.png" alt="image-20220711150730477" style="zoom:110%;" />
+
+<h3 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84.png" alt="image-20220711152331040"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%841.png" alt="image-20220711152349896"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%842.png" alt="image-20220711152604784"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%843.png" alt="image-20220711152617353"></p>
+<h3 id="构造与内存管理"><a href="#构造与内存管理" class="headerlink" title="构造与内存管理"></a>构造与内存管理</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A0%E4%B8%8E%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%861.png" alt="image-20220711161536527"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A0%E4%B8%8E%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%862.png" alt="image-20220711161554106"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A03.png" alt="image-20220711161625439"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A04.png" alt="image-20220711161640642"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A05.png" alt="image-20220711161653339"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A06.png" alt="image-20220711161705467"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A07.png" alt="image-20220711161719098"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A08.png" alt="image-20220711161730754"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A09.png" alt="image-20220711161743803"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A010.png" alt="image-20220711161755840"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A011.png" alt="image-20220711161809369"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A012.png" alt="image-20220711161821906"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E6%9E%84%E9%80%A013.png" alt="image-20220711161836283"></p>
+<h3 id="示例-3"><a href="#示例-3" class="headerlink" title="示例"></a>示例</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%A4%BA%E4%BE%8B1.png" alt="image-20220711161911045"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%A4%BA%E4%BE%8B2.png" alt="image-20220711161928090"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%A4%BA%E4%BE%8B3.png" alt="image-20220711161947105"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%A4%BA%E4%BE%8B4.png" alt="image-20220711162006081"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%A4%BA%E4%BE%8B5.png" alt="image-20220711162017737"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%A4%BA%E4%BE%8B6.png" alt="image-20220711162032756"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%A4%BA%E4%BE%8B7.png" alt="image-20220711162043490"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E8%A1%A8%E7%A4%BA%E4%BE%8B8.png" alt="image-20220711162054903"></p>
+<h3 id="哈希函数"><a href="#哈希函数" class="headerlink" title="哈希函数"></a>哈希函数</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B01.png" alt="image-20220711162139133"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B02.png" alt="image-20220711162151600"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B03.png" alt="image-20220711162203492"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E5%87%BD%E6%95%B04.png" alt="image-20220711162215439"></p>
+<h2 id="hash-set"><a href="#hash-set" class="headerlink" title="hash set"></a>hash set</h2><p>两种集合的主要区别是，搜寻元素按什么方式。（红黑树是以二叉搜索的方式，哈希表是以哈希映射，因此哈希集合的元素不会被自动排序），源码就不放出来了，了解即可。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E9%9B%86%E5%90%881.png" alt="image-20220713200753990"></p>
+<h2 id="hash-map"><a href="#hash-map" class="headerlink" title="hash map"></a>hash map</h2><p>与hash set一样的情况。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8Cmap1.png" alt="image-20220713201037384"></p>
+<h2 id="hash-multiset-amp-hash-multimap"><a href="#hash-multiset-amp-hash-multimap" class="headerlink" title="hash multiset &amp; hash multimap"></a>hash multiset &amp; hash multimap</h2><p>与hash set 一样的情况。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8C%E5%A4%9A%E9%87%8D%E9%9B%861.png" alt="image-20220713201123939"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%93%88%E5%B8%8Cmultimap1.png" alt="image-20220713201227747"></p>
+<h1 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h1><h2 id="概论"><a href="#概论" class="headerlink" title="概论"></a>概论</h2><h3 id="stl-算法总览"><a href="#stl-算法总览" class="headerlink" title="stl 算法总览"></a>stl 算法总览</h3><p>in-place操作，意思是所有的操作都是”就地“操作，不允许进行移动，或者称作<strong>原位操作</strong>，即<strong>不允许使用临时变量</strong>。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%80%BB%E8%A7%881.png" alt="image-20220713201515538"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%80%BB%E8%A7%882.png" alt="image-20220713201532118"></p>
+<img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%80%BB%E8%A7%883.png" alt="image-20220713201601573" style="zoom:150%;" />
+
+<img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%80%BB%E8%A7%884.png" alt="image-20220713201624630" style="zoom:150%;" />
+
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%80%BB%E8%A7%886.png" alt="image-20220713201644501"></p>
+<h3 id="质变算法"><a href="#质变算法" class="headerlink" title="质变算法"></a>质变算法</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E8%B4%A8%E5%8F%98%E7%AE%97%E6%B3%951.png" alt="image-20220713202024949"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E8%B4%A8%E5%8F%98%E7%AE%97%E6%B3%952.png" alt="image-20220713202041673"></p>
+<h3 id="非质变算法"><a href="#非质变算法" class="headerlink" title="非质变算法"></a>非质变算法</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E9%9D%9E%E8%B4%A8%E5%8F%98%E7%AE%97%E6%B3%951.png" alt="image-20220713202302960"></p>
+<h3 id="stl-算法一般形式"><a href="#stl-算法一般形式" class="headerlink" title="stl 算法一般形式"></a>stl 算法一般形式</h3><p>主要讲一些简单的规范</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E4%B8%80%E8%88%AC%E5%BD%A2%E5%BC%8F1.png" alt="image-20220713202705509"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E4%B8%80%E8%88%AC%E5%BD%A2%E5%BC%8F2.png" alt="image-20220713202723349"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E4%B8%80%E8%88%AC%E5%BD%A2%E5%BC%8F3.png" alt="image-20220713202736186"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E4%B8%80%E8%88%AC%E5%BD%A2%E5%BC%8F4.png" alt="image-20220713202747321"></p>
+<h2 id="泛化过程"><a href="#泛化过程" class="headerlink" title="泛化过程"></a>泛化过程</h2><p>将算法独立于数据结构，即算法适用于不同类型的结构。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%B3%9B%E5%8C%961.png" alt="image-20220713210815481"></p>
+<p>从int型泛化到任意类型</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%B3%9B%E5%8C%96.png" alt="image-20220713210914548"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%B3%9B%E5%8C%963.png" alt="image-20220713211111525"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%B3%9B%E5%8C%965.png" alt="image-20220713211303822"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%B3%9B%E5%8C%966.png" alt="image-20220713211523358"></p>
+<p>从普通指针泛化到迭代器</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%B3%9B%E5%8C%967.png" alt="image-20220713211651828"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%B3%9B%E5%8C%968.png" alt="image-20220713211949549"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E6%B3%9B%E5%8C%969.png" alt="image-20220713212053777"></p>
+<h2 id="数值算法-lt-stl-numeric-h-gt"><a href="#数值算法-lt-stl-numeric-h-gt" class="headerlink" title="数值算法 &lt;stl_numeric.h&gt;"></a>数值算法 &lt;stl_numeric.h&gt;</h2><p>使用数值算法，要包含头文件<code>&lt;numeric&gt;</code>，实现在<code> &lt;stl_numeric.h&gt;</code>。</p>
+<h3 id="运用示例"><a href="#运用示例" class="headerlink" title="运用示例"></a>运用示例</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E6%95%B0%E5%80%BC%E7%AE%97%E6%B3%95%E8%BF%90%E7%94%A8%E7%A4%BA%E4%BE%8B1.png" alt="image-20220713212515585"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E6%95%B0%E5%80%BC%E7%AE%97%E6%B3%95%E8%BF%90%E7%94%A8%E7%A4%BA%E4%BE%8B2.png" alt="image-20220713212534684"></p>
+<h3 id="accumulate"><a href="#accumulate" class="headerlink" title="accumulate"></a>accumulate</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E7%B4%AF%E5%8A%A01.png" alt="image-20220713212843679"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E7%B4%AF%E5%8A%A02.png" alt="image-20220713212857578"></p>
+<h3 id="adjacent-difference"><a href="#adjacent-difference" class="headerlink" title="adjacent_difference"></a>adjacent_difference</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95adjacent1.png" alt="image-20220713213135915"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95adjacent2.png" alt="image-20220713213159492"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95adjacent3.png" alt="image-20220713213224780"></p>
+<h3 id="inner-product"><a href="#inner-product" class="headerlink" title="inner_product"></a>inner_product</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E5%86%85%E7%A7%AF1.png" alt="image-20220713213734522"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E5%86%85%E7%A7%AF2.png" alt="image-20220713213752876"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E5%86%85%E7%A7%AF3.png" alt="image-20220713213804662"></p>
+<h3 id="partial-sum"><a href="#partial-sum" class="headerlink" title="partial_sum"></a>partial_sum</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E9%83%A8%E5%88%86%E5%92%8C1.png" alt="image-20220713214139398"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E9%83%A8%E5%88%86%E5%92%8C2.png" alt="image-20220713214316624"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E9%83%A8%E5%88%86%E5%92%8C3.png" alt="image-20220713214328669"></p>
+<h3 id="power"><a href="#power" class="headerlink" title="power"></a>power</h3><p>如果指数n是2的幂次方，则在第一个while就做完了，因为移位后低位一直是0，直到遇到唯一一个1变成最低位，期间x不断二次幂地执行op函数。记录算好的x，然后需要把n再右移一位（把前面说的那个‘1’扔掉，移除已经做完了的操作，即2的幂次方次操作）</p>
+<p>此时如果n仍不为0，此时继续算：每次n右移一位代表x要再平方一次，如果右移的位是1，则result要加上；如果是0则忽略，继续向下迭代。</p>
+<p>本质上直接用下面的while即可，但先用上面的while可以略去低位很多的连续0（如果有）。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E5%B9%821.png" alt="image-20220713214514825"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95%E5%B9%822.png" alt="image-20220713214526809"></p>
+<h3 id="itoa"><a href="#itoa" class="headerlink" title="itoa"></a>itoa</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%B3%95itoa.png" alt="image-20220713215739972"></p>
+<h2 id="基本算法-lt-stl-algobase-h-gt"><a href="#基本算法-lt-stl-algobase-h-gt" class="headerlink" title="基本算法&lt;stl_algobase.h&gt;"></a>基本算法&lt;stl_algobase.h&gt;</h2><h3 id="运用示例-1"><a href="#运用示例-1" class="headerlink" title="运用示例"></a>运用示例</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B1.png" alt="image-20220714095353452"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B2.png" alt="image-20220714095451416"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B3.png" alt="image-20220714095503217"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B4.png" alt="image-20220714095524252"></p>
+<h3 id="equal"><a href="#equal" class="headerlink" title="equal"></a>equal</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95equal1.png" alt="image-20220714100118987"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95equal2.png" alt="image-20220714100138700"></p>
+<h3 id="fill-amp-fill-n"><a href="#fill-amp-fill-n" class="headerlink" title="fill &amp; fill_n"></a>fill &amp; fill_n</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95fill1.png" alt="image-20220714100404299"></p>
+<img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95fill2.png" alt="image-20220714100419586" style="zoom:150%;" />
+
+<h3 id="iter-swap"><a href="#iter-swap" class="headerlink" title="iter_swap"></a>iter_swap</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95swap1.png" alt="image-20220714100707144"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95swap2.png" alt="image-20220714100726524"></p>
+<h3 id="lexicographical-compare"><a href="#lexicographical-compare" class="headerlink" title="lexicographical_compare"></a>lexicographical_compare</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E5%AD%97%E5%85%B8%E5%BA%8F1.png" alt="image-20220714101349204"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E5%AD%97%E5%85%B8%E5%BA%8F2.png" alt="image-20220714101406250"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E5%AD%97%E5%85%B8%E5%BA%8F3.png" alt="image-20220714101419397"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E5%AD%97%E5%85%B8%E5%BA%8F5.png" alt="image-20220714101433075"></p>
+<h3 id="max"><a href="#max" class="headerlink" title="max"></a>max</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95max1.png" alt="image-20220714101926677"></p>
+<h3 id="min"><a href="#min" class="headerlink" title="min"></a>min</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95min1.png" alt="image-20220714102002465"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95min2.png" alt="image-20220714102035256"></p>
+<h3 id="mismatch"><a href="#mismatch" class="headerlink" title="mismatch"></a>mismatch</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95mismatch1.png" alt="image-20220714102128380"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95mismatch2.png" alt="image-20220714102148154"></p>
+<h3 id="swap"><a href="#swap" class="headerlink" title="swap"></a>swap</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E5%AF%B9%E8%B1%A1%E4%BA%A4%E6%8D%A21.png" alt="image-20220714102312618"></p>
+<h3 id="copy——极高的效率"><a href="#copy——极高的效率" class="headerlink" title="copy——极高的效率"></a>copy——极高的效率</h3><p>assignment operator是赋值运算符</p>
+<p>trivial意思是平凡的（原生的），也就是在类里面的构造函数（ctor）、复制构造函数（copy）、赋值函数（assignment）、析构函数（dtor）这四个函数满足至少一条：</p>
+<ul>
+<li>显式(explict)定义了这四种函数。</li>
+<li>类里有非静态非POD的数据成员。</li>
+<li>有基类。</li>
+</ul>
+<p>则这些函数是non-trivial函数，否则就是trivial的。如果这个类都是trivial ctor&#x2F;dtor&#x2F;copy&#x2F;assignment函数，我们对这个类进行构造、析构、拷贝和赋值时可以采用最有效率的方法，不调用无所事事正真的那些ctor&#x2F;dtor等，而直接采用内存操作如malloc()、memcpy()等提高性能，这也是SGI STL内部干的事情。这里的copy，关键看类是否拥有<strong>trivial assignment</strong>。</p>
+<ul>
+<li>如果迭代器指向的序列是字符串，那么直接使用字符串拷贝，效率会提高。</li>
+<li>如果迭代器本身是指针，那么它所指向的这个序列在内存上是连续存放的，所以可能可以使用memmove复制底层内存来加速。如果指针指向的类型拥有trivial operator&#x3D;（例如int类型），那么直接使用memmove复制底层内存是一种更快的方法。</li>
+<li>如果迭代器本身就是迭代器，那么所指向的元素在内存上可能不是连续存放的，所以不能使用memmove。但是迭代器有分InputIterator和RandomAccessIterator，RandomAccessIterator可以加速复制过程。</li>
+</ul>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy1.png" alt="image-20220714102441740"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy2.png" alt="image-20220714103237927"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy3.png" alt="image-20220714103636436"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy4.png" alt="image-20220714103721723"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy5.png" alt="image-20220714103734468"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy6.png" alt="image-20220714104030718"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy7.png" alt="image-20220714104101844"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy8.png" alt="image-20220714104122221"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy9.png" alt="image-20220714104232216"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy10.png" alt="image-20220714104600986"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">泛化版本会借助一个__copy_dispatch结构体来应对不同的迭代器类型，从而调用不同版本的底层实现函数。__copy_dispatch结构体本质上还是一个模板结构体，通过传入的模板参数获取迭代器的类型，并调用相应版本的函数。此外，__copy_dispatch结构体还是一个函数对象，重载了operator()运算符，所以可以像调用函数一样使用__copy_dispatch结构体。</span><br><span class="line"></span><br><span class="line">至于这里为啥要使用结构体来分发函数，而不是使用函数来分发函数，主要是因为结构体支持偏特化，而函数不支持偏特化，它只支持全特化。关于偏特化和全特化的区别，可以看这篇博客：https://harttle.land/2015/10/03/cpp-template.html。因为迭代器就算是指针，指针所指向的类型也是不确定的，而全特化不能拥有不确定的类型，它不仅需要确定迭代器类型是指针，而且还要确定指针所指向的类型，所以使用全特化不能够涵盖迭代器类型为指针的所有情况。而偏特化只是在模板的基础上进一步限定了模板参数的类型，但是它仍然可以拥有不确定的类型，所以只能用结构体偏特化。就像第一点中提到的对外接口，因为已经明确了参数必须是指向char或者wchar_t的指针，不存在不确定的类型，所以可以直接使用全特化版本。</span><br><span class="line"></span><br><span class="line">原文链接：https://blog.csdn.net/Johnsonjjj/article/details/107743872</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy11.png" alt="image-20220714104615587"></p>
+<p>注：这两本版本的__copy（）根据最后一个参数iterator_tag区分。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy12.png" alt="image-20220714104637758"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy13.png" alt="image-20220714104651650"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy14.png" alt="image-20220714104706541"></p>
+<p>如果对象定义了赋值操作，即具备non-trivial assignment operator，则必须循环而使用对象的”&#x3D;”赋值操作。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span>* <span class="title">memmove</span><span class="params">(<span class="type">void</span>* dst,<span class="type">const</span> <span class="type">void</span>* src,<span class="type">size_t</span> count)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">void</span>* ret = dst;</span><br><span class="line">    <span class="comment">//dst &lt;= src表示，如果dst在src的前面，从前往后复制不会覆盖src中还没有复制的内容</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (dst &lt;= src || (<span class="type">char</span>*)dst &gt;= ((<span class="type">char</span>*)src + count))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">//从前往后复制，则不会出现覆盖src中没有复制的内容</span></span><br><span class="line">        <span class="keyword">while</span>(count--)</span><br><span class="line">        &#123;</span><br><span class="line">            *(<span class="type">char</span>*)dst = *(<span class="type">char</span>*)src; <span class="comment">//char类型指针，表示一个字节一个字节的复制</span></span><br><span class="line">            dst = (<span class="type">char</span>*)dst + <span class="number">1</span>; <span class="comment">//移动一个字节</span></span><br><span class="line">            src = (<span class="type">char</span>*)src + <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="comment">//从后往前复制，则不会出现覆盖src中没有复制的内容</span></span><br><span class="line">        dst = (<span class="type">char</span>*)dst + count - <span class="number">1</span>;<span class="comment">//移动到末尾</span></span><br><span class="line">        src = (<span class="type">char</span>*)src + count - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span>(count--)</span><br><span class="line">        &#123;</span><br><span class="line">            *(<span class="type">char</span>*)dst = *(<span class="type">char</span>*)src;</span><br><span class="line">            dst = (<span class="type">char</span>*)dst - <span class="number">1</span>; <span class="comment">//移动一个字节</span></span><br><span class="line">            src = (<span class="type">char</span>*)src - <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//返回dst的头指针，还方便左值操作。</span></span><br><span class="line">    <span class="comment">//如：ptstr = memmove(ptstr,src,count); cout &lt;&lt; memmove(ptstr,src,count);</span></span><br><span class="line">    <span class="keyword">return</span> ret; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="copy测试"><a href="#copy测试" class="headerlink" title="copy测试"></a>copy测试</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy15.png" alt="image-20220714104728497"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy16.png" alt="image-20220714104744428"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy17.png" alt="image-20220714104759964"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy18.png" alt="image-20220714104816163"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy19.png" alt="image-20220714104833740"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy20.png" alt="image-20220714104851661"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy21.png" alt="image-20220714104910005"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95copy22.png" alt="image-20220714104936585"></p>
+<h3 id="copy-backward"><a href="#copy-backward" class="headerlink" title="copy_backward"></a>copy_backward</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E5%8F%8D%E5%90%91copy1.png" alt="image-20220714115555737"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E5%8F%8D%E5%90%91copy2.png" alt="image-20220714115614257"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E5%8F%8D%E5%90%91copy3.png" alt="image-20220714115632463"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E5%8F%8D%E5%90%91copy4.png" alt="image-20220714115647479"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%9F%BA%E6%9C%AC%E7%AE%97%E6%B3%95%E5%8F%8D%E5%90%91copy5.png" alt="image-20220714115701225"></p>
+<h2 id="set相关算法"><a href="#set相关算法" class="headerlink" title="set相关算法"></a>set相关算法</h2><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E9%9B%86%E5%90%88%E7%AE%97%E6%B3%951.png" alt="image-20220714202741237"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E9%9B%86%E5%90%88%E7%AE%97%E6%B3%952.png" alt="image-20220714202816107"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E9%9B%86%E5%90%88%E7%AE%97%E6%B3%953.png" alt="image-20220714202853930"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E9%9B%86%E5%90%88%E7%AE%97%E6%B3%954.png" alt="image-20220714203000538"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E9%9B%86%E5%90%88%E7%AE%97%E6%B3%955.png" alt="image-20220714203020249"></p>
+<h3 id="并集-set-union"><a href="#并集-set-union" class="headerlink" title="并集 set_union"></a>并集 set_union</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B9%B6%E9%9B%86%E7%AE%97%E6%B3%951.png" alt="image-20220714203208465"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B9%B6%E9%9B%86%E7%AE%97%E6%B3%952.png" alt="image-20220714203324899"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B9%B6%E9%9B%86%E7%AE%97%E6%B3%953.png" alt="image-20220714203347384"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B9%B6%E9%9B%86%E7%AE%97%E6%B3%954.png" alt="image-20220714203402900"></p>
+<h3 id="交集-set-intersection"><a href="#交集-set-intersection" class="headerlink" title="交集 set_intersection"></a>交集 set_intersection</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E4%BA%A4%E9%9B%86%E7%AE%97%E6%B3%951.png" alt="image-20220714203637985"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E4%BA%A4%E9%9B%86%E7%AE%97%E6%B3%952.png" alt="image-20220714203738532"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E4%BA%A4%E9%9B%86%E7%AE%97%E6%B3%953.png" alt="image-20220714203753218"></p>
+<h3 id="差集-set-difference"><a href="#差集-set-difference" class="headerlink" title="差集 set_difference"></a>差集 set_difference</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B7%AE%E9%9B%861.png" alt="image-20220714203917427"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B7%AE%E9%9B%862.png" alt="image-20220714203932520"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B7%AE%E9%9B%863.png" alt="image-20220714203947129"></p>
+<h3 id="对称差-set-symmetric-difference"><a href="#对称差-set-symmetric-difference" class="headerlink" title="对称差 set_symmetric_difference"></a>对称差 set_symmetric_difference</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%AF%B9%E7%A7%B0%E5%B7%AE1.png" alt="image-20220714204235115"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%AF%B9%E7%A7%B0%E5%B7%AE2.png" alt="image-20220714204359475"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%AF%B9%E7%A7%B0%E5%B7%AE3.png" alt="image-20220714204413278"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%AF%B9%E7%A7%B0%E5%B7%AE4.png" alt="image-20220714204433754"></p>
+<h2 id="heap算法"><a href="#heap算法" class="headerlink" title="heap算法"></a>heap算法</h2><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%A0%86%E7%AE%97%E6%B3%951.png" alt="image-20220714204635123"></p>
+<h2 id="其他算法"><a href="#其他算法" class="headerlink" title="其他算法"></a>其他算法</h2><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%85%B6%E4%BB%96%20%E7%AE%97%E6%B3%951.png" alt="image-20220714204706662"></p>
+<h3 id="单纯数据处理算法"><a href="#单纯数据处理算法" class="headerlink" title="单纯数据处理算法"></a>单纯数据处理算法</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%8D%95%E7%BA%AF%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%951.png" alt="image-20220714204733064"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%8D%95%E7%BA%AF%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%952.png" alt="image-20220714204748664"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%8D%95%E7%BA%AF%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%953.png" alt="image-20220714204808323"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%8D%95%E7%BA%AF%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%954.png" alt="image-20220714204827113"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%8D%95%E7%BA%AF%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%955.png" alt="image-20220714204841122"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%8D%95%E7%BA%AF%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%956.png" alt="image-20220714204908691"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%8D%95%E7%BA%AF%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%957.png" alt="image-20220714204920647"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%8D%95%E7%BA%AF%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%958.png" alt="image-20220714204935019"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%8D%95%E7%BA%AF%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%9510.png" alt="image-20220714204949720"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%8D%95%E7%BA%AF%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%9511.png" alt="image-20220714205003607"></p>
+<h4 id="adjacent-find"><a href="#adjacent-find" class="headerlink" title="adjacent_find"></a>adjacent_find</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/adjacent_find.png" alt="image-20220714210815066"></p>
+<h4 id="count"><a href="#count" class="headerlink" title="count"></a>count</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/count%E7%AE%97%E6%B3%951.png" alt="image-20220714211135551"></p>
+<h4 id="count-if"><a href="#count-if" class="headerlink" title="count_if"></a>count_if</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/count_if%E7%AE%97%E6%B3%951.png" alt="image-20220714211155105"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/count_if%E7%AE%97%E6%B3%952.png" alt="image-20220714211209512"></p>
+<h4 id="find"><a href="#find" class="headerlink" title="find"></a>find</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/find%E7%AE%97%E6%B3%951.png" alt="image-20220714211606347"></p>
+<h4 id="find-if"><a href="#find-if" class="headerlink" title="find_if"></a>find_if</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/find_if1.png" alt="image-20220714211646674"></p>
+<h4 id="find-end"><a href="#find-end" class="headerlink" title="find_end"></a>find_end</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/find_end1.png" alt="image-20220714211720897"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/find_end2.png" alt="image-20220714211742806"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/find_end3.png" alt="image-20220714211759600"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/find_end4.png" alt="image-20220714211814419"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/find_end5.png" alt="image-20220714211829901"></p>
+<h4 id="find-first-of"><a href="#find-first-of" class="headerlink" title="find_first_of"></a>find_first_of</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/find_first_of.png" alt="image-20220714212919217"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/find_first_of2.png" alt="image-20220714212936044"></p>
+<h4 id="for-each"><a href="#for-each" class="headerlink" title="for_each"></a>for_each</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/foreach1.png" alt="image-20220714213308180"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/foreach2.png" alt="image-20220714213331032"></p>
+<h4 id="generate"><a href="#generate" class="headerlink" title="generate"></a>generate</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/generate1.png" alt="image-20220714220524077"></p>
+<h4 id="generate-n"><a href="#generate-n" class="headerlink" title="generate_n"></a>generate_n</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/generate_n1.png" alt="image-20220714220606074"></p>
+<h4 id="includes（有序区间）"><a href="#includes（有序区间）" class="headerlink" title="includes（有序区间）"></a>includes（有序区间）</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/includes1.png" alt="image-20220714220958628"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/includes2.png" alt="image-20220714221456530"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/includes3.png" alt="image-20220714221524967"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/includes4.png" alt="image-20220714221720053"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/includes5.png" alt="image-20220714221751558"></p>
+<h4 id="max-element"><a href="#max-element" class="headerlink" title="max_element"></a>max_element</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/maxelement1.png" alt="image-20220714222730578"></p>
+<h4 id="merge（有序区间）"><a href="#merge（有序区间）" class="headerlink" title="merge（有序区间）"></a>merge（有序区间）</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/merge1.png" alt="image-20220714222811138"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/merge2.png" alt="image-20220714222944765"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/merge3.png" alt="image-20220714223003871"></p>
+<h4 id="min-element"><a href="#min-element" class="headerlink" title="min_element"></a>min_element</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/min_element1.png" alt="image-20220714223233423"></p>
+<h4 id="partition（划分）"><a href="#partition（划分）" class="headerlink" title="partition（划分）"></a>partition（划分）</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/partition1.png" alt="image-20220714223316705"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/partition2.png" alt="image-20220714223338951"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/partition3.png" alt="image-20220714223357058"></p>
+<h4 id="remove"><a href="#remove" class="headerlink" title="remove"></a>remove</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/remove1.png" alt="image-20220716105046338"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/remove2.png" alt="image-20220716105123153"></p>
+<h4 id="remove-copy"><a href="#remove-copy" class="headerlink" title="remove_copy"></a>remove_copy</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/removecopy1.png" alt="image-20220716105411061"></p>
+<h4 id="remove-if"><a href="#remove-if" class="headerlink" title="remove_if"></a>remove_if</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/removeif1.png" alt="image-20220716105717210"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/removeif2.png" alt="image-20220716105731961"></p>
+<h4 id="remove-copy-if"><a href="#remove-copy-if" class="headerlink" title="remove_copy_if"></a>remove_copy_if</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/removecopyif.png" alt="image-20220716105841970"></p>
+<h4 id="replace"><a href="#replace" class="headerlink" title="replace"></a>replace</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/replace1.png" alt="image-20220716110027436"></p>
+<h4 id="replace-copy"><a href="#replace-copy" class="headerlink" title="replace_copy"></a>replace_copy</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/replace_copy1.png" alt="image-20220716110043024"></p>
+<h4 id="replace-if"><a href="#replace-if" class="headerlink" title="replace_if"></a>replace_if</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/replace_if1.png" alt="image-20220716110055607"></p>
+<h4 id="replace-copy-if"><a href="#replace-copy-if" class="headerlink" title="replace_copy_if"></a>replace_copy_if</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/replace_copy_if1.png" alt="image-20220716110224638"></p>
+<h4 id="reverse"><a href="#reverse" class="headerlink" title="reverse"></a>reverse</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/reverse1.png" alt="image-20220716110326856"></p>
+<h4 id="reverse-copy"><a href="#reverse-copy" class="headerlink" title="reverse_copy"></a>reverse_copy</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/reverse_copy1.png" alt="image-20220716110626384"></p>
+<h4 id="rotate"><a href="#rotate" class="headerlink" title="rotate"></a>rotate</h4><p>forward版本的，交换元素然后不断调整指针位置；</p>
+<p>bidirectional版本的解法很妙。</p>
+<p>random的就不关注了。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/rotate1.png" alt="image-20220716110808262"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/rotate2.png" alt="image-20220716110829579"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/rotate3.png" alt="image-20220716110846069"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/rotate4.png" alt="image-20220716110913182"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/rotate5.png" alt="image-20220716110928287"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/rotate6.png" alt="image-20220716110942128"></p>
+<h4 id="rotate-copy"><a href="#rotate-copy" class="headerlink" title="rotate_copy"></a>rotate_copy</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/rotate_copy1.png" alt="image-20220716112051491"></p>
+<h4 id="search"><a href="#search" class="headerlink" title="search"></a>search</h4><p>找的是连续的子序列</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/search1.png" alt="image-20220716112247627"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/search2.png" alt="image-20220716112302073"></p>
+<h4 id="search-n"><a href="#search-n" class="headerlink" title="search_n"></a>search_n</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/search_n1.png" alt="image-20220716112753477"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/search_n2.png" alt="image-20220716112833894"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/search_n.png" alt="image-20220716112855924"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/search_n3.png" alt="image-20220716112934338"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/search_n4.png" alt="image-20220716112951504"></p>
+<h4 id="swap-ranges"><a href="#swap-ranges" class="headerlink" title="swap_ranges"></a>swap_ranges</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/swap_ranges1.png" alt="image-20220716114006360"></p>
+<h4 id="transform"><a href="#transform" class="headerlink" title="transform"></a>transform</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/transform1.png" alt="image-20220716114112746"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/transform2.png" alt="image-20220716114125644"></p>
+<h4 id="unique"><a href="#unique" class="headerlink" title="unique"></a>unique</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/unique1.png" alt="image-20220716114413162"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/unique2.png" alt="image-20220716114536405"></p>
+<h4 id="unique-copy"><a href="#unique-copy" class="headerlink" title="unique_copy"></a>unique_copy</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/unique_copy1.png" alt="image-20220716114624383"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/unique_copy2.png" alt="image-20220716114644130"></p>
+<h3 id="复杂数据算法"><a href="#复杂数据算法" class="headerlink" title="复杂数据算法"></a>复杂数据算法</h3><h4 id="示例-4"><a href="#示例-4" class="headerlink" title="示例"></a>示例</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%A4%8D%E6%9D%82%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B1.png" alt="image-20220716115501986"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%A4%8D%E6%9D%82%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B2.png" alt="image-20220716115524279"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%A4%8D%E6%9D%82%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B3.png" alt="image-20220716115542322"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%A4%8D%E6%9D%82%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B4.png" alt="image-20220716115557817"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%A4%8D%E6%9D%82%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B5.png" alt="image-20220716115619070"></p>
 
       
     </div>
