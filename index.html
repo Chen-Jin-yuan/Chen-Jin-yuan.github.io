@@ -198,7 +198,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-07-16 12:00:58" itemprop="dateModified" datetime="2022-07-16T12:00:58+08:00">2022-07-16</time>
+                <time title="修改时间：2022-07-17 22:53:02" itemprop="dateModified" datetime="2022-07-17T22:53:02+08:00">2022-07-17</time>
               </span>
 
           
@@ -212,7 +212,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>重返C++，先STL入手。这里会记录一些重点，但是不会记录得很全面。</p>
+          <p>重返C++，先从STL入手。这里会记录一些重点。</p>
 <p>follow 侯捷大师的《STL源码剖析》</p>
 <p><strong>声明</strong></p>
 <p>博客大部分内容都来源于《STL源码剖析》这本书（copy了个人认为重要的部分，包括代码），对于一些不容易明白的地方会查找其他资料进行补充。</p>
@@ -1393,6 +1393,126 @@
 <p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%A4%8D%E6%9D%82%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B3.png" alt="image-20220716115542322"></p>
 <p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%A4%8D%E6%9D%82%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B4.png" alt="image-20220716115557817"></p>
 <p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%A4%8D%E6%9D%82%E6%95%B0%E6%8D%AE%E7%AE%97%E6%B3%95%E7%A4%BA%E4%BE%8B5.png" alt="image-20220716115619070"></p>
+<h4 id="lower-bound（有序区间）"><a href="#lower-bound（有序区间）" class="headerlink" title="lower_bound（有序区间）"></a>lower_bound（有序区间）</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/lower_bound1.png" alt="image-20220716210016874"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/lower_bound2.png" alt="image-20220716210108304"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/lower_bound3.png" alt="image-20220716210129359"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/lower_bound5.png" alt="image-20220716210152811"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/lower_bound6.png" alt="image-20220716210216423"></p>
+<h4 id="upper-bound（有序区间）"><a href="#upper-bound（有序区间）" class="headerlink" title="upper_bound（有序区间）"></a>upper_bound（有序区间）</h4><p>也即迭代器前面的元素<strong>≤value</strong>，注意lower_bound是**&lt;**。一个是返回该元素第一次出现的位置，一个是返回最后一次出现的位置的下一个。如果没有value元素则返回的位置都相同。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/upper_bound1.png" alt="image-20220716210639673"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/upper_bound2.png" alt="image-20220716210659587"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/upper_bound3.png" alt="image-20220716210722306"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/upper_bound4.png" alt="image-20220716210742882"></p>
+<h4 id="binary-search（有序区间）"><a href="#binary-search（有序区间）" class="headerlink" title="binary_search（有序区间）"></a>binary_search（有序区间）</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/binary_search2.png" alt="image-20220716211550228"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/binary_search.png" alt="image-20220716211606176"></p>
+<h4 id="next-permutation"><a href="#next-permutation" class="headerlink" title="next_permutation"></a>next_permutation</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/next_permutation1.png" alt="image-20220716212108470"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/next_permutation2.png" alt="image-20220716212318420"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/next_permutation3.png" alt="image-20220716212334221"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/next_permutation4.png" alt="image-20220716212602467"></p>
+<h4 id="prev-permutation"><a href="#prev-permutation" class="headerlink" title="prev_permutation"></a>prev_permutation</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/prev_permutation1.png" alt="image-20220716213159892"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/prev_permutation2.png" alt="image-20220716213221596"></p>
+<h4 id="random-shuffle"><a href="#random-shuffle" class="headerlink" title="random_shuffle"></a>random_shuffle</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/random_shuffle1.png" alt="image-20220716213419143"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/random_shuffle2.png" alt="image-20220716213507365"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/random_shuffle3.png" alt="image-20220716213719328"></p>
+<h4 id="partial-sort-copy"><a href="#partial-sort-copy" class="headerlink" title="partial_sort(_copy)"></a>partial_sort(_copy)</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/partial_sort(_copy)1.png" alt="image-20220716213827980"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/partial_sort(_copy)2.png" alt="image-20220716214008716"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/partial_sort(_copy)3.png" alt="image-20220716214031121"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/partial_sort(_copy)4.png" alt="image-20220716214048928"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/partial_sort(_copy)5.png" alt="image-20220716214107696"></p>
+<h4 id="sort"><a href="#sort" class="headerlink" title="sort"></a>sort</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/sort1.png" alt="image-20220716215312982"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/sort2.png" alt="image-20220716215341104"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/sort3.png" alt="image-20220716215407570"></p>
+<h5 id="insertion-sort"><a href="#insertion-sort" class="headerlink" title="insertion sort"></a>insertion sort</h5><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F1.png" alt="image-20220716215433434"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F2.png" alt="image-20220716215501735"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F3.png" alt="image-20220716215517323"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E6%8F%92%E5%85%A5%E6%8E%92%E5%BA%8F4.png" alt="image-20220716215533099"></p>
+<h5 id="quick-sort"><a href="#quick-sort" class="headerlink" title="quick sort"></a>quick sort</h5><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%BF%AB%E6%8E%921.png" alt="image-20220716220817021"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%BF%AB%E6%8E%922.png" alt="image-20220716220832651"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%BF%AB%E6%8E%923.png" alt="image-20220716220853155"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%BF%AB%E6%8E%924.png" alt="image-20220716220943850"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%BF%AB%E6%8E%925.png" alt="image-20220716221210031"></p>
+<p>这个函数<strong>没有</strong>（while中）对first和last作边界检查，而是以两个指针交错作为中止条件，节约了比较运算的开支。可以这么做的理由是因为，选择是首尾中间位置三个值的中间值作为pivot，因此一定会在超出此有效区域之前中止指针的移动（这其中while使用小于判断而不是小于等于判断起到了作用）。过程比较简单就不放出来了。</p>
+<h5 id="threshold"><a href="#threshold" class="headerlink" title="threshold"></a>threshold</h5><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%BF%AB%E6%8E%926.png" alt="image-20220716221754812"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E9%98%88%E5%80%BC2.png" alt="image-20220716221834707"></p>
+<h5 id="STL-sort"><a href="#STL-sort" class="headerlink" title="STL sort"></a>STL sort</h5><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/stlsort.png" alt="image-20220716222842461"></p>
+<p>这里层数<strong>乘2</strong>是因为代码的while一层只递归一半，可见后面源码。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/stlsort2.png" alt="image-20220716222035643"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/stlsort3.png" alt="image-20220716222108781"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/stlsort4.png" alt="image-20220716222136506"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/stlsort5.png" alt="image-20220716222205372"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/stlsort6.png" alt="image-20220716222220997"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/stlsort7.png" alt="image-20220716222236391"></p>
+<p>如何理解<code>__final_insertion_sort</code>函数呢？</p>
+<ul>
+<li>首先，unguarded版本的插入算法更快，因为<strong>不用边界检测</strong>。与常规版本相比，这个版本的插入算法直接跳入<code>__unguarded_linear_insert</code>函数（常规版本进入<code>__linear_insert</code>，先看是否比当前最小值小）。</li>
+<li>然后，注意到不用边界检测必然有一个前提条件，就是这个值不能比当前最小值小，即不能到最左边，所以必须保证全局最小值就在最左边的区间。</li>
+<li>最后，这个函数是如何保证最小值就在最前面的阈值大小的区间中呢？答案源于前面进行的<code>__introsort_loop</code>，该函数只有两种情况下可能返回：<ul>
+<li>一是区域小于等于阈值16；二是超过递归深度阈值。我们现在只考虑最左边的子序列：</li>
+<li>先假设是由于第一种情况终止了这个函数，那么该子区域小于16。而根据快排原理，<strong>左边区间的所有数据一定比右边小</strong>，可以推断出最小值一定在该小于16的子区域内。</li>
+<li>假设函数是第二种情况下终止，那么对于最左边的区间，由于递归深度过深，因此该区间会调用堆排序，所以这段区间的最小值一定位于最左端（这段区间大小不一定，但数据一定都比右区间小）。再加上前面的结论：左边区间所有的数据一定比右边小，那么该区间内最左边的数据一定是整个序列的最小值。</li>
+<li>因此，不论是哪种情况，都可以保证起始的16个元素中一定有最小值。</li>
+</ul>
+</li>
+<li>如若元素小于阈值，也即分支语句判断的那样，直接用常规的插入排序。</li>
+</ul>
+<p>对sort的理解可以参考博客：<code>https://feihu.me/blog/2014/sgi-std-sort/#为何__final_insertion_sort如此实现</code></p>
+<h4 id="equal-range（有序区间）"><a href="#equal-range（有序区间）" class="headerlink" title="equal_range（有序区间）"></a>equal_range（有序区间）</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/equal_range1.png" alt="image-20220717101116777"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/equal_range2.png" alt="image-20220717101150696"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/equal_range3.png" alt="image-20220717101213233"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/equal_range4.png" alt="image-20220717101236524"></p>
+<h4 id="inplace-merge（有序区间）"><a href="#inplace-merge（有序区间）" class="headerlink" title="inplace_merge（有序区间）"></a>inplace_merge（有序区间）</h4><p>常规的merge需要一个足够大的新区间，合并两个不一定连续的序列。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B0%B1%E5%9C%B0%E5%90%88%E5%B9%B61.png" alt="image-20220717102357897"></p>
+<p>注意这里两个序列是连接在一起的，缓存空间只需要能安置任何一个序列，就能简单由merge（backward）完成，因为这个merge过程使用缓存先存好了一个序列，往原来容器排序合并的过程中破坏了的元素不被需要（从缓存拿）。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B0%B1%E5%9C%B0%E5%90%88%E5%B9%B62.png" alt="image-20220717102412530"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B0%B1%E5%9C%B0%E5%90%88%E5%B9%B63.png" alt="image-20220717102435562"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B0%B1%E5%9C%B0%E5%90%88%E5%B9%B64.png" alt="image-20220717102451244"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B0%B1%E5%9C%B0%E5%90%88%E5%B9%B65.png" alt="image-20220717102506599"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B0%B1%E5%9C%B0%E5%90%88%E5%B9%B66.png" alt="image-20220717102519486"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B0%B1%E5%9C%B0%E5%90%88%E5%B9%B67.png" alt="image-20220717102531964"></p>
+<p>针对case3：</p>
+<ul>
+<li>本质上是将两个序列先分成3个序列，其中中间的序列是从前面序列拿后部分元素，从后面序列拿前部分元素。然后再把中间序列分成两个序列，就有4个序列，对前两个、后两个做merge，就减少了长度；如果长度还是不够就继续减少，因为是递归调用。</li>
+<li>接着我们看看中间序列是怎么形成的：将长的序列分两半（对照下面例子就是len2），然后另一个序列用<strong>lower_bound</strong>，这是至关重要的一点。因为两个序列都是递增序列，则middle-cut2的元素&lt;cut2指向的元素，这样序列一使用lower_bound得到的cut1指向的元素（包括到middle的元素）一定&gt;middle-cut2的元素，因为cut1元素&gt;&#x3D;cut2元素。并且first-cut1之间的元素&lt;cut2-last的元素（同样由lower_bound保证：cut1略过&lt;cut2的元素，而到&gt;&#x3D;cut2元素时停下）</li>
+<li>紧接着用一个rotate旋转，将middle-cut2的元素与cut1-middle的元素互换位置，就能保证first-newmiddle之间的元素比newmiddle-last的元素都小。这样分别对两个区间递归merge（每个区间又包含两个小区间），就减少了长度，使得缓冲区能容纳。</li>
+<li>真相呼之欲出。实质上为了缩小序列，把两个序列分成了四个小序列，不妨设为l1、l2、l3、l4，l1、l2由前半序列分成，l3、l4由后半序列分成。为了分别做merge，需要保证左半边的序列已经比右半边序列元素小，但直接划分的序列不能保证这个情况，因此使用了旋转。因为l1&lt;l2，l3&lt;l4，而使用了lower_bound，能保证l2&gt;l3，l4&gt;l1。在旋转后得到l1、l3，l2、l4，就保证了l1、l3都小于l2、l4，再递归对两个序列merge即可。</li>
+</ul>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B0%B1%E5%9C%B0%E5%90%88%E5%B9%B68.png" alt="image-20220717102544559"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B0%B1%E5%9C%B0%E5%90%88%E5%B9%B69.png" alt="image-20220717102614400"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B0%B1%E5%9C%B0%E5%90%88%E5%B9%B610.png" alt="image-20220717102633097"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B0%B1%E5%9C%B0%E5%90%88%E5%B9%B611.png" alt="image-20220717102653956"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%B0%B1%E5%9C%B0%E5%90%88%E5%B9%B612.png" alt="image-20220717102707307"></p>
+<h4 id="nth-element"><a href="#nth-element" class="headerlink" title="nth_element"></a>nth_element</h4><p>这个不动点的保证是根据<code>左边区间&lt;nth&lt;右边区间</code>，nth即可得到与排序相同的值，不用管其他元素。</p>
+<p>最后用插入排序是因为长度比较小，没必要再一点点分割了，直接排序完省事。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/nth_element1.png" alt="image-20220717110246499"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/nth_element2.png" alt="image-20220717110302510"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/nth_element3.png" alt="image-20220717110319387"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/nth_element4.png" alt="image-20220717110339228"></p>
+<h4 id="merge-sort"><a href="#merge-sort" class="headerlink" title="merge sort"></a>merge sort</h4><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F1.png" alt="image-20220717111608636"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%BD%92%E5%B9%B6%E6%8E%92%E5%BA%8F2.png" alt="image-20220717111630333"></p>
+<h1 id="仿函数（函数对象）"><a href="#仿函数（函数对象）" class="headerlink" title="仿函数（函数对象）"></a>仿函数（函数对象）</h1><h2 id="概观"><a href="#概观" class="headerlink" title="概观"></a>概观</h2><p>理解：仿函数实际上是一个类或结构体，重载了**()**运算符使得其可以像函数一样调用。而且对比一般的函数指针又具有更多的功能，比如能使用模板、拥有继承等类之间的关系，利于资源管理（如果不是暂时对象可以保存数据）、使用成员变量免去一些全局变量的维护。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E4%BB%BF%E5%87%BD%E6%95%B0%E6%A6%82%E8%A7%821.png" alt="image-20220717212445635"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E4%BB%BF%E5%87%BD%E6%95%B0%E6%A6%82%E8%A7%822.png" alt="image-20220717212620304"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E4%BB%BF%E5%87%BD%E6%95%B0%E6%A6%82%E8%A7%823.png" alt="image-20220717212640627"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E4%BB%BF%E5%87%BD%E6%95%B0%E6%A6%82%E8%A7%824.png" alt="image-20220717212701166"></p>
+<h2 id="可配接（adaptable）的关键"><a href="#可配接（adaptable）的关键" class="headerlink" title="可配接（adaptable）的关键"></a>可配接（adaptable）的关键</h2><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%8F%AF%E9%85%8D%E6%8E%A51.png" alt="image-20220717214155110"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%8F%AF%E9%85%8D%E6%8E%A52.png" alt="image-20220717214319801"></p>
+<h3 id="unary-function"><a href="#unary-function" class="headerlink" title="unary_function"></a>unary_function</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/unary_function1.png" alt="image-20220717214420971"></p>
+<h3 id="binary-function"><a href="#binary-function" class="headerlink" title="binary_function"></a>binary_function</h3><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/binary_function1.png" alt="image-20220717214846421"></p>
+<h2 id="算术运算类仿函数"><a href="#算术运算类仿函数" class="headerlink" title="算术运算类仿函数"></a>算术运算类仿函数</h2><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%9C%AF%E7%B1%BB%E4%BB%BF%E5%87%BD%E6%95%B01.png" alt="image-20220717220011705"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%9C%AF%E7%B1%BB%E4%BB%BF%E5%87%BD%E6%95%B02.png" alt="image-20220717220027680"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%9C%AF%E7%B1%BB%E4%BB%BF%E5%87%BD%E6%95%B03.png" alt="image-20220717220356714"></p>
+<p>第一种实例化创建方式，在main()函数栈中，第二种方式作为cout对象的”&lt;&lt;”运算符函数的临时对象参数（在这个运算符函数的栈中），在cout完就结束了生命周期。如果类里定义了构造函数，则在括号里加上数值就可以使用构造函数，如<code>plus&lt;int&gt;(123)(3,5)</code>，对应的不用临时对象的方式是<code>plus&lt;int&gt; plusobj(123)</code>（使用有参构造函数，否则使用无参构造函数或默认构造函数）。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%9C%AF%E7%B1%BB%E4%BB%BF%E5%87%BD%E6%95%B04.png" alt="image-20220717221533861"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E7%AE%97%E6%9C%AF%E7%B1%BB%E4%BB%BF%E5%87%BD%E6%95%B05.png" alt="image-20220717221551371"></p>
+<h2 id="关系运算类仿函数"><a href="#关系运算类仿函数" class="headerlink" title="关系运算类仿函数"></a>关系运算类仿函数</h2><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%85%B3%E7%B3%BB%E4%BB%BF%E5%87%BD%E6%95%B01.png" alt="image-20220717222058852"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%85%B3%E7%B3%BB%E4%BB%BF%E5%87%BD%E6%95%B02.png" alt="image-20220717222126027"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%85%B3%E7%B3%BB%E4%BB%BF%E5%87%BD%E6%95%B03.png" alt="image-20220717222140905"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%85%B3%E7%B3%BB%E4%BB%BF%E5%87%BD%E6%95%B04.png" alt="image-20220717222155928"></p>
+<h2 id="逻辑运算类仿函数"><a href="#逻辑运算类仿函数" class="headerlink" title="逻辑运算类仿函数"></a>逻辑运算类仿函数</h2><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E9%80%BB%E8%BE%91%E4%BB%BF%E5%87%BD%E6%95%B01.png" alt="image-20220717222242442"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E9%80%BB%E8%BE%91%E4%BB%BF%E5%87%BD%E6%95%B02.png" alt="image-20220717222300935"></p>
+<h2 id="证同、选择、投射"><a href="#证同、选择、投射" class="headerlink" title="证同、选择、投射"></a>证同、选择、投射</h2><p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E8%AF%81%E5%90%8C1.png" alt="image-20220717222336065"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E8%AF%81%E5%90%8C2.png" alt="image-20220717222352233"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E8%AF%81%E5%90%8C3.png" alt="image-20220717222407811"></p>
 
       
     </div>
