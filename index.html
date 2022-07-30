@@ -192,7 +192,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-07-30 20:34:45 / 修改时间：22:02:53" itemprop="dateCreated datePublished" datetime="2022-07-30T20:34:45+08:00">2022-07-30</time>
+              <time title="创建时间：2022-07-30 20:34:45 / 修改时间：22:16:21" itemprop="dateCreated datePublished" datetime="2022-07-30T20:34:45+08:00">2022-07-30</time>
             </span>
 
           
@@ -208,6 +208,7 @@
       
           <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>这两天把《MySQL必知必会》看完了，书本讲解的内容比较实用，注重命令的教学，对原理的涉及比较少。</p>
 <p>这篇博客再回顾、梳理一遍书本，记录一些重点的内容。</p>
+<p>2022-07-30</p>
 <h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><ul>
 <li>数据库（database）：保存有组织的数据的容器。</li>
 <li>数据库软件（dbms）：称为DBMS（数据库管理系统）。数据库是通过DBMS创建和操纵的容器。</li>
@@ -326,6 +327,38 @@
 
 <p>这里的NOT否定跟在它之后的条件，在更复杂的子句中，NOT是非常有用的。在与IN操作符联合使用时，NOT使找出与条件列表不匹配的行非常简单。</p>
 <p><em>MySQL支持使用NOT对IN、BETWEEN和EXISTS子句取反，这与多数其他DBMS允许使用NOT对各种条件取反有很大的差别。</em></p>
+<h2 id="通配符过滤"><a href="#通配符过滤" class="headerlink" title="通配符过滤"></a>通配符过滤</h2><ul>
+<li><p>通配符（wildcard）：用来匹配值的一部分的特殊字符。</p>
+</li>
+<li><p>搜索模式（search pattern）：由字面值、通配符或两者组合构成的搜索条件。</p>
+</li>
+<li><p>百分号**%**代表搜索模式中给定位置的0个、1个或多个字符。</p>
+</li>
+<li><p>下划线**_**总是匹配一个字符，不能多也不能少。</p>
+</li>
+</ul>
+<p>为在搜索子句中使用通配符，必须使用<strong>LIKE</strong>操作符。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SELECT prod_id,prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name LIKE &#x27;jet%&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>此例子使用了搜索模式**’jet%’<strong>。在执行这条子句时，将检索任意以jet起头的词。%告诉MySQL接受jet之后的</strong>任意字符**，不管它有多少字符。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SELECT prod_id,prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name LIKE &#x27;%anvil%&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>搜索模式**’%anvil%’<strong>表示匹配任何位置</strong>包含文本anvil**的值，而不论它之前或之后出现什么字符。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SELECT prod_id,prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name LIKE &#x27;s%e&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>这个例子找出以s起头以e结尾的所有产品。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--使用_通配符--</span><br><span class="line">SELECT prod_id,prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name LIKE &#x27;_ ton anvil&#x27;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>尾空格可能会干扰通配符匹配。例如，在保存词anvil 时，如果它后面有一个或多个空格，则子句<code>WHERE prod_name LIKE &#39;%anvil&#39;</code>将不会匹配它们，因为在最后的l后有多余的字符。解决这个问题的一个简单的办法是在搜索模式最后附加一个%。一个更好的办法是使用函数去掉首尾空格。</li>
+<li>注意NULL：虽然似乎%通配符可以匹配任何东西，但有一个例外，即NULL。即使是WHERE prod_name LIKE ‘%’也不能匹配用值NULL作为产品名的行。</li>
+</ul>
+<p>使用通配符是有代价的：通配符搜索的处理一般要比前面讨论的其他搜索<strong>所花时间更长</strong>。技巧：</p>
+<ul>
+<li>不要过度使用通配符。如果其他操作符能达到相同的目的，应该使用其他操作符。</li>
+<li>在确实需要使用通配符时，除非绝对有必要，否则<strong>不要</strong>把它们用在搜索模式的<strong>开始处</strong>。把通配符置于搜索模式的开始处，搜索起来是<strong>最慢的</strong>。</li>
+<li>仔细注意通配符的位置。如果放错地方，可能不会返回想要的数据。</li>
+</ul>
 
       
     </div>
