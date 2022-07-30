@@ -167,6 +167,184 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/07/30/%E6%B5%85%E5%AD%A6MySQL/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/07/30/%E6%B5%85%E5%AD%A6MySQL/" class="post-title-link" itemprop="url">浅学MySQL</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-07-30 20:34:45 / 修改时间：22:02:53" itemprop="dateCreated datePublished" datetime="2022-07-30T20:34:45+08:00">2022-07-30</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>这两天把《MySQL必知必会》看完了，书本讲解的内容比较实用，注重命令的教学，对原理的涉及比较少。</p>
+<p>这篇博客再回顾、梳理一遍书本，记录一些重点的内容。</p>
+<h1 id="概念"><a href="#概念" class="headerlink" title="概念"></a>概念</h1><ul>
+<li>数据库（database）：保存有组织的数据的容器。</li>
+<li>数据库软件（dbms）：称为DBMS（数据库管理系统）。数据库是通过DBMS创建和操纵的容器。</li>
+<li>表（table）：某种特定类型数据的结构化清单（文件）。每个表都有一个名字，用来标识自己。</li>
+<li>模式（schema）：关于数据库和表的布局及特性的信息。这些特性定义了数据如何存储。</li>
+<li>列（column）：表中的一个字段。所有表都是由一个或多个列组成的。可以理解为一类信息放在一列，每个列都有相应的数据类型。</li>
+<li>行（row）：表中的一个记录（record）。</li>
+<li>主键（primary key）：一列（或一组列），其值能够唯一区分表中每个行。任何列都可以作为主键，只要它满足以下条件：<ul>
+<li>任意两行都不具有相同的主键值；</li>
+<li>每个行都必须具有一个主键值（主键列不允许NULL值）。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">主键的最好习惯 除MySQL强制实施的规则外，应该坚持的几个普遍认可的最好习惯为： </span><br><span class="line">    不更新主键列中的值；</span><br><span class="line">	不重用主键列的值；</span><br><span class="line">	不在主键列中使用可能会更改的值。</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>SQL:(发音为字母S-Q-L或sequel）是结构化查询语言（Structured Query Language）的缩写。SQL是一种专门用来与数据库通信的语言。</li>
+<li>MySQL服务器部分:负责所有数据访问和处理的一个软件。这个软件运行在称为数据库服务器的计算机上。</li>
+<li>MySQL客户机部分：是与用户打交道的软件，向服务器作出请求。</li>
+</ul>
+<h1 id="基本操作"><a href="#基本操作" class="headerlink" title="基本操作"></a>基本操作</h1><p>假设拥有的一个数据库名字为<strong>sample</strong>。</p>
+<p>语句用**;<strong>结束，SQL语句不区分大小写，USE和use是一样的，一般关键字都用</strong>大写**，这样易于阅读和调试。</p>
+<p>SQL语句可以在一行上给出，也可以<strong>分成许多行</strong>。多数SQL开发人员认为将SQL语句分成多行更容易阅读和调试。</p>
+<h2 id="使用和显示"><a href="#使用和显示" class="headerlink" title="使用和显示"></a>使用和显示</h2><ul>
+<li>USE：最初连接到MySQL时，没有任何数据库打开供你使用。在执行任意数据库操作前，需要<strong>选择一个数据库</strong>。为此，可使用<strong>USE</strong>关键字（<code>USE sample;</code>）。必须先使用USE打开数据库，才能读取其中的数据。</li>
+<li>SHOW DATABASES：<code>SHOW DATABASES;</code>返回可用数据库的一个列表。</li>
+<li>SHOW TABLES：为了获得一个数据库内的表的列表，使用<code>SHOW TABLES;</code>。这个数据库是前面USE的数据库。</li>
+<li>SHOW COLUMNS：<code>SHOW COLUMNS FROM customers;</code>要求给出一个表名（FROM someTable），它对每个字段返回一行，行中包含字段名、数据类型、是否允许NULL、键信息、默认值以及其他信息。<ul>
+<li><code>DESCRIBE customers;</code>是<code>SHOW COLUMNS FROM customers;</code>的一种快捷方式。</li>
+</ul>
+</li>
+<li>其他SHOW语句（少用）：<ul>
+<li>SHOW STATUS，用于显示广泛的服务器状态信息；</li>
+<li>SHOW CREATE DATABASE和SHOW CREATE TABLE，分别用来显示创建特定数据库或表的MySQL语句;</li>
+<li>SHOW GRANTS，用来显示授予用户（所有用户或特定用户）的安全权限；</li>
+<li>SHOW ERRORS和SHOW WARNINGS，用来显示服务器错误或警告消息。</li>
+</ul>
+</li>
+</ul>
+<h2 id="检索"><a href="#检索" class="headerlink" title="检索"></a>检索</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">--检索单列--</span><br><span class="line">SELECT prod_name </span><br><span class="line">FROM products;</span><br></pre></td></tr></table></figure>
+
+<p>上述语句利用SELECT语句从products表中检索一个名为prod_name的列。所需的列名在SELECT关键字之后给出，FROM关键字指出从其中检索数据的表名。</p>
+<ul>
+<li>未排序数据：如果没有明确排序查询结果，则返回的数据的顺序没有特殊意义。返回数据的顺序可能是数据被添加到表中的顺序，也可能不是。只要返回相同数目的行，就是正常的。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">--检索多列--</span><br><span class="line">SELECT prod_id,prod_price,prod_name </span><br><span class="line">FROM products;</span><br><span class="line"></span><br><span class="line">--检索所有列--</span><br><span class="line">SELECT *</span><br><span class="line">FROM products;</span><br></pre></td></tr></table></figure>
+
+<p>如果给定一个通配符（*），则返回表中所有列。一般，除非你确实需要表中的每个列，否则<strong>最好别使用*通配符</strong>。虽然使用通配符可能会使你自己省事，不用明确列出所需列，但检索不需要的列通常会降低检索和应用程序的性能。可以用于检索<strong>未知列</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">--检索不同值（若相同则只返回一次）--</span><br><span class="line">SELECT DISTINCT vend_id</span><br><span class="line">FROM products;</span><br></pre></td></tr></table></figure>
+
+<p>DISTINCT 关键字指示MySQL只返回不同的值。</p>
+<p>不能部分使用DISTINCT DISTINCT关键字应用于所有列而不仅是前置它的列。如果给出SELECT DISTINCT vend_id, prod_price，除非指定的两个列都不同，否则所有行都将被检索出来。<strong>相当于同时比较两个列，只有一行对应的两个元素都相同才视为真的相同</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">--限制结果为前面n行--</span><br><span class="line">SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">LIMIT 5;</span><br><span class="line"></span><br><span class="line">--限制结果为某个区间--</span><br><span class="line">SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">LIMIT 5,5;</span><br></pre></td></tr></table></figure>
+
+<p><code>LIMIT 5</code>指示MySQL返回<strong>不多于</strong>5行。</p>
+<p><code>LIMIT 5, 5</code>指示MySQL返回<strong>从行5开始</strong>（位置从0开始计）的5行。两个数字容易搞混，因此有一种代替语法：<code>LIMIT 4 OFFSET 3</code>意为从行3开始取4行，就像LIMIT 3, 4一样。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">--完全限定名写法，限定某个列是哪个表的（表名也可以限定为哪个数据库的）--</span><br><span class="line">SELECT products.prod_name</span><br><span class="line">FROM products;</span><br></pre></td></tr></table></figure>
+
+<h2 id="排序"><a href="#排序" class="headerlink" title="排序"></a>排序</h2><p>一般返回的顺序是数据最初添加到表中的顺序。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--排序单列--</span><br><span class="line">SELECT prod_name</span><br><span class="line">FROM products</span><br><span class="line">ORDER BY prod_name;</span><br></pre></td></tr></table></figure>
+
+<p><code>ORDER BY</code>指示MySQL对prod_name列以字母顺序排序，通常，ORDER BY子句中<strong>使用的列将是为显示所选择的列</strong>。但是，实际上并不一定要这样，用非检索的列排序数据是完全合法的。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--排序多列--</span><br><span class="line">SELECT prod_id,prod_price,prod_name</span><br><span class="line">FROM products</span><br><span class="line">ORDER BY prod_price,prod_name;</span><br></pre></td></tr></table></figure>
+
+<p>在按多个列排序时，排序完全按所规定的顺序进行。换句话说，对于上述例子中的输出，<strong>仅在多个行具有相同</strong>的prod_price值时才对产品按prod_name进行排序。如果prod_price列中所有的值都是唯一的，则不会按prod_name排序。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--指定排序方向--</span><br><span class="line">SELECT prod_id,prod_price,prod_name</span><br><span class="line">FROM products</span><br><span class="line">ORDER BY prod_price DESC,prod_name;</span><br></pre></td></tr></table></figure>
+
+<p>数据排序不限于升序排序（从A到Z）。这只是默认的排序顺序，还可以使用ORDER BY子句以降序（从Z到A）顺序排序。为了进行<strong>降序</strong>排序，必须指定<strong>DESC关键字</strong>。</p>
+<p>DESC关键字<strong>只应用到直接位于其前面的列名</strong>。在上例中，只对prod_price列指定DESC，对prod_name列不指定。因此，prod_price列以降序排序，而prod_name列（在每个价格内）仍然按标准的升序排序。</p>
+<p>与DESC相反的关键字是ASC（ASCENDING），在升序排序时可以指定它。但实际上，ASC没有多大用处，因为<strong>升序是默认的</strong>。</p>
+<p><em>在字典（dictionary）排序顺序中，A被视为与a相同，这是MySQL（和大多数数据库管理系统）的默认行为。如果确实需要改变这种排序顺序，用简单的ORDER BY子句做不到。必须请求数据库管理员的帮助。</em></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">--应用：找最大值--</span><br><span class="line">SELECT prod_price</span><br><span class="line">FROM products</span><br><span class="line">ORDER BY prod_price DESC</span><br><span class="line">LIMIT 1;</span><br></pre></td></tr></table></figure>
+
+<p>prod_price DESC保证行是按照由最昂贵到最便宜检索的，而LIMIT 1告诉MySQL仅返回一行。</p>
+<p>在给出ORDER BY子句时，应该保证它位于FROM子句之后。如果使用LIMIT，它必须位于ORDER BY之后。使用子句的次序不对将产生错误消息。<strong>因为SELECT-FROM这一对给出了结果，然后再调用ORDER BY 来排序，最后用LIMIT取第一行。</strong></p>
+<h2 id="过滤"><a href="#过滤" class="headerlink" title="过滤"></a>过滤</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--使用WHERE子句过滤--</span><br><span class="line">SELECT prod_name,prod_price</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_price = 2.50;</span><br></pre></td></tr></table></figure>
+
+<p>这条语句从products表中检索两个列，但不返回所有行，只返回prod_price值为2.50的行。</p>
+<p>在同时使用ORDER BY和WHERE子句时，应该让ORDER BY位于WHERE之后，否则将会产生错误（因为先过滤完再排序）</p>
+<ul>
+<li>WHERE子句操作符：<ul>
+<li>&#x3D;：等于</li>
+<li>&lt;&gt;：不等于</li>
+<li>！&#x3D;：不等于</li>
+<li>&lt;：小于</li>
+<li>&lt;&#x3D;：小于等于</li>
+<li>&gt;：大于</li>
+<li>&gt;&#x3D;：大于等于</li>
+<li>BETWEEN：在指定的两个值之间</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">--检查单个值--</span><br><span class="line">SELECT prod_name,prod_price</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_price = &#x27;fuses&#x27;;</span><br><span class="line"></span><br><span class="line">--范围检查--</span><br><span class="line">SELECT prod_name,prod_price</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_price &lt;= 10;</span><br><span class="line"></span><br><span class="line">SELECT prod_name,prod_price</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_price BETWEEN 5 AND 10; --两个值必须用AND分隔开--</span><br><span class="line"></span><br><span class="line">--不匹配检查--</span><br><span class="line">SELECT prod_name,vend_id</span><br><span class="line">FROM products</span><br><span class="line">WHERE vend_id &lt;&gt; 1003;</span><br><span class="line"></span><br><span class="line">--空值检查--</span><br><span class="line">SELECT prod_name,prod_price</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_price IS NULL; --注意这里用了IS关键字--</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>NULL：无值（no value），它与字段包含0、空字符串或仅仅包含空格不同。</li>
+<li>NULL与不匹配：在通过过滤选择出<strong>不具有特定值</strong>的行时，你可能<strong>希望返回</strong>具有NULL值的行。但是不行。因为未知具有特殊的含义，数据库<strong>不知道它们是否匹配</strong>，所以在匹配过滤或不匹配过滤时<strong>不返回它们</strong>。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">--AND操作符--</span><br><span class="line">SELECT prod_name,prod_price,prod_id</span><br><span class="line">FROM products</span><br><span class="line">WHERE vend_id = 1003 AND prod_price &lt;= 10;</span><br><span class="line"></span><br><span class="line">--OR操作符--</span><br><span class="line">SELECT prod_name,prod_price,prod_id</span><br><span class="line">FROM products</span><br><span class="line">WHERE vend_id = 1003 OR vend_id = 1005;</span><br><span class="line"></span><br><span class="line">--使用优先级组合--</span><br><span class="line">SELECT prod_name,prod_price,prod_id</span><br><span class="line">FROM products</span><br><span class="line">WHERE vend_id = 1002 OR vend_id = 1003 AND prod_price &lt;= 10;</span><br><span class="line"></span><br><span class="line">--使用圆括号组合--</span><br><span class="line">SELECT prod_name,prod_price,prod_id</span><br><span class="line">FROM products</span><br><span class="line">WHERE (vend_id = 1002 OR vend_id) = 1003 AND prod_price &lt;= 10;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>AND：用在WHERE子句中的关键字，用来指示检索满足<strong>所有</strong>给定条件的行。</li>
+<li>OR：WHERE子句中使用的关键字，用来表示检索匹配<strong>任一</strong>给定条件的行。</li>
+<li>优先级：SQL（像多数语言一样）在处理OR操作符前，优先处理AND操作符。此问题的解决方法是使用<strong>圆括号</strong>明确地分组相应的操作符。<em>任何时候使用具有AND和OR操作符的WHERE子句，都应该使用圆括号明确地分组操作符，它能消除歧义。</em></li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--IN操作符--</span><br><span class="line">SELECT prod_name,prod_price,prod_id</span><br><span class="line">FROM products</span><br><span class="line">WHERE vend_id IN (1002,1003);</span><br></pre></td></tr></table></figure>
+
+<p>IN操作符完成与OR相同的功能，IN操作符用来指定条件范围，范围中的每个条件都可以进行匹配。IN取合法值的由逗号分隔的清单，全都括在圆括号中。优点：</p>
+<ul>
+<li>在使用长的合法选项清单时，IN操作符的语法更清楚且更直观。</li>
+<li>在使用IN时，计算的次序更容易管理（因为使用的操作符更少）。 </li>
+<li>IN操作符一般比OR操作符清单执行更快。</li>
+<li>IN的最大优点是可以包含其他SELECT语句，使得能够更动态地建立WHERE子句。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--NOT操作符--</span><br><span class="line">SELECT prod_name,prod_price,prod_id</span><br><span class="line">FROM products</span><br><span class="line">WHERE vend_id NOT IN (1002,1003);</span><br></pre></td></tr></table></figure>
+
+<p>这里的NOT否定跟在它之后的条件，在更复杂的子句中，NOT是非常有用的。在与IN操作符联合使用时，NOT使找出与条件列表不匹配的行非常简单。</p>
+<p><em>MySQL支持使用NOT对IN、BETWEEN和EXISTS子句取反，这与多数其他DBMS允许使用NOT对各种条件取反有很大的差别。</em></p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/06/20/STL%E5%AD%A6%E4%B9%A0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -2266,7 +2444,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-count">7</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
