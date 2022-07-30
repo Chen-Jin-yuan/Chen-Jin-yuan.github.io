@@ -28,7 +28,7 @@
 <meta property="og:description" content="前言这两天把《MySQL必知必会》看完了，书本讲解的内容比较实用，注重命令的教学，对原理的涉及比较少。 这篇博客再回顾、梳理一遍书本，记录一些重点的内容。 2022-07-30 概念 数据库（database）：保存有组织的数据的容器。 数据库软件（dbms）：称为DBMS（数据库管理系统）。数据库是通过DBMS创建和操纵的容器。 表（table）：某种特定类型数据的结构化清单（文件）。每个表都有">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-07-30T12:34:45.688Z">
-<meta property="article:modified_time" content="2022-07-30T14:16:21.080Z">
+<meta property="article:modified_time" content="2022-07-30T14:57:10.590Z">
 <meta property="article:author" content="Jy">
 <meta name="twitter:card" content="summary">
 
@@ -194,7 +194,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-07-30 20:34:45 / 修改时间：22:16:21" itemprop="dateCreated datePublished" datetime="2022-07-30T20:34:45+08:00">2022-07-30</time>
+              <time title="创建时间：2022-07-30 20:34:45 / 修改时间：22:57:10" itemprop="dateCreated datePublished" datetime="2022-07-30T20:34:45+08:00">2022-07-30</time>
             </span>
 
           
@@ -361,6 +361,83 @@
 <li>在确实需要使用通配符时，除非绝对有必要，否则<strong>不要</strong>把它们用在搜索模式的<strong>开始处</strong>。把通配符置于搜索模式的开始处，搜索起来是<strong>最慢的</strong>。</li>
 <li>仔细注意通配符的位置。如果放错地方，可能不会返回想要的数据。</li>
 </ul>
+<h2 id="正则表达式"><a href="#正则表达式" class="headerlink" title="正则表达式"></a>正则表达式</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--REGEXP关键字--</span><br><span class="line">SELECT prod_id,prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name REGEXP &#x27;1000&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>这个语句检索列prod_name<strong>包含文本1000</strong>的所有行（注意，用LIKE要使用通配符才能检查’’包含’’），关键字LIKE被REGEXP代替，它告诉MySQL：REGEXP后所跟的东西作为正则表达式（与文字正文1000匹配的一个正则表达式）处理。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--REGEXP关键字--</span><br><span class="line">SELECT prod_id,prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name REGEXP &#x27;.000&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>这里使用了正则表达式.000。**.<strong>是正则表达式语言中一个特殊的字符。它表示</strong>匹配任意一个字符**，因此，1000和2000都匹配且返回。</p>
+<ul>
+<li>MySQL中的正则表达式匹配（自版本3.23.4后）不区分大小写（即，大写和小写都匹配）。为区分大小写，可使用<strong>BINARY</strong>关键字，如<code>WHERE prod_name REGEXP BINARY &#39;JetPack .000&#39;</code>。</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--OR匹配--</span><br><span class="line">SELECT prod_id,prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name REGEXP &#x27;1000|2000&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>语句中使用了正则表达式1000|2000。|为正则表达式的OR操作符。它表示匹配其中之一，因此1000和2000都匹配并返回。可以有两个以上的OR条件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--匹配几个字符之一--</span><br><span class="line">SELECT prod_id,prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name REGEXP &#x27;[123] Ton&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>这里，使用了正则表达式[123] Ton。[123]定义一组字符，它的意思是匹配1或2或3，因此，1 ton和2 ton都匹配且返回（没有3 ton）。</p>
+<p>[]是另一种形式的OR语句。事实上，正则表达式[123]Ton为[1|2|3]Ton的缩写，也可以使用后者。但是，需要<strong>用[]来定义OR语句查找什么</strong>。如果直接用<code>&#39;1|2|3 Ton&#39;</code>，MySQL则假定你的意思是’1’或’2’或’3 ton’。</p>
+<ul>
+<li><p>字符集合也可以被<strong>否定</strong>，即，它们将匹配除指定字符外的任何东西。为否定一个字符集，在集合的开始处放置一个<strong>^</strong>即可。因此，尽管[123]匹配字符1、2或3，但**[^123]**却匹配除这些字符外的任何东西。</p>
+</li>
+<li><p>如果要匹配数字，则为集合[0123456789]，一种简化的写法为[0-9]（用’-‘定义一个范围）。范围不限于完整的集合，[1-3]和[6-9]也是合法的范围。此外，范围不一定只是数值的，[a-z]匹配任意字母字符。</p>
+</li>
+<li><p>如果要匹配’.’，不能直接REGEXP ‘.’，因为这会匹配任意一个字符。需要用两个反斜杠转义，即在特殊字符前加<code>\\</code>。如<code>\\.</code>。</p>
+<ul>
+<li>为了匹配反斜杠（\）字符本身，需要使用<code>\\\</code>。</li>
+<li>MySQL要求两个反斜杠（MySQL自己解释一个，正则表达式库解释另一个）。</li>
+<li><code>\\</code>也用来引用元字符，如<code>\\f</code>表示换页。</li>
+</ul>
+</li>
+</ul>
+<p>存在找出经常使用的数字、所有字母字符或所有数字字母字符等的匹配。为更方便工作，可以使用预定义的字符集，称为字符类（character class）：</p>
+<ul>
+<li>[:alnum:] ：任意字母和数字（同[a-zA-Z0-9]）</li>
+<li>[:alpha:] ：任意字符（同[a-zA-Z]）</li>
+<li>[:blank:] ：空格和制表（同[\t]）</li>
+<li>[:cntrl:] ：ASCII控制字符（ASCII 0到31和127）</li>
+<li>[:digit:] ：任意数字（同[0-9]）</li>
+<li>[:graph:] ：与[:print:]相同，但不包括空格</li>
+<li>[:lower:] ：任意小写字母（同[a-z]）</li>
+<li>[:print:] ：任意可打印字符</li>
+<li>[:punct:] ：既不在[:alnum:]又不在[:cntrl:]中的任意字符</li>
+<li>[:space:] ：包括空格在内的任意空白字符（同[\f\n\r\t\v]）</li>
+<li>[:upper:] ：任意大写字母（同[A-Z]）</li>
+<li>[:xdigit:] ：任意十六进制数字（同[a-fA-F0-9]）</li>
+</ul>
+<h3 id="字符汇总"><a href="#字符汇总" class="headerlink" title="字符汇总"></a>字符汇总</h3><ul>
+<li>.：匹配任意一个字符</li>
+<li>|：表示OR（条件或）</li>
+<li>[]：另一种形式的OR语句，来定义OR语句查找什么</li>
+<li>^：否定</li>
+<li>-：定义范围</li>
+<li>\\：转义</li>
+<li>[: :]：前面所示的一些字符类</li>
+<li>*：0个或多个匹配，置于某字符后</li>
+<li>+：1个或多个匹配（等于{1,}），置于某字符后</li>
+<li>？：0个或1个匹配（等于{0,1}），置于某字符后</li>
+<li>{n}：指定数目的匹配，置于某字符后</li>
+<li>{n,}：不少于指定数目的匹配，置于某字符后</li>
+<li>{n,m}：匹配数目的范围（m不超过255），置于某字符后</li>
+<li>^：文本的开始（双重用途），放在串的开头</li>
+<li>$：文本的结尾，放在串的结尾</li>
+<li>[[:&lt;:]]：词的开始</li>
+<li>[[:&gt;:]]：词的结尾</li>
+</ul>
+<p><strong>^</strong>的双重用途：^有两种用法。在集合中（用[和]定义），用它来否定该集合，否则，用来指串的开始处，如^[0-9\\.]（后面有例子）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--使用？--</span><br><span class="line">SELECT prod_id,prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name REGEXP &#x27;\\([0-9] sticks?\\)&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>正则表达式\\([0-9] sticks?\\)需要解说一下。\\(匹配(，[0-9]匹配任意数字，sticks?匹配stick和sticks（s后的?使s可选，因为?匹配它<strong>前面</strong>的任何字符的0次或1次出现），\\)匹配)。没有?，匹配stick和sticks会非常困难。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">--匹配连在一起的4位数字--</span><br><span class="line">SELECT prod_id,prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name REGEXP &#x27;[:digit:]&#123;4&#125;&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>[:digit:]匹配任意数字，因而它为数字的一个集合。{4}确切地要求它前面的字符（任意数字）出现4次。</p>
+<p>如果想找出<strong>以一个数（包括以小数点开始的数）开始</strong>的所有产品，怎么办？简单搜索[0-9\\.]（或[[:digit:]\\.]）不行，因为它将在文本内<strong>任意位置</strong>查找匹配（正则是查找”包含“）。解决办法是使用^定位符。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SELECT prod_id,prod_name</span><br><span class="line">FROM products</span><br><span class="line">WHERE prod_name REGEXP &#x27;^[0-9\\.]&#x27;;</span><br></pre></td></tr></table></figure>
+
+<p>^匹配串的开始。因此，^[0-9\\.]只在.或任意数字为串中第一个字符时才匹配它们。</p>
+<ul>
+<li>使REGEXP起类似LIKE的作用 ：前面说过，LIKE和REGEXP的不同在于，LIKE匹配整个串而REGEXP匹配子串。利用定位符，通过<strong>用^开始每个表达式，用$结束每个表达式</strong>，可以使REGEXP的作用与LIKE一样。</li>
+</ul>
 
     </div>
 
@@ -460,7 +537,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E5%BF%B5"><span class="nav-number">2.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">基本操作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%92%8C%E6%98%BE%E7%A4%BA"><span class="nav-number">3.1.</span> <span class="nav-text">使用和显示</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A3%80%E7%B4%A2"><span class="nav-number">3.2.</span> <span class="nav-text">检索</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%92%E5%BA%8F"><span class="nav-number">3.3.</span> <span class="nav-text">排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%87%E6%BB%A4"><span class="nav-number">3.4.</span> <span class="nav-text">过滤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E9%85%8D%E7%AC%A6%E8%BF%87%E6%BB%A4"><span class="nav-number">3.5.</span> <span class="nav-text">通配符过滤</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%A6%82%E5%BF%B5"><span class="nav-number">2.</span> <span class="nav-text">概念</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C"><span class="nav-number">3.</span> <span class="nav-text">基本操作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%92%8C%E6%98%BE%E7%A4%BA"><span class="nav-number">3.1.</span> <span class="nav-text">使用和显示</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A3%80%E7%B4%A2"><span class="nav-number">3.2.</span> <span class="nav-text">检索</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%92%E5%BA%8F"><span class="nav-number">3.3.</span> <span class="nav-text">排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%87%E6%BB%A4"><span class="nav-number">3.4.</span> <span class="nav-text">过滤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E9%85%8D%E7%AC%A6%E8%BF%87%E6%BB%A4"><span class="nav-number">3.5.</span> <span class="nav-text">通配符过滤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-number">3.6.</span> <span class="nav-text">正则表达式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%97%E7%AC%A6%E6%B1%87%E6%80%BB"><span class="nav-number">3.6.1.</span> <span class="nav-text">字符汇总</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
