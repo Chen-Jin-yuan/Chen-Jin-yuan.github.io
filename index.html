@@ -190,10 +190,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-08-03 10:10:09 / 修改时间：23:27:53" itemprop="dateCreated datePublished" datetime="2022-08-03T10:10:09+08:00">2022-08-03</time>
+              <time title="创建时间：2022-08-03 10:10:09" itemprop="dateCreated datePublished" datetime="2022-08-03T10:10:09+08:00">2022-08-03</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-08-04 11:08:01" itemprop="dateModified" datetime="2022-08-04T11:08:01+08:00">2022-08-04</time>
+              </span>
 
           <br>
             <span class="post-meta-item" title="本文字数">
@@ -201,14 +207,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.6k</span>
+              <span>8.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>5 分钟</span>
+              <span>8 分钟</span>
             </span>
 
         </div>
@@ -368,12 +374,12 @@
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B1</span>:<span class="keyword">public</span> <span class="keyword">virtual</span> A;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">B2</span>:<span class="keyword">public</span> <span class="keyword">virtual</span> A;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">D</span>:<span class="keyword">public</span> B1,<span class="keyword">public</span> B2;</span><br></pre></td></tr></table></figure>
 
 <p>虚拟继承在一般的应用中很少用到，所以也往往被忽视，这也主要是因为在C++中，多重继承是不推荐的，也并不常用，而一旦离开了多重继承，虚拟继承就完全失去了存在的必要因为这样只会降低效率和占用更多的空间。</p>
-<h2 id="为什么需要虚继承？"><a href="#为什么需要虚继承？" class="headerlink" title="为什么需要虚继承？"></a><strong>为什么需要虚继承？</strong></h2><p>由于C++支持多重继承，那么在这种情况下会出现重复的基类这种情况，也就是说可能出现将一个类两次作为基类的可能性。比如这里D继承B1和B2，B1继承A，B2也继承A，实际上有两条继承路径：D-&gt;B1-&gt;A，以及D-&gt;B2-&gt;A，D是一样的，但这<strong>两个A在直接继承的情况下是不一样的</strong>。当存在歧义的时候就会导致编译错误：</p>
+<h2 id="为什么需要虚继承？"><a href="#为什么需要虚继承？" class="headerlink" title="为什么需要虚继承？"></a>为什么需要虚继承？</h2><p>由于C++支持多重继承，那么在这种情况下会出现重复的基类这种情况，也就是说可能出现将一个类两次作为基类的可能性。比如这里D继承B1和B2，B1继承A，B2也继承A，实际上有两条继承路径：D-&gt;B1-&gt;A，以及D-&gt;B2-&gt;A，D是一样的，但这<strong>两个A在直接继承的情况下是不一样的</strong>。当存在歧义的时候就会导致编译错误：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> std::cout;</span><br><span class="line"><span class="keyword">using</span> std::endl;</span><br><span class="line"><span class="comment">//------------------------------------------------//</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">protected</span>:</span><br><span class="line"><span class="type">int</span> value;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line"><span class="built_in">Base</span>()</span><br><span class="line">&#123;</span><br><span class="line">cout&lt;&lt;<span class="string">&quot;in Base&quot;</span>&lt;&lt;endl;</span><br><span class="line">&#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//------------------------------------------------//</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DerivedA</span>:<span class="keyword">protected</span> Base</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line"><span class="built_in">DerivedA</span>()</span><br><span class="line">&#123;</span><br><span class="line">cout&lt;&lt;<span class="string">&quot;in DerivedA&quot;</span>&lt;&lt;endl;</span><br><span class="line">&#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//------------------------------------------------//</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">DerivedB</span>: <span class="keyword">protected</span> Base</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line"><span class="built_in">DerivedB</span>()</span><br><span class="line">&#123;</span><br><span class="line">cout&lt;&lt;<span class="string">&quot;in DerivedB&quot;</span>&lt;&lt;endl;</span><br><span class="line">&#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//------------------------------------------------//</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">MyClass</span>:DerivedA,DerivedB</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line"><span class="built_in">MyClass</span>()</span><br><span class="line">&#123;</span><br><span class="line">cout&lt;&lt;<span class="string">&quot;in MyClass&quot;</span>&lt;&lt;value&lt;&lt;endl;</span><br><span class="line">&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 
 <p>这种情况下会造成在MyClass中访问value时出现路径不明确的编译错误，要访问数据，就需要显示地加以限定。变成DerivedA::value或 者DerivedB::value，以消除歧义性。并且，通常情况下，像Base这样的公共基类不应该表示为两个分离的对象，而要解决这种问题就可以用虚 基类加以处理。如果使用虚继承，编译便正常了。</p>
 <p><strong>虚继承的特点是，在任何派生类中的virtual基类总用同一个（共享）对象表示。</strong></p>
-<h2 id="引入虚继承和直接继承的区别"><a href="#引入虚继承和直接继承的区别" class="headerlink" title="引入虚继承和直接继承的区别"></a><strong>引入虚继承和直接继承的区别</strong></h2><p>由于有了间接性和共享性两个特征，所以决定了虚继承体系下的对象在访问时必然会在时间和空间上与一般情况有较大不同：</p>
+<h2 id="引入虚继承和直接继承的区别"><a href="#引入虚继承和直接继承的区别" class="headerlink" title="引入虚继承和直接继承的区别"></a>引入虚继承和直接继承的区别</h2><p>由于有了间接性和共享性两个特征，所以决定了虚继承体系下的对象在访问时必然会在时间和空间上与一般情况有较大不同：</p>
 <ul>
 <li><strong>时间：</strong>在通过继承类对象访问虚基类对象中的成员（包括数据成员和函数成员）时，都必须通过某种间接引用来完成，这样会增加引用寻址时间（就和虚函数一样），其实就是调整this指针以指向虚基类对象，只不过这个调整是运行时间接完成的。</li>
 <li><strong>空间：</strong>由于共享所以不必要在对象内存中保存多份虚基类子对象的拷贝，这样较之多继承会节省空间。虚拟继承与普通继承不同的是，虚拟继承可以防止出现diamond继承时，一个派生类中同时出现了两个基类的子对象。也就是说，为了保证这一点，在虚拟继承情况下，基类子对象的布局是不同于普通继承的。因此，它需要多出一个<strong>指向基类子对象的指针</strong>。</li>
@@ -410,6 +416,112 @@
 <li>当有多个基类时，将按照它们在继承方式中的声明次序调用，与它们在构造函数初始化列表中的次序无关。当基类A本身又是另一个类B的派生类时，则先调用基类B的构造函数，再调用基类A的构造函数。</li>
 <li>当有多个对象成员时，将按它们在派生类中的声明次序调用，与它们在构造函数初始化列表中的次序无关。</li>
 <li>当构造函数初始化列表中的基类和对象成员的构造函数调用完成之后，才执行派生类构造函数体中的程序代码。</li>
+</ul>
+<h1 id="虚函数与抽象类"><a href="#虚函数与抽象类" class="headerlink" title="虚函数与抽象类"></a>虚函数与抽象类</h1><h2 id="多态性"><a href="#多态性" class="headerlink" title="多态性"></a>多态性</h2><p>多态就是在同一个类或继承体系结构的基类与派生类中，用<strong>同名函数</strong>来实现各种不同的功能。</p>
+<ul>
+<li><strong>静态绑定又称静态联编</strong>：是指在编译程序时就根据调用函数提供的信息，把它所对应的具体函数确定下来，即在编译时就把调用函数名与具体函数绑定在一起。</li>
+<li><strong>动态绑定又称动态联编</strong>：是指在编译程序时还不能确定函数调用所对应的具体函数，只有在程序运行过程中才能够确定函数调用所对应的具体函数，即在程序运行时才把调用函数名与具体函数绑定在一起。</li>
+<li><strong>编译时多态性</strong>（静态联编(连接)）：系统在编译时就决定如何实现某一动作,即对某一消息如何处理。静态联编具有执行<strong>速度快</strong>的优点。在C++中的编译时多态性是通过<strong>函数重载和运算符重载</strong>实现的。</li>
+<li><strong>运行时多态性</strong>（动态联编(连接)）：系统在运行时动态实现某一动作,即对某一消息在运行过程实现其如何响应。动态联编为系统提供了<strong>灵活和高度问题抽象</strong>的优点,在C++中的运行时多态性是通过<strong>继承和虚函数</strong>实现的。</li>
+</ul>
+<h2 id="虚函数"><a href="#虚函数" class="headerlink" title="虚函数"></a>虚函数</h2><p>虚函数的意义：</p>
+<ul>
+<li>首先派生类对象可以赋值给基类对象。 派生类对象的地址可以赋值给指向基类对象的指针。 派生类对象可以作为基类对象的引用。 赋值相容的问题： 不论哪种赋值方式，都只能通过基类对象（或基类对象的指针或引用）访问到派生类对象从基类中<strong>继承到的成员</strong>， <strong>不能借此访问派生类定义的成员</strong>。</li>
+<li>虚函数使得可以通过基类对象的指针或引用<strong>访问派生类定义的成员</strong>。</li>
+<li>virtual关键字其实质是告知编译系统，被指定为virtual的函数采用动态联编的形式编译。</li>
+<li>虚函数的虚特征：基类指针指向派生类的对象时，通过该指针访问其虚函数将<strong>调用派生类的版本</strong>。</li>
+</ul>
+<p>要点：</p>
+<ul>
+<li>一旦将某个成员函数声明为虚函数后，它在继承体系中就<strong>永远</strong>为虚函数了。（派生类在定义时可以不加virtual关键字）</li>
+<li>如果基类定义了虚函数，当通过基类指针或引用调用派生类对象时，将访问到它们<strong>实际所指对象中的虚函数版本</strong>。</li>
+<li>只有通过基类对象的指针和引用访问派生类对象的虚函数时，<strong>才能体现虚函数的特性</strong>。</li>
+<li>派生类中的虚函数要保持其虚特征，必须与基类虚函数的<strong>函数原型完全相同</strong>，<strong>否则就是普通的重载函数</strong>，与基类的虚函数无关。</li>
+<li>派生类通过<strong>从基类继承的成员函数调用虚函数</strong>时，将<strong>访问到派生类中的版本</strong>。</li>
+<li>只有类的<strong>非静态成员函数</strong>才能被定义为虚函数，类的<strong>构造函数和静态成员函数不能定义为虚函数</strong>。原因是虚函数在继承层次结构中才能够发生作用，而<strong>构造函数、静态成员是不能够被继承的</strong>。</li>
+<li><strong>内联函数也不能是虚函数</strong>（多态时）。因为<strong>内联函数采用的是静态联编</strong>的方式，而虚函数是在程序运行时才与具体函数动态绑定的，采用的是动态联编的方式，即使<strong>虚函数在类体内被定义，C++编译器也将它视为非内联函数</strong>。 <ul>
+<li>类中定义的函数是内联函数，类中声明、类外定义且都没用inline关键字的是普通函数（注：inline要起作用，inline要与<strong>函数定义</strong>放在一起。inline是一种“用于实现的关键字，而不是用于声明的关键字）</li>
+<li>虚函数可以是内联函数，内联是可以修饰虚函数的，但是当虚函数表现多态性的时候不能内联。</li>
+<li>内联是在编译期建议编译器内联，而虚函数的多态性在运行期，编译器无法知道运行期调用哪个代码，因此虚函数表现为多态性时（运行期）不可以内联。</li>
+<li><code>inline virtual</code> 唯一可以内联的时候是：编译器知道所调用的对象是哪个类（如 <code>Base::who()</code>），这只有在编译器具有实际对象而不是对象的指针或引用时才会发生。</li>
+</ul>
+</li>
+<li>基类<strong>析构函数几乎总是为虚析构函数</strong>。假定使用delete和一个指向派生类的基类指针来销毁派生类对象，如果基类析构函数不为虚，就如一个普通成员函数，delete函数调用的就是基类析构函数（<strong>而不是调用该派生类的析构函数</strong>）。在通过基类对象的引用或指针调用派生类对象时，将致使对象析构不彻底。（如果是虚析构函数，则会先调用派生类的析构函数再调用基类的析构函数）</li>
+</ul>
+<h2 id="纯虚函数和抽象类"><a href="#纯虚函数和抽象类" class="headerlink" title="纯虚函数和抽象类"></a>纯虚函数和抽象类</h2><p>纯虚函数：仅定义函数原型而不定义其实现的虚函数。</p>
+<p>实用角度：占位手段place-holder。</p>
+<p>方法学：接口定义手段，抽象表达手段。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">X</span> </span><br><span class="line">&#123; </span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> ret_type <span class="title">func_name</span> <span class="params">(param)</span> </span>= <span class="number">0</span>; <span class="comment">//virtual与‘=0’就构成纯虚函数</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>抽象类：包含一个或多个纯虚函数的类。</p>
+<p><strong>不能实例化抽象类</strong>，但可以定义抽象类的<strong>指针和引用</strong>。定义一个抽象类的派生类，必须定义<strong>所有纯虚函数</strong>，否则该派生类仍然是一个抽象类。</p>
+<p>总结：</p>
+<ul>
+<li>抽象类中含有纯虚函数，由于纯虚函数没有实现代码，所以不能建立抽象类的对象。</li>
+<li>抽象类只能作为其他类的基类，可以通过抽象类对象的指针或引用访问到它的派生类对象，实现运行时的多态性。</li>
+<li>如果派生类只是简单地继承了抽象类的纯虚函数，而没有重新定义基类的纯虚函数，则派生类也是一个抽象类。</li>
+</ul>
+<h1 id="运算符重载"><a href="#运算符重载" class="headerlink" title="运算符重载"></a>运算符重载</h1><p>运算符重载是C++的一项强大功能。通过重载，可以扩展C++运算符的功能，使它们能够操作用户自定义的数据类型，增加程序代码的直观性和可读性。</p>
+<h2 id="重载二元运算符"><a href="#重载二元运算符" class="headerlink" title="重载二元运算符"></a>重载二元运算符</h2><p>二元运算符的调用形式与解析：a@b 可解释成 <code>a.operator@(b)</code> 或解释成 <code>operator@(a,b)</code>(@表示运算符)</p>
+<p>如果两者都有定义,就按照重载解析：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">X</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	<span class="type">void</span> <span class="keyword">operator</span>+(<span class="type">int</span>);<span class="comment">//实际上是X+int</span></span><br><span class="line">	<span class="built_in">X</span>(<span class="type">int</span>);</span><br><span class="line">&#125;;</span><br><span class="line"><span class="type">void</span> <span class="keyword">operator</span>+(X,X);<span class="comment">//X+x</span></span><br><span class="line"><span class="type">void</span> <span class="keyword">operator</span>+(X,<span class="type">double</span>);<span class="comment">//X+double</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="类运算符重载形式"><a href="#类运算符重载形式" class="headerlink" title="类运算符重载形式"></a>类运算符重载形式</h2><ul>
+<li><p>非静态成员运算符重载：以类成员形式重载的运算符参数比实际参数少一个，第1个参数是以this指针隐式传递的。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Complex</span>&#123;</span><br><span class="line">		<span class="type">double</span> real,image;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">		Complex <span class="keyword">operator</span>+(Complex b)&#123;……&#125;<span class="comment">//实际上是Complex+Complex，*this+b</span></span><br><span class="line">......</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>友元运算符重载：如果将运算符函数作为类的友元重载，它需要的参数个数就与运算符实际需要的参数个数相同。</p>
+</li>
+</ul>
+  <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Complex</span>&#123;</span><br><span class="line">……</span><br><span class="line">		<span class="keyword">friend</span> Complex <span class="keyword">operator</span>+(Complex a,Complex b);<span class="comment">//声明</span></span><br><span class="line"><span class="comment">//......</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//实际上就是Complex+Complex，a+b</span></span><br><span class="line">Complex  <span class="keyword">operator</span>+(Complex a,Complex b)&#123;……&#125;<span class="comment">//定义</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="重载一元运算符"><a href="#重载一元运算符" class="headerlink" title="重载一元运算符"></a>重载一元运算符</h2><ul>
+<li><p>一元运算符：只需要一个运算参数，如取地址运算符（&amp;）、负数（?）、自增加（++）等。</p>
+</li>
+<li><p>一元运算符常见调用形式如下，其中的@代表一元运算符，a代表操作数。</p>
+<ul>
+<li>隐式调用形式：@a 或 a@ ，@a代表前缀一元运算，如“++a”；a@表示后缀运算，如“a++”。</li>
+<li>显式调用一元运算符@：a.operator@()</li>
+</ul>
+</li>
+<li><p>一元运算符作为类成员函数重载时不需要参数，其形式如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">X</span>&#123;</span><br><span class="line">……</span><br><span class="line">		T <span class="keyword">operator</span>@()&#123;……&#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//T是运算符@的返回类型。从形式上看，作为类成员函数重载的一元运算符没有参数</span></span><br><span class="line"><span class="comment">//但实际上它包含了一个隐含参数，即调用对象的this指针。</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>前自增(减)与后自增(减)：C++编译器可以通过在运算符函数参数表中是否插入关键字int 来区分这两种方式</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//前缀</span></span><br><span class="line"><span class="keyword">operator</span> ++ ();</span><br><span class="line"><span class="keyword">operator</span> ++ (X &amp; x);<span class="comment">//这里的X代表其他的类型，可能有其他操作</span></span><br><span class="line"><span class="comment">//后缀</span></span><br><span class="line"><span class="keyword">operator</span> ++ (<span class="type">int</span>);</span><br><span class="line"><span class="keyword">operator</span> ++ (X &amp; x, <span class="type">int</span>);</span><br></pre></td></tr></table></figure></li>
+</ul>
+<h2 id="重载赋值运算符-x3D"><a href="#重载赋值运算符-x3D" class="headerlink" title="重载赋值运算符&#x3D;"></a>重载赋值运算符&#x3D;</h2><p>当以拷贝的方式初始化一个对象时，会调用拷贝构造函数；当给一个对象赋值时，会调用重载过的赋值运算符。</p>
+<p><strong>即使我们没有显式的重载赋值运算符，编译器也会以默认地方式重载它。默认重载的赋值运算符功能很简单，就是将原有对象的所有成员变量一一赋值给新对象，这和默认拷贝构造函数的功能类似。</strong></p>
+<p>对于简单的类，默认的赋值运算符一般就够用了，我们也没有必要再显式地重载它。但是当类持有其它资源时，例如动态分配的内存、打开的文件、指向其他数据的指针、网络连接等，默认的赋值运算符就不能处理了，我们必须显式地重载它，这样才能将原有对象的所有数据都赋值给新对象。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstdlib&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"><span class="comment">//变长数组类</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Array</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Array</span>(<span class="type">int</span> len);</span><br><span class="line">    <span class="built_in">Array</span>(<span class="type">const</span> Array &amp;arr);  <span class="comment">//拷贝构造函数</span></span><br><span class="line">    ~<span class="built_in">Array</span>();</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="type">int</span> <span class="keyword">operator</span>[](<span class="type">int</span> i) <span class="type">const</span> &#123; <span class="keyword">return</span> m_p[i]; &#125;  <span class="comment">//获取元素（读取）</span></span><br><span class="line">    <span class="type">int</span> &amp;<span class="keyword">operator</span>[](<span class="type">int</span> i)&#123; <span class="keyword">return</span> m_p[i]; &#125;  <span class="comment">//获取元素（写入）</span></span><br><span class="line">    Array &amp; <span class="keyword">operator</span>=(<span class="type">const</span> Array &amp;arr);  <span class="comment">//重载赋值运算符</span></span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">length</span><span class="params">()</span> <span class="type">const</span> </span>&#123; <span class="keyword">return</span> m_len; &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> m_len;</span><br><span class="line">    <span class="type">int</span> *m_p;</span><br><span class="line">&#125;;</span><br><span class="line">Array::<span class="built_in">Array</span>(<span class="type">int</span> len): <span class="built_in">m_len</span>(len)&#123;</span><br><span class="line">    m_p = (<span class="type">int</span>*)<span class="built_in">calloc</span>( len, <span class="built_in">sizeof</span>(<span class="type">int</span>) );</span><br><span class="line">&#125;</span><br><span class="line">Array::<span class="built_in">Array</span>(<span class="type">const</span> Array &amp;arr)&#123;  <span class="comment">//拷贝构造函数</span></span><br><span class="line">    <span class="keyword">this</span>-&gt;m_len = arr.m_len;</span><br><span class="line">    <span class="keyword">this</span>-&gt;m_p = (<span class="type">int</span>*)<span class="built_in">calloc</span>( <span class="keyword">this</span>-&gt;m_len, <span class="built_in">sizeof</span>(<span class="type">int</span>) );</span><br><span class="line">    <span class="built_in">memcpy</span>( <span class="keyword">this</span>-&gt;m_p, arr.m_p, m_len * <span class="built_in">sizeof</span>(<span class="type">int</span>) );</span><br><span class="line">&#125;</span><br><span class="line">Array::~<span class="built_in">Array</span>()&#123; <span class="built_in">free</span>(m_p); &#125;</span><br><span class="line"></span><br><span class="line">Array &amp;Array::<span class="keyword">operator</span>=(<span class="type">const</span> Array &amp;arr)&#123;  <span class="comment">//重载赋值运算符</span></span><br><span class="line">    <span class="keyword">if</span>( <span class="keyword">this</span> != &amp;arr)&#123;  <span class="comment">//判断是否是给自己赋值</span></span><br><span class="line">        <span class="keyword">this</span>-&gt;m_len = arr.m_len;</span><br><span class="line">        <span class="built_in">free</span>(<span class="keyword">this</span>-&gt;m_p);  <span class="comment">//释放原来的内存</span></span><br><span class="line">        <span class="keyword">this</span>-&gt;m_p = (<span class="type">int</span>*)<span class="built_in">calloc</span>( <span class="keyword">this</span>-&gt;m_len, <span class="built_in">sizeof</span>(<span class="type">int</span>) );</span><br><span class="line">        <span class="built_in">memcpy</span>( <span class="keyword">this</span>-&gt;m_p, arr.m_p, m_len * <span class="built_in">sizeof</span>(<span class="type">int</span>) );</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>operator&#x3D;() 的返回值类型为<code>Array &amp;</code>，这样不但能够<strong>避免在返回数据时调用拷贝构造函数</strong>，还能够达到<strong>连续赋值</strong>的目的。下面的语句就是连续赋值：arr4 &#x3D; arr3 &#x3D; arr2 &#x3D; arr1;</li>
+<li><code>if( this != &amp;arr)</code>语句的作用是<strong>「判断是否是给同一个对象赋值」</strong>：如果是，那就什么也不做；如果不是，那就将原有对象的所有成员变量一一赋值给新对象，并为新对象重新分配内存。</li>
+<li><code>return *this</code>表示返回当前对象（新对象）。</li>
+<li>operator&#x3D;() 的形参类型为<code>const Array &amp;</code>，这样不但<strong>能够避免在传参时调用拷贝构造函数</strong>，还能够<strong>同时接收 const 类型和非 const 类型的实参</strong>。</li>
+<li>赋值运算符重载函数除了能有对象引用这样的参数之外，也能有其它参数。但是<strong>其它参数必须给出默认值</strong>，例如：<code>Array &amp; operator=(const Array &amp;arr, int a = 100);</code></li>
+</ul>
+<h2 id="重载赋值运算符"><a href="#重载赋值运算符" class="headerlink" title="重载赋值运算符[]"></a>重载赋值运算符[]</h2><ul>
+<li><p>[ ]是一个二元运算符，其重载形式如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">X</span>&#123;</span><br><span class="line">……</span><br><span class="line">		X&amp; <span class="keyword">operator</span>[](<span class="type">int</span> n);<span class="comment">//调用：X[n]</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>重载[]需要注意的问题</p>
+<ul>
+<li>[]是一个二元运算符，其第1个参数是通过对象的this指针传递的，第2个参数代表数组的下标</li>
+<li>由于[]既可以出现在赋值符“&#x3D;”的左边，也可以出现在赋值符“&#x3D;”的右边，所以重载运算符[]时常<strong>返回引用</strong>。（既能作为左值赋值也能作为右值读取，如果不是引用，作为左值时函数只是返回了一个临时对象，赋值写入没用意义）</li>
+<li><strong>[]只能被重载为类的非静态成员函数，不能被重载为友元和普通函数</strong>。</li>
+</ul>
+</li>
+</ul>
+<h2 id="重载"><a href="#重载" class="headerlink" title="重载( )"></a>重载( )</h2><ul>
+<li><p>运算符( )是函数调用运算符，也能被重载。且<strong>只能被重载为类的成员函数</strong>。</p>
+</li>
+<li><p>运算符( )的重载形式如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">X</span>&#123;</span><br><span class="line">……</span><br><span class="line">		<span class="function">X&amp; <span class="title">operator</span><span class="params">( )</span><span class="params">(参数表)</span></span>;<span class="comment">//其中的参数表可以包括任意多个参数。</span></span><br><span class="line">&#125;；</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>运算符( )的调用形式如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">X Obj; <span class="comment">//对象定义</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">Obj</span>()(参数表); <span class="comment">//调用形式1</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">Obj</span>(参数表); <span class="comment">//调用形式2，普遍用这种形式</span></span><br></pre></td></tr></table></figure></li>
 </ul>
 
       
@@ -3659,12 +3771,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">93k</span>
+    <span title="站点总字数">96k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:24</span>
+    <span title="站点阅读时长">1:27</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
   </div>
