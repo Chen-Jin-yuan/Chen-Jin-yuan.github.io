@@ -1,3 +1,4 @@
+https://jysama.cn/2022/08/10/effectiveC++/
 https://jysama.cn/2022/08/08/c++lambda%E8%A1%A8%E8%BE%BE%E5%BC%8F/
 https://jysama.cn/2022/08/08/c++stringTOint/
 https://jysama.cn/2022/08/07/c++%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88/

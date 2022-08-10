@@ -28,7 +28,7 @@
 <meta property="og:description" content="导入先看一组类： 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768697071727374757677#include &lt;iostream&gt;#include &lt;mutex&amp;gt">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-08-07T13:12:13.610Z">
-<meta property="article:modified_time" content="2022-08-08T07:35:31.338Z">
+<meta property="article:modified_time" content="2022-08-10T04:12:27.894Z">
 <meta property="article:author" content="Jy">
 <meta name="twitter:card" content="summary">
 
@@ -200,7 +200,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-08-08 15:35:31" itemprop="dateModified" datetime="2022-08-08T15:35:31+08:00">2022-08-08</time>
+                <time title="修改时间：2022-08-10 12:12:27" itemprop="dateModified" datetime="2022-08-10T12:12:27+08:00">2022-08-10</time>
               </span>
 
           <br>
@@ -209,7 +209,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.7k</span>
+              <span>5.8k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -405,6 +405,7 @@
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// shape* -&gt; circle* 使用static_cast转换后,指针为空  与dynamic_cast相比,不安全</span></span><br><span class="line"><span class="function">shared_ptr&lt;shape&gt; <span class="title">sptr2</span><span class="params">(<span class="keyword">new</span> shape)</span></span>;</span><br><span class="line">shared_ptr&lt;circle&gt; sptr1 = <span class="built_in">static_pointer_cast</span>&lt;circle&gt;(sptr2);      <span class="comment">// 基类转子类</span></span><br><span class="line"></span><br><span class="line">cout &lt;&lt; <span class="string">&quot;use count of sptr1 is now &quot;</span> &lt;&lt; dptr1.<span class="built_in">use_count</span>() &lt;&lt; endl;    <span class="comment">// 0</span></span><br><span class="line">cout &lt;&lt; <span class="string">&quot;use count of sptr2 is now &quot;</span> &lt;&lt; dptr2.<span class="built_in">use_count</span>() &lt;&lt; endl;    <span class="comment">// 1</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// circle* -&gt; circle* 使用dynamic_cast转换后,指针不为空,此时资源被两者共同使用,引用计数为2</span></span><br><span class="line"><span class="function">shared_ptr&lt;shape&gt; <span class="title">sptr3</span><span class="params">(<span class="keyword">new</span> circle)</span></span>;</span><br><span class="line"><span class="comment">//    shared_ptr&lt;circle&gt; sptr3(new circle);     // 上面或者当前行,后面输出一样！</span></span><br><span class="line">shared_ptr&lt;circle&gt; sptr1_1 = <span class="built_in">static_pointer_cast</span>&lt;circle&gt;(sptr3);      <span class="comment">// 基类转子类</span></span><br><span class="line"></span><br><span class="line">cout &lt;&lt; <span class="string">&quot;use count of sptr1_1 is now &quot;</span> &lt;&lt; sptr1_1.<span class="built_in">use_count</span>() &lt;&lt; endl;    <span class="comment">// 2</span></span><br><span class="line">cout &lt;&lt; <span class="string">&quot;use count of sptr3 is now &quot;</span> &lt;&lt; sptr3.<span class="built_in">use_count</span>() &lt;&lt; endl;    <span class="comment">// 2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// circle* -&gt; circle* 使用static_cast转换后,指针不为空,此时资源被两者共同使用,引用计数为2 等价于dynamic_cast</span></span><br><span class="line"><span class="function">shared_ptr&lt;circle&gt; <span class="title">sptr3_1</span><span class="params">(<span class="keyword">new</span> circle)</span></span>;</span><br><span class="line">shared_ptr&lt;shape&gt; sptr2_1 = <span class="built_in">static_pointer_cast</span>&lt;shape&gt;(sptr3_1);      <span class="comment">// 子类转基类 上行转换,安全！</span></span><br><span class="line"></span><br><span class="line">cout &lt;&lt; <span class="string">&quot;use count of sptr2_1 is now &quot;</span> &lt;&lt; sptr2_1.<span class="built_in">use_count</span>() &lt;&lt; endl;    <span class="comment">// 2</span></span><br><span class="line">cout &lt;&lt; <span class="string">&quot;use count of sptr3_1 is now &quot;</span> &lt;&lt; sptr3_1.<span class="built_in">use_count</span>() &lt;&lt; endl;    <span class="comment">// 2</span></span><br></pre></td></tr></table></figure>
 
 <p>输出结果同上dynamic_cast，不同之处，在下行转换的时候(基类转子类)，是不安全的！</p>
+<p>还可以将non-const对象强制转换为const：<code>static_cast&lt;const A&amp;&gt;(*this)</code>：将本身（A&amp;）转换为const A&amp;。</p>
 <h2 id="const-cast"><a href="#const-cast" class="headerlink" title="const_cast"></a>const_cast</h2><p>去掉const属性：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> U&gt;</span></span><br><span class="line"><span class="function">shared_ptr&lt;T&gt; <span class="title">const_pointer_cast</span><span class="params">(</span></span></span><br><span class="line"><span class="params"><span class="function">        <span class="type">const</span> shared_ptr&lt;U&gt; &amp;other)</span> <span class="keyword">noexcept</span> </span>&#123;</span><br><span class="line">    T *ptr = <span class="built_in">const_cast</span>&lt;T *&gt;(other.<span class="built_in">get</span>());</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">shared_ptr</span>&lt;T&gt;(other, ptr);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -533,7 +534,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-count">13</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -570,12 +571,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">130k</span>
+    <span title="站点总字数">145k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">1:58</span>
+    <span title="站点阅读时长">2:12</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
   </div>
