@@ -190,10 +190,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2022-08-10 09:41:01 / 修改时间：22:56:41" itemprop="dateCreated datePublished" datetime="2022-08-10T09:41:01+08:00">2022-08-10</time>
+              <time title="创建时间：2022-08-10 09:41:01" itemprop="dateCreated datePublished" datetime="2022-08-10T09:41:01+08:00">2022-08-10</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-08-11 20:35:28" itemprop="dateModified" datetime="2022-08-11T20:35:28+08:00">2022-08-11</time>
+              </span>
 
           <br>
             <span class="post-meta-item" title="本文字数">
@@ -201,14 +207,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>15k</span>
+              <span>29k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>14 分钟</span>
+              <span>27 分钟</span>
             </span>
 
         </div>
@@ -220,7 +226,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>因为电子书只有图片扫描版的，因此所有记录都只能自己码字。</p>
+          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>因为电子书只有图片扫描版的，因此基本上都只能自己码字。</p>
 <p>我尽可能地详细叙述，但更多的是作为总结复习，在总结之上才进行补充。希望学习的朋友还是尽量看看原书。</p>
 <h1 id="条款01"><a href="#条款01" class="headerlink" title="条款01"></a>条款01</h1><blockquote>
 <p>视 c++ 为一个语言联邦。</p>
@@ -370,6 +376,7 @@
 <p>另外，如果成员变量是const或reference的，它们就必须使用初始化列表。因而很多时候最简单的做法就是总使用初始化列表。</p>
 <p>在初始化列表中，成员的初始化次序与初始化列表中的次序无关，真的的次序是成员变量在类中被声明的次序。这导致后声明的变量可以使用先声明的变量来初始化，反之不行。因此，也最好按声明的次序在初始化列表里初始化。</p>
 <p>初始化列表除了初始化成员变量，还初始化继承的基类，一般基类总是在最前面。现在，还剩下non-local static对象需要讨论。</p>
+<hr>
 <p>所谓static对象，其寿命从被构造出来直到程序结束为止，因此stack和heap-base对象都被排除。这种对象包括global对象、定义于namespace作用域内的对象、在class内、在函数内、以及在file作用域内被声明为static的对象。函数内的static对象称为local static对象（因为它们对函数而言是local的），其他对象称为non-local static对象。程序结束时static对象自动销毁，也即它们的析构函数会在main()结束时被自动调用。</p>
 <p>所谓编译单元，是指产出单一目标文件的那些源码，基本上它是单一源码文件加上其所含入的头文件。</p>
 <p>我们关心的问题涉及至少两个源码文件。如果某编译单元内的某个non-local static对象的初始化动作使用了另一个编译单元内的某个non-local static对象，它所用到的这个对象可能尚未被初始化。</p>
@@ -617,6 +624,395 @@
 <li>copying函数应确保复制”对象内的所有成员变量“及”所有base class 成分“；</li>
 <li>不要尝试以某个copying函数实现另一个copying函数。应将共同技能放进第三个函数中，并由两个copying函数共同调用。</li>
 </ul>
+</blockquote>
+<h1 id="条款13"><a href="#条款13" class="headerlink" title="条款13"></a>条款13</h1><blockquote>
+<p>以对象管理资源</p>
+</blockquote>
+<p>假设我们使用一个用来塑模投资行为（例如股票、债券等）的程序库，各种各样的投资类型继承自root class Investment。进一步假设这个库使用了通过一个 factory 函数为我们提供特定 Investment 对象的方法：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Investment</span> &#123; ... &#125;; <span class="comment">// “投资类型”继承体系中的root class</span></span><br><span class="line"></span><br><span class="line"><span class="function">Investment* <span class="title">createInvestment</span><span class="params">()</span></span>; <span class="comment">/*返回指向Investment继承体系内的动态分配对象的指针。调用者有责任删除它。这里为了简化，刻意不写参数*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//当 createInvestment 函数返回的对象不再使用时，由调用者负责删除它。下面的函数 f 来履行以下职责：</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">Investment *pInv = <span class="built_in">createInvestment</span>(); <span class="comment">// 调用factory对象</span></span><br><span class="line">... </span><br><span class="line"><span class="keyword">delete</span> pInv; <span class="comment">// 释放pInv所指对象</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以下几种情形会造成 f 可能无法删除它得自 createInvestment 的投资对象：</p>
+<ul>
+<li>“…” 部分的某处有一个提前出现的 return 语句，控制流就无法到达 delete 语句；</li>
+<li>对 createInvestment 的使用和删除在一个循环里，而这个循环以一个 continue 或 goto 语句提前退出；</li>
+<li>“…” 中的一些语句可能抛出一个异常，控制流不会再到达那个 delete。</li>
+</ul>
+<p>单纯依赖“f总是会执行其delete语句”是行不通的，因为代码可能会在时间渐渐过去后被其他人修改、维护。</p>
+<p>为了确保 createInvestment 返回的资源总能被释放，我们需要将资源放入对象中，当控制流离开f，这个对象的析构函数会自动释放那些资源。将资源放到对象内部，我们可以依赖 C++ 的“析构函数自动调用机制”确保资源被释放。</p>
+<p>许多资源都是动态分配到堆上的，并在单一区块或函数内使用，且应该在控制流离开那个块或函数的时候释放。标准库的 auto_ptr 正是为这种情形而设计的。auto_ptr 是一个类似指针的对象（智能指针），它的析构函数自动对其所指对象调用 delete。下面就是如何使用 auto_ptr 来预防 f 的潜在的资源泄漏：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line"><span class="function">std::auto_ptr&lt;Investment&gt; <span class="title">pInv</span><span class="params">(createInvestment())</span></span>; <span class="comment">// 调用工厂函数</span></span><br><span class="line">... <span class="comment">// 一如以往地使用pInv</span></span><br><span class="line">&#125; <span class="comment">// 经由auto_ptr的析构函数自动删除pInv</span></span><br></pre></td></tr></table></figure>
+
+<p>这个简单的例子示范了“以对象管理资源”的两个关键想法：</p>
+<ul>
+<li>获得资源后应该立即放进管理对象内。</li>
+<li>管理对象使用它们的析构函数确保资源被释放。</li>
+</ul>
+<p>auto_ptr 和 tr1::shared_ptr 都在它们的析构函数中使用 delete，而不是 delete []。这就意味着将 auto_ptr 或 tr1::shared_ptr 用于动态分配的数组是个馊主意。C++ 中没有可用于动态分配数组的类似 auto_ptr 或 tr1::shared_ptr 这样的东西，甚至在 TR1 中也没有。那是因为 vector 和 string 几乎总是能代替动态分配数组。</p>
+<p>如果你手动释放资源（例如，使用 delete，而不使用资源管理类），你就是在自找麻烦。像 auto_ptr 和 tr1::shared_ptr 这样的预制的资源管理类通常会使本条款的建议变得容易，但有时你所使用的资源是目前这些预制的类无法妥善管理的，你就需要精心打造自己的资源管理类。</p>
+<p>记住：</p>
+<blockquote>
+<ul>
+<li>为防止资源泄露，请使用RAII对象，它们在构造函数中获得资源并在析构函数中释放资源。</li>
+<li>两个常被使用的RAII classes 分别是tr1::shared_ptr和auto_ptr。前者通常是较佳选择 ，因为其copy行为比较直观。若选择auto_ptr，复制动作会使被复制物指向null。</li>
+</ul>
+</blockquote>
+<h1 id="条款14"><a href="#条款14" class="headerlink" title="条款14"></a>条款14</h1><blockquote>
+<p>在资源管理类中小心copying行为。</p>
+</blockquote>
+<p>如果一个RAII对象被复制，会发生什么？</p>
+<p>在上一个条款之中，提到了“资源获得的时机就是初始化时机”（Resource Acquisition Is Initialization（RAII）），并且说明了auto_ptr和tr1::shared_ptr如何在heap-based的资源上作用的。但是，并不是所有的资源都是“heap-based”的，对于这种资源，上述的这两种指类指针对象就不再适合作为资源管理者了。于是，我们需要建立自己的资源管理类，</p>
+<p>举个例子，加入使用C API函数处理类型为Mutex的互斥器对象（mutex objects），共有lock和unlock两个函数可以使用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Lock</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">explict <span class="title">Lock</span><span class="params">(Mutex* pm)</span> : mutexPtr(pm)</span></span><br><span class="line"><span class="function">    &#123;</span> <span class="built_in">lock</span>(mutexPtr); &#125;   <span class="comment">//获得资源</span></span><br><span class="line">    ~<span class="built_in">Lock</span>() ( <span class="built_in">unlock</span>(mutexPtr); )   <span class="comment">//释放资源</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    Mutex *mutexPtr;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在使用Lock时，符合RAII的标准：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Mutex m;        <span class="comment">//定义所需要的互斥器</span></span><br><span class="line">...</span><br><span class="line">&#123;               <span class="comment">//建立一个区块用来定义critical section</span></span><br><span class="line"><span class="function">Lock <span class="title">ml</span><span class="params">(&amp;m)</span></span>;    <span class="comment">//锁定互斥器</span></span><br><span class="line">    ...         <span class="comment">//执行critical section内的操作</span></span><br><span class="line">&#125;               <span class="comment">//在区块结尾处，会自动解除互斥器的锁定</span></span><br></pre></td></tr></table></figure>
+
+<p>这样的操作的是没有问题，但是如果此时Lock对象被复制：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Lock <span class="title">ml1</span><span class="params">(&amp;m)</span></span>;       <span class="comment">//锁定m</span></span><br><span class="line"><span class="function">Lock <span class="title">ml2</span><span class="params">(m1l)</span></span>;      <span class="comment">//将ml1复制到ml2之上</span></span><br></pre></td></tr></table></figure>
+
+<p>这个时候，对于这种情况，一般有两种选择：</p>
+<ul>
+<li>禁止复制。因为许多时候，允许RAII被复制并不合理。如果复制动作对于RAII对象不够合理，就应该禁止。实现这种禁止，即用到了条款6中所说的办法：将copying操作声明为private。</li>
+<li>对底层资源使用“引用计数法”。有的时候，我们希望保持着资源，直到它的最后一个使用者（某个对象）被销毁。在这种情况下，复制RAII对象时，应该将资源的“被引用数”进行递增。tr1::shared_ptr就是如此。</li>
+</ul>
+<hr>
+<p>通常只要内含一个tr1::shared_ptr成员变量，RAII classes就可以实现reference-counting copying行为（使用默认的拷贝构造函数即可，因为这时会对成员变量调用其拷贝构造）。假如前面的Lock想要使用reference counting，它可以直接去改变mutexPtr的类型即可：将其从Mutex*改为tr1::shared_ptr&lt; Mutex &gt;。</p>
+<p>但是，需要注意的是，tr1::shared_ptr的默认行为为：当引用次数为0时，删除其所指物。删除操作并不是我们想要的，当我们使用一个Mutex，我们要做的释放动作是解除锁定而并非删除。</p>
+<p>因此，tr1::shared_ptr是允许定义所谓的“删除器（deleter）”的，这是一个函数或者函数对象（function object），当引用的次数为0时被调用（这个功能并不存在与auto_ptr中，它总是将其指针删除）。这个删除器对于tr1::shared_ptr是第二个参数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Lock</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">explict <span class="title">Lock</span><span class="params">(Mutex* pm)</span>   <span class="comment">//以某个Mutex初始化shared_ptr</span></span></span><br><span class="line"><span class="function">      : mutexPtr(pm, unlock)  //并且unlock函数作为删除器</span></span><br><span class="line"><span class="function">      &#123;</span></span><br><span class="line">          <span class="built_in">lock</span>(mutexPtr.<span class="built_in">get</span>());   </span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">//注意！没有析构函数！</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">std::tr1::shared_ptr&lt;Mutex&gt; mutexPtr;   <span class="comment">//使用shared_ptr代替raw pointer   </span></span><br><span class="line">&#125;；</span><br></pre></td></tr></table></figure>
+
+<p>在条款5中说过，无论是编译器自动生成的、还是用户自定义的，class 析构函数都会自动调用其non-static成员变量（在这里是mutexPtr）的析构函数，使计数器减1。而mutexPtr的析构函数会在互斥器的引用计数为0时自动调用tr1::shared_ptr的删除器（在这里是unlock）。也就是说，之所以没有声明析构函数，完全只是依赖了编译器生成的缺省行为。</p>
+<p>总之，对RAII对象的复制基本就两种情况：</p>
+<ul>
+<li>复制底部资源。可以是多个对象指向一份资源（引用计数）；也可以深度拷贝，对这个资源多生成一份副本（从内存来看是不同的）。</li>
+<li>转移底部资源的拥有权。确保永远只有一个RAII对象指向一个原始资源。</li>
+</ul>
+<p>记住：</p>
+<blockquote>
+<ul>
+<li>复制RAII对象必须一并复制它所管理的资源，所以资源的copying行为决定RAII对象的copying行为。</li>
+<li>普遍而常见的RAII class copying 行为是：抑制copying、施行引用计数法。不过其他行为也都可能被实现。</li>
+</ul>
+</blockquote>
+<h1 id="条款15"><a href="#条款15" class="headerlink" title="条款15"></a>条款15</h1><blockquote>
+<p>在资源管理类中提供对原始资源的访问。</p>
+</blockquote>
+<p>所谓资源管理类（resource-managing classes），可以有效的帮助我们去预防资源泄漏。但是，虽然在理想的情况下，我们希望所有的资源与对象之间的互动都依赖于这样的资源管理类，仍有许多的API会直接去涉及原始资源（raw resource）。</p>
+<p>举个例子，在前面的条款13中，我们可以得知：使用智能指针auto_ptr或者tr1::shared_ptr来保存factory函数例如createInvestment的调用结果：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">std::<span class="function">tr1::shared_ptr&lt;Investment&gt; <span class="title">pInv</span><span class="params">(createInvestment())</span></span>;<span class="comment">//pInv本身是shared_ptr，内部的成员指针才是Investment的</span></span><br></pre></td></tr></table></figure>
+
+<p>如果我们希望用某个函数来处理Investment对象：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">dayHeld</span><span class="params">(<span class="type">const</span> Investment* pi)</span></span>;      <span class="comment">//返回投资的天数</span></span><br></pre></td></tr></table></figure>
+
+<p>此时，如果我们想要这样去调用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> days = <span class="built_in">daysHeld</span>(pInv);      <span class="comment">//错误！！</span></span><br></pre></td></tr></table></figure>
+
+<p>这样做是错误的，因为daysHeld需要的是Investment的指针，而并非此时传递给它的类型为tr1::shared_ptr的对象。</p>
+<p>因此，此时需要一个函数，可以将RAII class对象转换为其所内含的原始资源（即tr1::shared_ptr -&gt; Investment*）<br>有两种方法可以实现这样的功能：</p>
+<ul>
+<li><p>显式转换：tr1::shared_ptr和auto_ptr都提供了一个get成员函数，用来执行显式转换。也就是说，可以返回智能指针内部的原始资源（的复件）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> days = <span class="built_in">daysHeld</span>(pInv.<span class="built_in">get</span>());    <span class="comment">//成功的将pInv内的原始指针传给了daysHeld</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>隐式转换：就像几乎所有的智能指针一样，这些对类指针对象都重载了指针取值（pointer dereferencing）操作符（operator -&gt;和operator *），它们允许隐式转换至底部的原始指针：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Investment</span> &#123;    <span class="comment">//investment继承体系的根类</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">isTaxFree</span> <span class="params">()</span> <span class="type">const</span></span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">Investment* <span class="title">createInvestment</span><span class="params">()</span></span>;     <span class="comment">//factory函数</span></span><br><span class="line"></span><br><span class="line">std::<span class="function">tr1::shared_ptr&lt;Investment&gt; <span class="title">pi1</span><span class="params">(createInvestment())</span></span>; <span class="comment">//令tr1::shared_ptr管理一笔资源</span></span><br><span class="line"><span class="type">bool</span> taxable1 = !(pi1-&gt;<span class="built_in">isTaxFree</span>());  <span class="comment">//经由operator-&gt;访问资源</span></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="function">std::auto_ptr&lt;Investment&gt; <span class="title">pi2</span><span class="params">(createInvestment())</span></span>;  <span class="comment">//令auto_ptr管理一笔资源</span></span><br><span class="line"><span class="type">bool</span> taxable2 = !((*pi2).<span class="built_in">isTaxFree</span>());   <span class="comment">//经由operator*访问资源</span></span><br><span class="line">... </span><br></pre></td></tr></table></figure>
+
+<p>因为有时需要必须取得RAII内部的原始资源，一般的做法是提供一个隐式转换函数（operator A()，A的目标类型）。举个例子，对于用于字体的RAII class（对于C API而言，字体是一种原始数据结构、即原始资源）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">FontHandle <span class="title">getFont</span><span class="params">()</span></span>;       <span class="comment">//这是一个C API</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">releaseFont</span><span class="params">(FontHandle fh)</span></span>;    <span class="comment">//来自同一组的C API</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Font</span> &#123;    <span class="comment">//RAII class</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Font</span><span class="params">(FontHandle fh)</span> : f(fh)   //获得资源，采用pass-by-value的方法</span></span><br><span class="line"><span class="function">    &#123;</span> &#125;</span><br><span class="line">    ~<span class="built_in">Font</span>() &#123; <span class="built_in">releaseFont</span>(f); &#125;    <span class="comment">//释放资源</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    FontHandle f;     <span class="comment">//原始（raw）字体资源</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>假设有大量与字体相关的C API，它们处理的都是FontHandle，那么“将Font对象转换为FontHandle”将会是一件非常繁琐的事情。因此，Font class可以提供一个显式的转换函数，就像上面的get一样：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Font</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ...</span><br><span class="line">    <span class="function">FontHandle <span class="title">get</span><span class="params">()</span> <span class="type">const</span> </span>&#123; <span class="keyword">return</span> f; &#125;    <span class="comment">//显式转换函数</span></span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//然而，每次用户想要使用API时，都必须要调用get：</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">changeFontSize</span><span class="params">(FontHandle f, <span class="type">int</span> newFontSize)</span></span>; <span class="comment">//C API</span></span><br><span class="line"><span class="function">Font <span class="title">f</span><span class="params">(getFont())</span></span>;</span><br><span class="line"><span class="type">int</span> newFontSize;</span><br><span class="line">...</span><br><span class="line"><span class="built_in">changeFontSize</span>(f.<span class="built_in">get</span>(), newFontSize);   <span class="comment">//明确地将Font转换为FontHandle</span></span><br></pre></td></tr></table></figure>
+
+<p>另外一种办法则是令Font提供隐式转换函数，转换的类型FontHandle：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Font</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="keyword">operator</span> <span class="title">FontHandle</span><span class="params">()</span> <span class="type">const</span>   <span class="comment">//隐式转换函数</span></span></span><br><span class="line"><span class="function">    </span>&#123; <span class="keyword">return</span> f; &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//这样，在调用C API时，就非常的方便了：</span></span><br><span class="line"><span class="function">Font <span class="title">f</span><span class="params">(getFont())</span></span>;</span><br><span class="line"><span class="type">int</span> newFontSize;</span><br><span class="line">...</span><br><span class="line"><span class="built_in">changeFontSize</span>(f, newFontSize);   <span class="comment">//将Font隐式地转换为FontHandle</span></span><br></pre></td></tr></table></figure>
+
+<p>但是，这种隐式转换却会增加错误的发生机会。例如，当我们需要使用Font时，却会意外的创建一个FontHandle：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Font <span class="title">f1</span><span class="params">(getFont())</span></span>;</span><br><span class="line">...</span><br><span class="line">FontHandle f2 = f1; <span class="comment">//注意！这里的本意是拷贝一个Font对象，但是因为隐式转换的原因（f2前面的FontHandle），将f1给隐式转换为了FontHandle，然后才执行了复制操作</span></span><br></pre></td></tr></table></figure>
+
+<p>在上面的程序中，FontHandle由Font对象f1进行管理，但是这个FontHandle也可以直接通过f2进行取得。这样就会引发问题，例如当f1被销毁时，字体会被释放，而f2因此会成为“虚吊的”（dangle）。</p>
+</li>
+</ul>
+<hr>
+<p>综上所说，是否应该提供一个显式转换函数（例如get成员函数）将RAII class转换为其底部资源，还是提供隐式转换，取决于其执行的具体功能，具体说来：</p>
+<ul>
+<li>让接口容易被正确使用，不易被误用。因此，通常显式转换函数如get就是比较好的方法，因为显式转换将非故意的类型转换的发生的可能性最小化了。</li>
+<li>然而有时候隐式类型转换所带来的自然用法也能取得方便。</li>
+</ul>
+<p>最后，值得说明的是，从RAII class 获取原始资源并没有什么矛盾（你可能认为这样的类封装是失败的）。关于RAII class，它们并不是为了封装，而是为了确保：资源释放，这一行为，一定会发生。</p>
+<p>记住：</p>
+<blockquote>
+<ul>
+<li>APIs往往要求访问原始资源，所以每一个RAII class 应该提供一个“取得其所管理之资源”的办法。</li>
+<li>对原始资源的访问可能经由显式转换（比如一个get成员函数）或隐式转换（重载operator A()）。一般而言显式转换比较安全，但隐式转换对客户比较方便。</li>
+</ul>
+</blockquote>
+<h1 id="条款16"><a href="#条款16" class="headerlink" title="条款16"></a>条款16</h1><blockquote>
+<p>成对使用new和delete时要采取相同形式。</p>
+</blockquote>
+<p>这章内容比较简单，就是“单一对象”和“对象数组”的问题。</p>
+<ul>
+<li>当你使用delete[]时，实际上是告诉编译器我要delete的对象是一个数组，让它得知内存中存在一个“数组大小记录”，这样才能释放完全空间。</li>
+<li>如果对象不是数组但依然用了delete[]，就会导致编译器在解释内存空间时误认为某一项是“数组大小”，然后错误地释放空间。</li>
+<li>最后，不要对数组形式做typedef动作，因为这会导致你new时不容易发现到底有没有[]，从而导致delete出错。</li>
+</ul>
+<p>记住：</p>
+<blockquote>
+<p>如果你在new表达式中使用[]，必须在相应的delete表达式中也使用[]。如果你在new表达式中不使用[]，一定不要在相应的delete表达式中使用[]。</p>
+</blockquote>
+<h1 id="条款17"><a href="#条款17" class="headerlink" title="条款17"></a>条款17</h1><blockquote>
+<p>以独立语句将newed对象置入智能指针。</p>
+</blockquote>
+<p>首先，假设我们有个函数用来显示处理函数的优先权，另一个函数用来在某动态分配所得的Widget上进行某些带有优先权的处理：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">priority</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">processWidget</span><span class="params">(std::tr1::shared_ptr&lt;Widget&gt; pw, <span class="type">int</span> priority)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>根据“以对象管理资源”的条款，processWidget使用智能指针来对动态分配得到的Widget进行管理（即tr1::shared_ptr）</p>
+<p>当我们试图调用processWidget：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">processWidget</span>(<span class="keyword">new</span> Widget, <span class="built_in">priority</span>());<span class="comment">//这种情况会调用拷贝构造函数</span></span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是，此时是不能通过编译的。tr1::shared_ptr构造函数需要一个原始指针（raw pointer），但是这个构造函数是一个explicit构造函数，无法进行隐式转换。因此，需要将“newWidget”的原始指针转换为processWidget所需要的tr1::shared_ptr，因此需要这样写：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">processWidget</span>(std::tr1::<span class="built_in">shared_ptr</span>&lt;Widget&gt; (<span class="keyword">new</span> Widget), <span class="built_in">priority</span> ());<span class="comment">//先使用构造函数，再拷贝构造</span></span><br></pre></td></tr></table></figure>
+
+<p>但是，虽然此时我们使用了“对象管理式资源”，仍然会产生资源的泄漏！</p>
+<p>在编译器产生一个processWidget调用代码之前，首先需要确定把即将被传递的各个实参是什么。在上面的代码中，第二个实参较为简单，只是一个对priority函数的调用；而第一个实参则较为复杂，对于这个实参std::tr1::shared_ptr&lt; Widget &gt; (new Widget)，它有两部分组成：</p>
+<ul>
+<li>执行“new Widget”表达式</li>
+<li>调用tr1::shared_ptr构造函数</li>
+</ul>
+<p>因此，在调用processWidget之前，编译器需要创建代码，做以下三件事情：</p>
+<ul>
+<li>调用priority</li>
+<li>执行“new Widget”</li>
+<li>调用tr1::shared_ptr构造函数</li>
+</ul>
+<p>对于这三件事情，对于C++而言，“new Widget”的执行次序一定是在“tr1::shared_ptr构造函数被调用”之前，因为这个表达式的结果还需要被传递作为tr1::shared_ptr构造函数的一个实参。但是对于priority的调用而言，则是可以在第一、第二或者第三执行。假如选择在第二位执行，可以得到这样的执行序列：</p>
+<ul>
+<li>1.执行“new Widget”</li>
+<li>2.调用priority</li>
+<li>3.调用tr1::shared_ptr构造函数</li>
+</ul>
+<p>因此，对于上面这个执行次序，如果priority的调用产生异常，此时“new Widget”返回的指针将会遗失，因为它尚未被置入tr1::shared_ptr内，而这个智能指针的存在就是为了防止资源泄漏的。因此，在对processWidget的调用过程中是会引发资源泄漏，因为在“资源被创建（经由“new Widget”）”和“资源被替换为资源管理对象”这两个时间点之间可能会被发生干扰。</p>
+<p>为了避免这样的问题，解决办法为分离语句。即分别写出：</p>
+<ul>
+<li><p>1.创建WIdget</p>
+</li>
+<li><p>2.将它置入一个智能指针之中，然后再将这个智能指针传给processWidget：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">std::<span class="function">tr1::shared_ptr&lt;Widget&gt; <span class="title">pw</span><span class="params">(<span class="keyword">new</span> Widget)</span></span>;    <span class="comment">//在单独的语句内以智能指针存储newed所得对象</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">process</span>(pw <span class="built_in">priority</span>());     <span class="comment">//这个调用动作就不会造成泄漏</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>之所以可以解决这个问题，是因为编译器对于“跨越语句的各项操作”没有重新排列的自由（只有在语句内它才拥有这个自由）。在上述修改后的代码中，“new Widget”表达式以及“对tr1::shared_ptr构造函数的调用”这两个动作，与“对priority的调用”是分隔开的，在不同的语句之中，因此编译器就不能再它们之间任意选择执行次序。</p>
+<p>记住：</p>
+<blockquote>
+<p>以独立语句将newed对象存储于（置入）智能指针内。如果不这样做，一旦异常被抛出（在资源对象产生到置入资源管理对象之间，产生异常的话），有可能导致难以察觉的资源泄漏。</p>
+</blockquote>
+<h1 id="条款18"><a href="#条款18" class="headerlink" title="条款18"></a>条款18</h1><blockquote>
+<p>让接口容易被正确使用，不易被误用。</p>
+</blockquote>
+<p>想要开发出一个“容易被正确使用，不易被误用”的接口，首先就需要明白使用这样的接口可能会产生怎样的错误？举个例子，假设我们为一个用来表示日期的class设计构造函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Date</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Date</span>(<span class="type">int</span> month, <span class="type">int</span> day, <span class="type">int</span> year);</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>虽然这样定义的构造函数乍一看没什么问题，但其实在调用时，却可能会产生以下两个错误：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//错误的传递参数次序：</span></span><br><span class="line"><span class="function">Date <span class="title">d</span><span class="params">(<span class="number">30</span>, <span class="number">3</span>, <span class="number">1995</span>)</span></span>;    <span class="comment">//把月和日传递反了</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//传递一个无效的月份或天数：</span></span><br><span class="line"><span class="function">Date <span class="title">d</span><span class="params">(<span class="number">2</span>, <span class="number">30</span>, <span class="number">1995</span>)</span></span>;    <span class="comment">//二月有30号？？</span></span><br></pre></td></tr></table></figure>
+
+<p>想要解决这样的问题，类型系统（type system）是一个关键办法。我们使用外覆类型（wrapper type）来区别这样的天数、月份和年份，然后在Date构造函数中使用这些类型：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">Day</span> &#123;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Day</span><span class="params">(<span class="type">int</span> d)</span> : val(d) &#123;</span> &#125;</span><br><span class="line">    <span class="type">int</span> val;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Month</span> &#123;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Month</span><span class="params">(<span class="type">int</span> m)</span> : val(m) &#123;</span> &#125;</span><br><span class="line">    <span class="type">int</span> val;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">Year</span> &#123;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Year</span><span class="params">(<span class="type">int</span> y)</span> : val(y) &#123;</span> &#125;</span><br><span class="line">    <span class="type">int</span> val;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Date</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Date</span>(<span class="type">const</span> Month&amp; m, <span class="type">const</span> Day&amp; d, <span class="type">const</span> Year&amp; y);</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">Date <span class="title">d</span><span class="params">(<span class="number">30</span>, <span class="number">3</span>, <span class="number">1995</span>)</span></span>;        <span class="comment">//错误的类型！</span></span><br><span class="line"><span class="function">Date <span class="title">d</span><span class="params">(Day(<span class="number">30</span>), Month(<span class="number">3</span>), Year(<span class="number">1995</span>))</span></span>;  <span class="comment">//错误的类型！</span></span><br><span class="line"><span class="function">Date <span class="title">d</span><span class="params">(Month(<span class="number">3</span>), Day(<span class="number">30</span>), Year(<span class="number">1995</span>))</span></span>;  <span class="comment">//正确了！</span></span><br></pre></td></tr></table></figure>
+
+<p>当我们确定好类型的定义，限制它们的取值也是非常重要。比如，月份的取值只能是1-12。方法之一，就是利用enum表现月份。不过enum并不具备类型安全性。因此，比较安全的解法是预先定义所有有效的Months：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Month</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">static</span> Month <span class="title">Jan</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> <span class="built_in">Month</span>(<span class="number">1</span>): &#125;  <span class="comment">//函数，返回有效的月份（本质是构造函数）</span></span><br><span class="line">    <span class="type">static</span> Month <span class="built_in">Feb</span>() &#123; <span class="keyword">return</span> <span class="built_in">Month</span>(<span class="number">2</span>); &#125; <span class="comment">//“以函数替换对象”，请回忆条款4中non-local static对象问题</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="type">static</span> Month <span class="title">Dec</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> <span class="built_in">Month</span>(<span class="number">12</span>);&#125;</span><br><span class="line">    ...    <span class="comment">//其他的成员函数</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Month</span><span class="params">(<span class="type">int</span> m)</span>   <span class="comment">//阻止生成新的月份</span></span></span><br><span class="line"><span class="function">    ...</span></span><br><span class="line"><span class="function">&#125;</span>;</span><br><span class="line"></span><br><span class="line"><span class="function">Date <span class="title">d</span><span class="params">(Month::Mar(), Day(<span class="number">30</span>), Year(<span class="number">1995</span>))</span></span>;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>预防错误的另一种方法，限制类型内什么事情可以做，什么不可以做。常见的限制是加上const。在前面的条款3中，就对const的作用进行了说明。</li>
+<li>“让types容易被正确使用，不容易被误用”，进一步表现为：除非有更好的理由，否则应该尽量让我们定义的types的行为与内置的types一致。一旦有怀疑，就拿int类型当范本。比如a*b这个表达式不允许赋值。</li>
+<li>避免无端的与内置类型不兼容，真正的理由是为了提供行为一致的接口。STL容器的接口就比较一致，这就使得它们非常容易被使用。例如，每个STL容器都有size函的成员函数，它会告诉调用者目前容器内的对象的个数。</li>
+</ul>
+<hr>
+<p>如果一个接口要求使用者必须记住某些事情，就会有着“不正确使用”的倾向，因为使用者很有可能忘记做这件事。举个例子，在条款13中所说的factory函数，它会返回一个指针指向Investment继承体系内的一个动态分配的对象：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Investment* <span class="title">createInvestment</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>为了避免资源的泄漏，createInvestment返回的指针最终必须被删除，但是在这个过程中，至少可能会出现两个错误机会：（1）没有删除指针。（2）删除同一个指针超过一次。</p>
+<p>在条款13中提供的解决办法是将createInvestment的返回值存储在一个智能指针内，于是delete的责任就赋予了智能指针。不过，使用者如果忘记使用智能指针，则会出现问题。因此，较为理想的接口就是令factory函数返回一个智能指针：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//这实际上就是强迫使用者将返回值存储在一个tr1::shared_ptr内，</span></span><br><span class="line"><span class="comment">//因此几乎就消除了忘记删除底部Investment对象的可能性。</span></span><br><span class="line">std::<span class="function">tr1::shared_ptr&lt;Investment&gt; <span class="title">createInvestment</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>假设class的设计，希望“从createInvestment取得Investment*指针”，将该指针传递给一个名为getRidOfInvestment的函数，而不是直接delete。那么这样设计的一个接口（上面那个）却会产生新的错误：企图使用错误的资源析构机制——即使用delete替换getRidOfInvestment。</p>
+<p>对于这个问题，一个解决办法则是：返回一个“将getRidOfInvestment绑定为删除器（deleter）”的tr1::shared_ptr。</p>
+<p>在前面的条款中有讲到过，tr1::shared_ptr提供的构造函数有两个实参：</p>
+<ul>
+<li>（1）被管理的指针</li>
+<li>（2）引用次数变成0时被调用的“删除器”</li>
+</ul>
+<p>由此可得，我们可以创建一个null tr1::shared_ptr并以getRidOfInvestment作为其删除器：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//试图创建一个null shared_ptr并携带一个自定的编译器</span></span><br><span class="line">std::<span class="function">tr1::shared_ptr&lt;Investment&gt; <span class="title">pInv</span><span class="params">(<span class="number">0</span>, getRidOfInvestment)</span></span>;</span><br><span class="line"><span class="comment">//错误的形式！无法通过编译！！</span></span><br></pre></td></tr></table></figure>
+
+<p>上面的代码是不能通过编译的，因为tr1::shared_ptr构造函数的第一个参数必须是个指针，而0不是指针。因此，转型（cast）可以解决这样的问题：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//正确地创建一个null shared_ptr并携带一个自定的编译器</span></span><br><span class="line">std::<span class="function">tr1::shared_ptr&lt;Investment&gt; <span class="title">pInv</span><span class="params">(<span class="keyword">static_cast</span>&lt;Investment*&gt;(<span class="number">0</span>), getRidOfInvestment)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>因此，如果我们想要实现createInvestment使它返回一个tr1::shared_ptr并夹带getRidOfInvestment函数作为删除器，代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">std::<span class="function">tr1::shared_ptr&lt;Investment&gt; <span class="title">createInvestment</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::<span class="function">tr1::shared_ptr&lt;Investment&gt; <span class="title">retVal</span><span class="params">(<span class="keyword">static_cast</span>&lt;Investment*&gt;(<span class="number">0</span>), getRidOfInvestment)</span></span>;</span><br><span class="line">    retVal = ...;    <span class="comment">//令retVal指向正确的对象</span></span><br><span class="line">    <span class="keyword">return</span> retVal;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当然，如果被管理的原始指针可以在建立智能指针之前先确定下来，那么将原始指针传给构造函数会比先初始化为null再赋值更好。</p>
+<hr>
+<p>tr1::shared_ptr的一个优秀的性质是：它会自动的使用它的“每个指针专属的删除器”这样的性质消除了一个潜在的可能错误：“cross-DLL problem”。</p>
+<p>这个问题发生于“对象在动态链接库（DLL）中被创建，但却在另一个DLL内被delete销毁”。在一些平台上，这一类“跨DLL的new&#x2F;delete成对运用”会导致运行期间错误。</p>
+<p>然而tr1::shared_ptr就没有这个问题，因为它默认的删除器是来自“tr1::shared_ptr诞生所在的那个那个DLL”的delete。举个例子来说，如果Stock派生自Investment，而createInvestment的实现如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">std::<span class="function">tr1::shared_ptr&lt;Investment&gt; <span class="title">createInvestment</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> std::tr1::<span class="built_in">shared_ptr</span>&lt;Investment&gt;(<span class="keyword">new</span> Stock);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>返回的那个tr1::shared_ptr可被传递给任何其他的DLLs，无需在意“cross-DLL problem”。这个指向Stock的tr1::shared_ptr会追踪记录“当Stock的引用次数变成0时该调用的那个DLL’s delete”。</p>
+<p>记住：</p>
+<blockquote>
+<ul>
+<li>好的接口很容易被正确使用，不容易被误用。你应该在你的所有接口中努力达成这些性质。</li>
+<li>“促使正确使用”的办法包括接口的一致性，以及与内置类型的行为兼容。</li>
+<li>“阻止误用”的办法包括建立新类型、限制类型上的操作，束缚对象值，以及消除客户的资源管理责任。</li>
+<li>tr1::shared_ptr支持定制型删除器。这可防范DLL问题，可被用来自动解除互斥锁（见条款14）等等。</li>
+</ul>
+</blockquote>
+<h1 id="条款19"><a href="#条款19" class="headerlink" title="条款19"></a>条款19</h1><blockquote>
+<p>设计class犹如设计type。</p>
+</blockquote>
+<p>当我们定义一个新的class时，就相当于定义了一个新的type。</p>
+<p>如何设计一个高效的classes？主要面对以下的问题：</p>
+<ul>
+<li><strong>新type的对象应该如何被创建和销毁？</strong>这会影响到class的构造函数和构造函数以及内存分配函数和释放函数（operator new, operator new[], operator deleter和operator deleter[]）。</li>
+<li><strong>对象的初始化和对象的赋值应该有什么差别？</strong>这个问题的答案，决定了构造函数和赋值（assignment）操作符的行为，以及它们之间的差异。需要注意的是，“初始化”和“赋值”是不同的，因为他们应用于不同的函数调用。（详见条款4）</li>
+<li><strong>新type的对象如果被passed by value（以值传递），会怎样？</strong>需要记住的是，copy构造函数用来定义一个type的pass-by-value应该如何去实现。</li>
+<li><strong>什么是type的“合法值”？</strong>对class的成员变量来说，通常某些只有数值集是有效的。那些数值集决定了class需要维护的约束条件（invariants），因此，也就决定了成员函数（特别是构造函数、赋值操作符以及所谓的“setter”函数）必须要进行错误检查工作。</li>
+<li><strong>创建的新type需要配合某一个继承图系（inheritance graph）么？</strong>如果继承来自某些既有的classes，那么设计的新classes就受到了束缚，特别是受到“它们的函数是virtual或者non-virtual”的影响。如果我们定义的class允许其他class去继承，这样会影响我们所声明的函数——尤其是析构函数——是否为virtual（详见条款7）。</li>
+<li><strong>创建的新type需要怎样的转换？</strong>如果我们希望允许类型T1可以被隐式地转换为类型T2，就必须在class T1中写一个类型转换函数（operator T2）或者在class T2内写一个non-explicit-one-argument（可被单一实参调用）的构造函数。如果我们只允许explicit构造函数存在，就必须写出专门负责执行转换操作的函数。</li>
+<li><strong>什么样的操作符和函数对新创建的type而言是合理的？</strong>针对这个问题，需要决定class声明哪些函数，在这些函数中，哪些应该是member 函数，哪些则不是。</li>
+<li><strong>什么样的标准函数应该被驳回？</strong>这些函数是必须声明为private的函数（详见条款7）。</li>
+<li><strong>谁来取用新的type成员？</strong>这个问题可以帮助我们决定哪些成员应该是public、protected和private；同时也可以帮我们决定哪一个class&#x2F;function应该是friends，以及将它们嵌套到另一个之内是否合理。</li>
+<li><strong>什么是新type的“未声明接口”（undeclared interface）？</strong>它会对效率、异常安全性以及资源运用（例如多任务锁定和动态内存）提供何种保证？你在这些方面提供的保证将为你的class实现代码加上相应的约束条件。</li>
+<li><strong>创建的新的type有多么一般化？</strong>如果说我们所需要的不是一个type，而是需要一整个types家族，那么我们就需要定义一个新的class template。</li>
+<li><strong>真的需要定义一个新的type吗？</strong>如果只是定义新的derived class以便既有的class添加功能，那么单纯的定义一个或多个non-member函数或者template，或许更能达到目标。</li>
+</ul>
+<p>记住：</p>
+<blockquote>
+<p>class的设计就是type的设计。在定义一个新type之前，请确定你已经考虑过本条款覆盖的所有讨论主题。</p>
+</blockquote>
+<h1 id="条款20"><a href="#条款20" class="headerlink" title="条款20"></a>条款20</h1><blockquote>
+<p>宁以pass-by-reference-to-const替换pass-by-value。</p>
+</blockquote>
+<p>在一般的情况下，默认情况中C++会以by value的方式传递对象自（或来自）函数。除非我们去特别指定，否则函数参数都是以实际实参的复件为初值，而调用端获得的也是函数返回值的一个复件。这些复件是由对象的copy构造函数生成的，这可能会造成pass-by-value称为较为费事儿的操作。</p>
+<p>对于下面这个例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Person</span>();</span><br><span class="line">    <span class="keyword">virtual</span> ~<span class="built_in">Person</span>();</span><br><span class="line">    ...</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    std::string name;</span><br><span class="line">    std::string address;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Student</span>:<span class="keyword">public</span> Person &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Student</span>();</span><br><span class="line">    !<span class="built_in">Student</span>();</span><br><span class="line">    ...</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    std::string schoolName;</span><br><span class="line">    std::string schoolAddress;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这时，我们调用函数validateStudent，该函数需要一个Student实参（by value）并返回它是否是有效的：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">validateStudent</span><span class="params">(Student s)</span></span>;   <span class="comment">//函数以by value的形式接受学生</span></span><br><span class="line">Student white;    <span class="comment">//定义一个学生white</span></span><br><span class="line"><span class="type">bool</span> whiteIsOk = <span class="built_in">validateStudent</span>(white);   <span class="comment">//调用函数</span></span><br></pre></td></tr></table></figure>
+
+<p>当我们执行上面的代码时：首先，Student的copy构造函数会被调用，以white为蓝本将s进行初始化。同时，当validateStudent返回s时会被销毁。因此，对于此函数而言，参数的传递成本是：</p>
+<ul>
+<li>一次Student copy构造函数调用</li>
+<li>一次Student析构函数调用</li>
+</ul>
+<p>但是！这还不算完！Student对象内有两个string对象，因此每次构造一个Student对象也就构造了两个string对象。此外，Student对象继承自Person对象，因此，每次每次构造Student对象是也必须构造一个Person对象。一个Person对象又有两个string对象，因此，每一次Person的构造动作也要承担两个string对构造动作。</p>
+<p>于是，最终结果是：以by value的形式传递一个Student对象会调用一次Student对象会导致调用一次Student copy构造函数、一次Person copy构造函数、四次string copy构造函数。因此，当函数内的Student复件被销毁时，每一个构造函数调用动作都会对应一个析构函数调用动作。以by-value方式传递一个Student对象，</p>
+<p>总体成本是：六次构造函数 和 六次析构函数。</p>
+<hr>
+<p>这是一个非常大的代价了。想要回避这样的大代价的一个办法就是pass by reference-to-const：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">validateStudent</span><span class="params">(<span class="type">const</span> Student&amp; s)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>这样的传递方法，效率要高的多：没有构造函数或者析构函数被调用，因为没有任何新对象被创建。</p>
+<p>在上面修改后的代码，参数const是非常重要的。因为在原先的validateStudent中参数是以by-value的形式进行传递的，因此变相的就告诉我们这个传递的参数是收到保护的，函数内绝不会对传入的Student进行任何的更改，能更改也只是对Student的复件进行修改。</p>
+<p>于是，Student以by reference方式的传递，将它声明为const是必要的，使得确保传递的Student不至于被修改。</p>
+<hr>
+<p>以by reference方式传递参数，也可以避免slicing（对象切割）问题。</p>
+<p>当一个derived class对象以by value方式进行传递，并被视为一个base class对象，base class的copy构造函数会被调用，然而：“造成此对象的行为像一个derived class对象”的那些特质化的特征全部被切割掉了，仅仅留下了一个base class对象。造成这种情况的原因是，这个对象正是base class构造函数进行建立的，然而这种现象是我们一定不希望看到的。</p>
+<p>举个例子，假设我们定义一组class，用来实现一个图形窗口系统：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Window</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ...</span><br><span class="line">    <span class="function">std::string <span class="title">name</span><span class="params">()</span> <span class="type">const</span></span>;       <span class="comment">//返回窗口的名称</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">display</span><span class="params">()</span> <span class="type">const</span></span>;   <span class="comment">//显示窗口和其中的内容</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">WindowWithScrollBars</span> : <span class="keyword">public</span> Window &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">display</span><span class="params">()</span> <span class="type">const</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>对于所有的Window对象，都有一个名称，我们可以通过name函数获取。所有的窗口显示，我们也可以通过display函数来进行实现。<br>其中，display函数是一个virtual函数，这就意味着base class Window对象的显示方式和WindowWithScrollBars对象的显示方式是不同的。</p>
+<p>而当我们希望写一个函数去打印窗口的名称，然后显示该窗口，下面的写法是错误的：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">printNameAndDisply</span><span class="params">(Window w)</span>   <span class="comment">//不正确，参数可能会被切割</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::cout&lt;&lt;w.<span class="built_in">name</span>();</span><br><span class="line">    w.<span class="built_in">display</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当我们调用上述的参数并向其传递一个WindowWithScrollBars对象时：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">WindowWithScrollBars wwsb;</span><br><span class="line"><span class="built_in">printNameAndDisplay</span>(wwsb);</span><br></pre></td></tr></table></figure>
+
+<p>此时，参数w会被构造称为一个Window对象，因为它是pass by value的。于是，使得wwsb“之所以是一个WindowWithScrollBars对象”的所有特征都会被切割掉，简而言之：在printNameAndDisplay函数内不管是传递过来的对象时什么类型，参数w就像是一个Window对象。<br>因此，在printNameAndDisplay函数内调用display调用的总是Window::display，而绝不会是WindowWithScrollBars::display。</p>
+<p>解决切割（slicing）问题的办法，就是以by reference-to-const方式传递w：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">void</span> printNameAndDisplay（<span class="type">const</span> Window&amp; w）</span><br><span class="line">&#123;</span><br><span class="line">    std::cout&lt;&lt;w.<span class="built_in">name</span>();</span><br><span class="line">    w.<span class="built_in">display</span>();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此时，传进来的窗口的是什么类型，w就表现出那种类型。</p>
+<hr>
+<p>当我们观察C++编译器底层时，可以看到reference往往是以指针来实现的，因此：pass by reference通常意味传递的是指针。</p>
+<ul>
+<li>根据这点，如果我们需要传递的对象属于内置类型（例如int），pass by value往往比pass by reference的效率更高。对于这一点，也同样适用于STL的迭代器和函数对象，因为习惯上，它们都被设计为passed by value。</li>
+<li>因为内置类型都相当的小，所以可能有人就会认为，所有小型types都可以使用pass-by-value，甚至当它们是用户自定义的class也一样，这个结论是错误的！因为对象小不代表copy构造函数的代价就不高。有许多对象——包括大多数STL容器——内含的东西只比一个指针多一些而已，但是复制这种对象却需要承担“赋值这些指针所指的每一样东西”。因此，代价也是非常昂贵的。</li>
+<li>即使小型对象拥有并不昂贵的copy构造函数，在效率上也可能有差距。某些编译器在对待“内置类型”和“用户自定义类型”的态度上截然不同，即使两者拥有相同的底层表述（underlying representation）。</li>
+<li>“小型的用户自定义类型不一定通过pass-by-value”的另一个理由是：作为一个用户自定义类型，其大小容易变化。一个type目前虽然比较小，将来却可能会变得比较大，因为其内部实现可能会变化。</li>
+</ul>
+<p>总而言之，其他小型的type包括自定义的class，对象本身小不代表copy代价不高；就算代价不高，编译器的不同对待也会导致效率也比较低；并且这些自定义类型大小是容易变化的。</p>
+<p>一般而言，我们可以认为：</p>
+<ul>
+<li>pass-by-value代价不高的唯一对象就是内置类型和STL的迭代器和函数对象。</li>
+</ul>
+<p>以至于所其他其他的任何东西，都应当尽量以pass-by-reference-to-const替换pass-by-value。</p>
+<p>记住：</p>
+<blockquote>
+<ul>
+<li>尽量以 pass-by-reference-to-const 替换pass-by-value。前者通常比较高效，并可避免切割问题。</li>
+<li>以上规则并不适用于内置类型、STL的迭代器和函数对象。对它们而言，pass-by-value 往往比较适当。</li>
+</ul>
+</blockquote>
+<h1 id="条款21"><a href="#条款21" class="headerlink" title="条款21"></a>条款21</h1><blockquote>
+<p>必须返回对象时，别妄想返回其reference。</p>
+</blockquote>
+<p>在上一章中我们了解到，pass-by-value有很多效率方面的问题，因此pass-by-reference可能是一种比较好的方法。<br>但是！盲目的用reference可能会造成这样的错误：开始传递一些references指向其实并不存在的对象！</p>
+<p>举个例子，对于一个用以表现有理数（rational number）的class，内含一个函数用来计算一个有理数的乘积：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Rational</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Rational</span>(<span class="type">int</span> numerator = <span class="number">0</span>, <span class="type">int</span> denominator = <span class="number">1</span>);</span><br><span class="line">    <span class="comment">//分子numerator和分母denominator</span></span><br><span class="line">    ...</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> n, d;</span><br><span class="line">    <span class="keyword">friend</span></span><br><span class="line">      <span class="type">const</span> Rational</span><br><span class="line">        <span class="keyword">operator</span>* (<span class="type">const</span> Rational&amp; lhs, </span><br><span class="line">                   <span class="type">const</span> Rational&amp; rhs);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在上面的代码中，这个版本的operator 是以by value的方法返回其计算结果——一个rational对象。对于这样的返回方法，代价如何？<br>假如说我们进行修改，使用reference进行传递，就不需要付出代价了。</p>
+<p>但是：所谓的reference，只是一个名称，代表着某个既有对象。即，它一定是某物的另一个名称。</p>
+<p>就像上面的operator* ，如果他返回一个reference，那么后者一定指向某个既有的Rational对象，内含两个Rational对象的乘积。因此，我们不能期望这样一个内含乘积的Rational对象在调用operator* 之前就存在。也就是说：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Rational <span class="title">a</span><span class="params">(<span class="number">1</span>, <span class="number">2</span>)</span></span>;       <span class="comment">//a = 1/2</span></span><br><span class="line"><span class="function">Rational <span class="title">b</span><span class="params">(<span class="number">3</span>, <span class="number">5</span>)</span></span>;       <span class="comment">//b = 3/5</span></span><br><span class="line">Rational c = a * b;     <span class="comment">//c应该是3/10</span></span><br></pre></td></tr></table></figure>
+
+<p>期望“原本就存在一个值为3&#x2F;10的Rational对象”并不合理。如果operator* 要返回一个reference指向这个数值，它就必须自己创建这个Rational对象！</p>
+<hr>
+<p>一般来说，函数创建新对象有两种方法：</p>
+<ul>
+<li>在stack空间创建</li>
+<li>在heap空间创建</li>
+</ul>
+<p>如果我们定义一个local变量，就是在stack空间创建对象。根据这个策略，尝试写一下operator*：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> Rational&amp; <span class="keyword">operator</span>* ( <span class="type">const</span> Rational&amp; lhs,</span><br><span class="line">                            <span class="type">const</span> Rational&amp; rhs)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="function">Rational <span class="title">result</span><span class="params">(lhs.n * rhs.n, lhs.d * rhs.d)</span></span>;  <span class="comment">//使用了构造函数实现，但是非常糟糕！</span></span><br><span class="line">    <span class="keyword">return</span> result;</span><br><span class="line">&#125;                       </span><br></pre></td></tr></table></figure>
+
+<p>对于上面这个方法，是一个比较糟糕的办法！因为我们的目标是避免使用构造函数，而result却必须用构造函数的方法来进行构造。更严重的是，这个函数返回一个reference指向result，但是result是一个local对象，而local对象在函数退出之前就被销毁了。因此，此时operator* 所指向的Rational，是一个已经被销毁的Rational！于是，此时将会陷入“无定义行为”的困境。</p>
+<p>简单总结一句话：任何函数如果返回一个reference指向某个local对象，都会产生必然的错误！</p>
+<hr>
+<p>因此，我们考虑在heap内构造一个对象，并返回reference指向它。<br>Heap-based对象是由new创建的，因此我们需要写一个heap-based operator*，形式如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> Rational&amp; <span class="keyword">operator</span>* ( <span class="type">const</span> Rational&amp; lhs,</span><br><span class="line">                            <span class="type">const</span> Rational&amp; rhs)</span><br><span class="line">&#123;</span><br><span class="line">    Rational* result = <span class="keyword">new</span> <span class="built_in">Rational</span>(lhs.n * rhs.n, lhs.n * rhs.d);    <span class="comment">//更为！糟糕的写法！</span></span><br><span class="line">    <span class="keyword">return</span> *result;</span><br><span class="line">&#125;                       </span><br></pre></td></tr></table></figure>
+
+<p>在上面的代码中，我们依然需要付出一个“构造函数调用”的代价，因为分配获得的内存将以一个适当的构造函数完成初始化动作。<br>然而，此时还有一个更为严重问题：谁应该为被new出来的对象实施delete？</p>
+<p>即使我们十分谨慎，还是会在合情合理的使用下，造成内存泄漏：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Rational w, x,y,z;</span><br><span class="line">w = x * y * z;          <span class="comment">//与operator*(operator*(x, y), z)相同</span></span><br></pre></td></tr></table></figure>
+
+<p>在上面的代码中，同一个语句调用了两次operator*，因此使用了两次new，因此也就需要两次delete。但是，并没有合理的办法让operator*的使用者进行哪些delete调用，因为没有合理的办法让他们取得operator* 返回的references背后隐藏的那个指针。</p>
+<p>这势必会造成内存泄漏！</p>
+<hr>
+<p>无论是on-the-stack，还是on-the-heap的做法，都因为对operator* 返回的结果调用构造函数而产生了问题，而最开始的目标就是避免如此的构造函调用动作！于是，另一个想法则是基于：</p>
+<ul>
+<li>让operator* 返回的reference指向一个被定义于函数内部的static Rational对象。</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> Rational&amp; <span class="keyword">operator</span>* ( <span class="type">const</span> Rational&amp; lhs,</span><br><span class="line">                            <span class="type">const</span> Rational&amp; rhs)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">static</span> Rational result;    <span class="comment">//还是很糟糕！定义static对象，该函数将返回它的reference</span></span><br><span class="line">    result = ... ;             <span class="comment">//将lhs乘以rhs，并将结果置于result之内</span></span><br><span class="line">    <span class="keyword">return</span> result; </span><br><span class="line">&#125;   </span><br></pre></td></tr></table></figure>
+
+<p>上面的代码之所以糟糕，是因为如果对于以下的使用代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">bool</span> <span class="keyword">operator</span>==(<span class="type">const</span> Rational&amp; lhs,</span><br><span class="line">                <span class="type">const</span> Rational&amp; rhs);   <span class="comment">//一个针对Rational而写的operator==</span></span><br><span class="line">Rational a, b, c, d;</span><br><span class="line"><span class="comment">///</span></span><br><span class="line"><span class="keyword">if</span> ((a * b) == (c * d))</span><br><span class="line">&#123;</span><br><span class="line">    乘积相等所执行的动作</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">    乘积不等所执行的动作</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>出现的问题是：无论a, b, c, d的值是多少，表达式((a * b) &#x3D;&#x3D; (c * d))总是被判定为True！</p>
+<p>让我们将上述的if判断语句写成等价的函数形式：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (<span class="keyword">operator</span>==(<span class="keyword">operator</span>*(a, b), <span class="keyword">operator</span>*(c, d))</span><br></pre></td></tr></table></figure>
+
+<p>上面这句代码，可以看到在operator==被调用之前，已经有两个operator* 被调用了，并且每一个都返回reference指向operator* 内部定义的static Rational对象。因此，operator==被要求将“operator* 内的static Rational对象值” 拿来和“operator* 内的static Rational对象值” 进行比较，这自然就是相等了。</p>
+<p>值得注意的是，两次的operator*的调用确实是改变了static Rational对象值，但是由于他们都是返回reference，因此调用段看到的永远是static Rational对象的“现值”。</p>
+<p>另外，如果创建一个static array保存这些static对象呢？一方面这个数组的大小很难选择（太小不够用，太大降低效率），一方面每个对象都会在函数第一次调用时构造完成，调用n个构造函数和最后有n个析构函数。接着，为了把结果值写入array，又要调用赋值操作，很多时候赋值操作相当于一个拷贝构造和一个析构函数，情况就更恶劣了。</p>
+<hr>
+<p>于是，一个“必须返回新对象”的函数的正确写法是：直接让这个函数返回一个新对象。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">incline <span class="type">const</span> Rational <span class="keyword">operator</span>* ( <span class="type">const</span> Rational&amp; lhs, <span class="type">const</span> Raitonal&amp; rhs)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Rational</span>(lhs.n * rhs.n, lhs.d * rhs.n);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当然了，operator*返回值的构造成本和析构成本是必须支出的，但是这只是获得正确行为的小小代价。</p>
+<p>总之：</p>
+<ul>
+<li>当我们必须在“返回一个reference和返回一个object”之间进行选择时，选择行为正确的那一个。</li>
+</ul>
+<p>记住：</p>
+<blockquote>
+<p>绝不要返回pointer或reference指向一个local stack对象，或返回reference指向一个heap-allocated对象。或返回pointer或reference指向一个local static对象而有可能同时需要多个这样的对象。条款4已经为“在单线程环境中合理返回reference 指向一个local static对象”提供了一份设计实例。</p>
 </blockquote>
 
       
@@ -5561,12 +5957,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">145k</span>
+    <span title="站点总字数">160k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:12</span>
+    <span title="站点阅读时长">2:25</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
   </div>
