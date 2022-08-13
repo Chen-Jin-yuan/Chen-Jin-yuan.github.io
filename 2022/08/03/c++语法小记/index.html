@@ -28,7 +28,7 @@
 <meta property="og:description" content="常对象在 C++ 中，const 也可以用来修饰对象，称为常对象。一旦将对象定义为常对象之后，就只能调用类的 const 成员（包括 const 成员变量和 const 成员函数）了。 定义常对象的语法和定义常量的语法类似： 12const  class  object(params);class const object(params);  当然你也可以定义 const 指针： 12const">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-08-03T02:10:09.648Z">
-<meta property="article:modified_time" content="2022-08-10T07:49:58.292Z">
+<meta property="article:modified_time" content="2022-08-13T13:54:21.114Z">
 <meta property="article:author" content="Jy">
 <meta name="twitter:card" content="summary">
 
@@ -200,7 +200,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-08-10 15:49:58" itemprop="dateModified" datetime="2022-08-10T15:49:58+08:00">2022-08-10</time>
+                <time title="修改时间：2022-08-13 21:54:21" itemprop="dateModified" datetime="2022-08-13T21:54:21+08:00">2022-08-13</time>
               </span>
 
           <br>
@@ -822,7 +822,7 @@
 
 <h2 id="函数声明后面加throw"><a href="#函数声明后面加throw" class="headerlink" title="函数声明后面加throw()"></a>函数声明后面加throw()</h2><p>C++函数后面加关键字throw(<em>something</em>)限制，是对这个函数的<strong>异常安全作出限制</strong>；这是一种异常规范，只会出现在声明函数时，表示这个函数可能抛出任何类型的异常。</p>
 <ul>
-<li>void fun() throw();      &#x2F;&#x2F;表示fun函数不允许抛出任何异常，即fun函数是异常安全的。</li>
+<li>void fun() throw();      &#x2F;&#x2F;表示fun函数不允许抛出任何异常，即fun函数是异常安全的，一旦异常，将是意想不到的严重错误。</li>
 <li>void fun() throw(…);    &#x2F;&#x2F;表示fun函数可以抛出任何形式的异常。</li>
 <li>void fun() throw(exceptionType);    &#x2F;&#x2F; 表示fun函数只能抛出exceptionType类型的异常。</li>
 </ul>
@@ -830,10 +830,10 @@
 <ul>
 <li>void GetTag() throw(int);                     &#x2F;&#x2F; 表示只抛出int类型异常</li>
 <li>void GetTag() throw(int，char);         &#x2F;&#x2F; 表示抛出int，char类型异常</li>
-<li>void GetTag() throw();                         &#x2F;&#x2F; 表示不会抛出任何类型异常</li>
+<li>void GetTag() throw();                         &#x2F;&#x2F; 表示不会抛出任何类型异常，一旦异常，将是意想不到的严重错误</li>
 <li>void GetTag() throw(…);                      &#x2F;&#x2F; 表示抛出任何类型异常</li>
 </ul>
-<p>void GetTag() throw(int); 表示只抛出int类型异常,并不表示一定会抛出异常，但是一旦抛出异常只会抛出int类型，如果抛出非int类型异常，调用unexsetpion()函数，退出程序。</p>
+<p>void GetTag() throw(int); 表示只抛出int类型异常，并不表示一定会抛出异常，但是一旦抛出异常只会抛出int类型，如果抛出非int类型异常，调用unexsetpion()函数，退出程序。</p>
 <h2 id="来自C-之父Bjarne-Stroustrup的建议"><a href="#来自C-之父Bjarne-Stroustrup的建议" class="headerlink" title="来自C++之父Bjarne Stroustrup的建议"></a>来自C++之父Bjarne Stroustrup的建议</h2><ul>
 <li>当局部的控制能够处理时，不要使用异常； </li>
 <li>使用“资源分配即初始化”技术去管理资源； </li>
@@ -1315,12 +1315,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">160k</span>
+    <span title="站点总字数">177k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:25</span>
+    <span title="站点阅读时长">2:41</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
   </div>
