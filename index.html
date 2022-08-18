@@ -198,7 +198,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-08-16 23:55:19" itemprop="dateModified" datetime="2022-08-16T23:55:19+08:00">2022-08-16</time>
+                <time title="修改时间：2022-08-18 21:48:57" itemprop="dateModified" datetime="2022-08-18T21:48:57+08:00">2022-08-18</time>
               </span>
 
           <br>
@@ -207,14 +207,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>84k</span>
+              <span>108k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1:17</span>
+              <span>1:38</span>
             </span>
 
         </div>
@@ -226,8 +226,285 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>因为电子书只有图片扫描版的，因此基本上都只能自己码字。</p>
-<p>我尽可能地详细叙述，但更多的是作为总结复习，在总结之上才进行补充。希望学习的朋友还是尽量看看原书。</p>
+          <h1 id="目录-amp-索引"><a href="#目录-amp-索引" class="headerlink" title="目录&amp;索引"></a>目录&amp;索引</h1><ul>
+<li>条款01：<strong>视 c++ 为一个语言联邦。</strong><ul>
+<li>c++高效编程守则视状况而变化，取决于你使用c++的哪个部分。</li>
+</ul>
+</li>
+<li>条款02：<strong>尽量以const，enum，inline 替换 #define。</strong><ul>
+<li>对于单纯常量，最好以cosnt对象或enum替换#defines；</li>
+<li>对于形似函数的宏（macros），最好改用inline函数替换#define。</li>
+</ul>
+</li>
+<li>条款03：<strong>尽可能使用const。</strong><ul>
+<li>将某些东西声明为const可帮助编译器侦测出错误用法。const可被施加于任何作用域内的对象、函数参数、函数返回类型、成员函数本体。</li>
+<li>编译器强制实施bitwise constness，但你编写程序时应该使用“概念上的常量性”（conceptual constness）。</li>
+<li>当const和non-const成员函数有着实质等价的实现时，令non-const版本调用const版本可避免代码重复。</li>
+</ul>
+</li>
+<li>条款04：<strong>确定对象被使用前已先被初始化。</strong><ul>
+<li>为内置型对象进行手工初始化，因为c++不保证初始化它们。</li>
+<li>构造函数最好使用成员初值列（初始化列表），而不要在构造函数本体内使用赋值操作。初值列列出的成员变量，其排列次序应该和它们在class中的声明次序相同。</li>
+<li>为免除“跨编译单元之初始化次序”问题，请以local static对象替换non-local static对象。</li>
+</ul>
+</li>
+<li>条款05：<strong>了解c++默默编写并调用哪些函数。</strong><ul>
+<li>编译器可以暗自为class创建默认构造函数、拷贝构造函数、赋值操作符以及析构函数。</li>
+</ul>
+</li>
+<li>条款06：<strong>若不想使用编译器自动生成的函数，就该明确拒绝。</strong><ul>
+<li>为驳回编译器自动提供的机能，可将相应的成员函数声明为private并且不予实现。使用像Uncopyable这样的base class也是一种做法。</li>
+<li>附：在c++11以后，可以用delete修饰函数，这是一种更好的方法。</li>
+</ul>
+</li>
+<li>条款07：<strong>为多态基类声明virtual析构函数。</strong><ul>
+<li>polymorphic（带多态性质的）base classes应该声明一个virtual析构函数。如果class带有任何virtual函数，它就应该拥有一个virtual析构函数</li>
+<li>classes的设计目的如果不是作为base classes使用，或不是为了具备多态性，就不应该声明virtual析构函数。</li>
+<li>纯虚的析构函数必须给出定义。</li>
+</ul>
+</li>
+<li>条款08：<strong>别让异常逃离析构函数。</strong><ul>
+<li>析构函数绝对不要吐出异常。如果一个被析构函数调用的函数可能抛出异常，析构函数应该捕捉任何异常，然后吞下它们（不传播）或结束程序。</li>
+<li>如果客户需要对某个操作函数运行期间抛出的异常做出反应，那么class应该提供一个普通函数（而非在析构函数中）执行该操作。</li>
+</ul>
+</li>
+<li>条款09：<strong>绝不在构造和析构过程中调用virtual函数。</strong><ul>
+<li>在构造和析构期间不要调用virtual函数，因为这类调用从不下降至派生类（比起当前执行构造函数和析构函数的那层）。</li>
+</ul>
+</li>
+<li>条款10：*<em>令 operator&#x3D; 返回一个reference to <em>this。</em></em><ul>
+<li>令 operator&#x3D; 返回一个reference to *this。</li>
+</ul>
+</li>
+<li>条款11：<strong>在 operator&#x3D; 中处理“自我赋值”。</strong><ul>
+<li>确保当对象自我赋值时 operator&#x3D; 有良好行为。其中技术包括比较“来源对象”和“”目标对象“的地址、精心周到的语句顺序、以及copy-and-swap。</li>
+<li>确定任何函数如果操作一个以上的对象，而其中多个对象是同一个对象时，其行为仍然正确。</li>
+</ul>
+</li>
+<li>条款12：<strong>复制对象时勿忘其每一个部分。</strong><ul>
+<li>copying函数应确保复制”对象内的所有成员变量“及”所有base class 成分“；</li>
+<li>不要尝试以某个copying函数实现另一个copying函数。应将共同技能放进第三个函数中，并由两个copying函数共同调用。</li>
+</ul>
+</li>
+<li>条款13：<strong>以对象管理资源。</strong><ul>
+<li>为防止资源泄露，请使用RAII对象，它们在构造函数中获得资源并在析构函数中释放资源。</li>
+<li>两个常被使用的RAII classes 分别是tr1::shared_ptr和auto_ptr。前者通常是较佳选择 ，因为其copy行为比较直观。若选择auto_ptr，复制动作会使被复制物指向null。</li>
+</ul>
+</li>
+<li>条款14：<strong>在资源管理类中小心copying行为。</strong><ul>
+<li>复制RAII对象必须一并复制它所管理的资源，所以资源的copying行为决定RAII对象的copying行为。</li>
+<li>普遍而常见的RAII class copying 行为是：抑制copying、施行引用计数法。不过其他行为也都可能被实现。</li>
+</ul>
+</li>
+<li>条款15：<strong>在资源管理类中提供对原始资源的访问。</strong><ul>
+<li>APIs往往要求访问原始资源，所以每一个RAII class 应该提供一个“取得其所管理之资源”的办法。</li>
+<li>对原始资源的访问可能经由显式转换（比如一个get成员函数）或隐式转换（重载operator A()）。一般而言显式转换比较安全，但隐式转换对客户比较方便。</li>
+</ul>
+</li>
+<li>条款16：<strong>成对使用new和delete时要采取相同形式。</strong><ul>
+<li>如果你在new表达式中使用[]，必须在相应的delete表达式中也使用[]。如果你在new表达式中不使用[]，一定不要在相应的delete表达式中使用[]。</li>
+</ul>
+</li>
+<li>条款17：<strong>以独立语句将newed对象置入智能指针。</strong><ul>
+<li>以独立语句将newed对象存储于（置入）智能指针内。如果不这样做，一旦异常被抛出（在资源对象产生到置入资源管理对象之间，产生异常的话），有可能导致难以察觉的资源泄漏。</li>
+</ul>
+</li>
+<li>条款18：<strong>让接口容易被正确使用，不易被误用。</strong><ul>
+<li>好的接口很容易被正确使用，不容易被误用。你应该在你的所有接口中努力达成这些性质。</li>
+<li>“促使正确使用”的办法包括接口的一致性，以及与内置类型的行为兼容。</li>
+<li>“阻止误用”的办法包括建立新类型、限制类型上的操作，束缚对象值，以及消除客户的资源管理责任。</li>
+<li>tr1::shared_ptr支持定制型删除器。这可防范DLL问题，可被用来自动解除互斥锁（见条款14）等等。</li>
+</ul>
+</li>
+<li>条款19：<strong>设计class犹如设计type。</strong><ul>
+<li>class的设计就是type的设计。在定义一个新type之前，请确定你已经考虑过本条款覆盖的所有讨论主题。</li>
+</ul>
+</li>
+<li>条款20：<strong>宁以pass-by-reference-to-const替换pass-by-value。</strong><ul>
+<li>尽量以 pass-by-reference-to-const 替换pass-by-value。前者通常比较高效，并可避免切割问题。</li>
+<li>以上规则并不适用于内置类型、STL的迭代器和函数对象。对它们而言，pass-by-value 往往比较适当。</li>
+</ul>
+</li>
+<li>条款21：<strong>必须返回对象时，别妄想返回其reference。</strong><ul>
+<li>绝不要返回pointer或reference指向一个local stack对象，或返回reference指向一个heap-allocated对象。或返回pointer或reference指向一个local static对象而有可能同时需要多个这样的对象。条款4已经为“在单线程环境中合理返回reference 指向一个local static对象”提供了一份设计实例。</li>
+</ul>
+</li>
+<li>条款22：<strong>将成员变量声明为private。</strong><ul>
+<li>切记将成员变量声明为private。这可赋予用户访问数据的一致性、可细微划分访问控制、允诺约束条件获得保证，并提供class作者以充分的实现弹性。</li>
+<li>protected并不比public更具封装性。</li>
+</ul>
+</li>
+<li>条款23：<strong>宁以non-member&amp;non-friend替换member函数。</strong><ul>
+<li>宁可拿non-member non-friend函数替换member函数。这样做可以增加封装性、包裹弹性和机能扩充性。</li>
+<li>附：大量的便利函数可以使用相同的命名空间而放在不同的头文件里，这样用户可以根据自己对功能的需求使用头文件，减少编译相依性。其中该有个核心的头文件，提供核心便利函数以及类的实现。</li>
+</ul>
+</li>
+<li>条款24：<strong>若所有参数皆需类型转换，请为此采用non-member函数。</strong><ul>
+<li>如果你需要为某个函数的所有参数（包括this指针所指的哪个隐喻参数）进行类型转换，那么这个函数必须是个non-member。</li>
+<li>附：因为隐式转换需要匹配参数列，对于成员函数，第一个参数是*this，使得可能不能匹配转换。</li>
+</ul>
+</li>
+<li>条款25：<strong>考虑写出一个不抛异常的swap函数。</strong><ul>
+<li>当std::swap对你的类型效率不高时，提供一个swap成员函数，并确定这个函数不抛出异常。</li>
+<li>如果你提供一个member swap，也该提供一个non-member swap用来调用前者。对于classes（而非templates），也请全特化std::swap。</li>
+<li>调用swap时应针对std::swap使用using声明式，然后调用swap并且不带任何“命名空间资格修饰”。</li>
+<li>为“用户定义类型”进行std templates全特化是好的，但千万不要尝试在std内加入某些对std而言全新的东西。</li>
+</ul>
+</li>
+<li>条款26：<strong>尽可能延后变量定义式的出现时间。</strong><ul>
+<li>尽可能延后变量定义式的出现。这样做可增加程序的清晰度并改善程序效率。</li>
+</ul>
+</li>
+<li>条款27：<strong>尽量少做转型动作。</strong><ul>
+<li>如果可以，尽量避免转型，特别是在注重效率的代码中避免dynamic_casts。如果有个设计需要转型动作，试着发展无需转型的替代设计。</li>
+<li>如果转型是必要的，试着将它隐藏于某个函数背后。客户随后可以调用该函数，而不需要将转型放进他们自己的代码内。</li>
+<li>宁可使用c++-style（新式）转型，不要使用旧式转型。前者很容易辨识出来，而且也比较有着分门别类的职掌。</li>
+</ul>
+</li>
+<li>条款28：<strong>避免返回handles指向对象内部成分。</strong><ul>
+<li>避免返回handles（包括reference、指针、迭代器）指向对象内部。遵守这个条款可增加封装性，帮助const成员函数的行为像个const，并将发生“虚吊号码牌”的可能性降至最低。</li>
+</ul>
+</li>
+<li>条款29：<strong>为“异常安全”而努力是值得的。</strong><ul>
+<li>异常安全函数即使发生异常也不会泄漏资源或允许任何数据结构败坏。这样的函数区分为三种可能的保证：基本型、强烈型、不抛异常型。</li>
+<li>“强烈保证”往往能够以copy-and-swap实现出来，但“强烈保证”并非对所有函数都可实现或具备实现意义。</li>
+<li>函数提供的“异常安全保证”通常最高只等于其所调用之各个函数的“异常安全保证”中的最弱者。</li>
+</ul>
+</li>
+<li>条款30：<strong>透彻了解inlining的里里外外。</strong><ul>
+<li>将大多数inlining限制在小型、被频繁调用的函数身上。这可使日后的调试过程和二进制升级更容易，也可使潜在的代码膨胀问题最小化，使程序的速度提升机会最大化。</li>
+<li>不要只因为function templates出现在头文件，就将它们声明为inline。</li>
+</ul>
+</li>
+<li>条款31：<strong>将文件间的编译依存关系降至最低。</strong><ul>
+<li>支持“编译依存性最小化”的一般构想是：相依于声明式，而不要相依于定义式。基于此构想的两个手段是Handle classes和Interface classes。</li>
+<li>程序库头文件应该以“完全且仅有声明式”的形式存在。这种做法不论是否涉及templates都适用。</li>
+</ul>
+</li>
+<li>条款32：<strong>确定你的public继承塑膜出is-a关系。</strong><ul>
+<li>“public 继承”意味着 is-a。适用于base classes身上的每一件事情一定也适用于derived classes身上，因为每一个derived class对象也都是一个base class对象。</li>
+</ul>
+</li>
+<li>条款33：<strong>避免遮掩继承而来的名称。</strong><ul>
+<li>derived classes内的名称会遮掩base classes内的名称。在public继承下从来没有人希望如此。</li>
+<li>为了让被遮掩的名称再见天日，可使用using声明式或转交函数。</li>
+</ul>
+</li>
+<li>条款34：<strong>区分接口继承和实现继承。</strong><ul>
+<li>接口继承和实现继承不同。在public继承之下，derived classes总是继承base class的接口。</li>
+<li>pure virtual函数只具体指定接口继承。（附：有强烈的特异性，必须重新实现。并且纯虚函数的定义实现可以用来充当缺省版本）</li>
+<li>简朴的（非纯）impure virtual函数具体指定接口继承及缺省实现继承。（附：根据自己的特殊情况看需不需要覆写，如果没必要可以用基类的版本，但这个缺省的功能可能会产生一些危险。）</li>
+<li>non-virtual函数具体指定接口继承以及强制性实现继承。（附：强烈的共性，派生类只管继承不覆写）</li>
+</ul>
+</li>
+<li>条款35：<strong>考虑virtual函数以外的其他选择。</strong><ul>
+<li>virtual函数的替代方案包括NVI手法及Strategy设计模式的多种形式。NVI手法自身是一个特殊形式的Template Method设计模式。</li>
+<li>将机能从成员函数移到class外部函数，带来的一个缺点是，非成员函数无法访问class的non-public成员。</li>
+<li>tr1::function对象的行为就像一般函数指针。这样的对象可接纳“与给定之目标签名式兼容”的所有可调用物。</li>
+</ul>
+</li>
+<li>条款36：<strong>绝不重新定义继承而来的non-virtual函数。</strong><ul>
+<li>绝不重新定义继承而来的non-virtual函数。</li>
+</ul>
+</li>
+<li>条款37：<strong>绝不重新定义继承而来的缺省参数值。</strong><ul>
+<li>绝对不要重新定义一个继承而来的缺省参数值，因为缺省参数值都是静态绑定，而virtual函数——你唯一应该覆写的东西——却是动态绑定。</li>
+<li>附：注意仅仅是参数值，而非整个函数。函数是可以重新定义的，并且当使用了一个基类指针时，可以视为带了默认参数。</li>
+</ul>
+</li>
+<li>条款38：<strong>通过复合塑模出has-a或“根据某物实现出”。</strong><ul>
+<li>复合（composition）的意义和public继承完全不同。</li>
+<li>在应用域（application domain），复合意味has-a；在实现域（implementation domain），复合意味is-implemented-in-terms-of（根据某物实现出）。</li>
+</ul>
+</li>
+<li>条款39：<strong>明智而审慎地使用private继承。</strong><ul>
+<li>private继承意味着is-implemented-in-terms-of（根据某物实现出）。它通常比复合（composition）的级别低。但是当derived class需要访问protected base class的成员，或需要重新定义继承而来的virtual函数时，使用private是合理的。</li>
+<li>和复合（composition）不同，private继承可以造成empty base最优化。这对致力于“对象占用空间最小化”的程序库开发者而言，可能很重要。</li>
+</ul>
+</li>
+<li>条款40：<strong>明智而审慎地使用多继承。</strong><ul>
+<li>多重继承比单一继承复杂。它可能导致新的歧义性、以及对virtual继承的需要。</li>
+<li>virtual继承会增加大小、速度、初始化（及赋值）复杂度等等成本。如果virtual base classes不带任何数据，将是最具实用价值的情况。</li>
+<li>多重继承的确有正当用途。其中一个情节涉及“public继承某个Interface class”和“private继承某个协助实现的class”的两相组合。</li>
+</ul>
+</li>
+<li>条款41：<strong>了解隐式接口和编译期多态。</strong><ul>
+<li>classes和templates都支持接口和多态。</li>
+<li>对classes而言接口是显式的，以函数签名为中心。多态则是通过virtual函数发生于运行期。</li>
+<li>对template参数而言，接口是隐式的，奠基于有效表达式。多态则是通过template具现化和函数重载解析发生于编译期。</li>
+</ul>
+</li>
+<li>条款42：<strong>了解typename的双重意义。</strong><ul>
+<li>声明template参数时，前缀关键字class和typename可互换。</li>
+<li>请使用关键字typename标识嵌套从属类型名称；但不得在base class lists（基类列）或member initialization list（成员初值列）内以它作为base class修饰符。</li>
+</ul>
+</li>
+<li>条款43：<strong>学习处理模板化基类内的名称。</strong><ul>
+<li>可在 derived class template 内通过 “this-&gt;” 指涉 base class template 内的成员名称，或藉由一个明白写出的 “base class 资格修饰符” 完成。</li>
+<li>附：以及using声明</li>
+</ul>
+</li>
+<li>条款44：<strong>将与参数无关的代码抽离templates。</strong><ul>
+<li>Templates 生成多个 classes 和多个 functions，所以任何 template 代码都不该与某个造成膨胀的 template 参数产生相依关系。</li>
+<li>因非类型模板参数（non-type template parameters）而造成的代码膨胀，往往可以消除，做法是以函数参数或 class 成员变量替换 template 参数。</li>
+<li>因类型参数（type parameters）而造成的代码膨胀，往往可以降低，做法是让带有完全相同二进制表述（binary representations）的具现类型（instantiation types）共享实现码。</li>
+</ul>
+</li>
+<li>条款45：<strong>运用成员函数模板接受所有兼容类型。</strong><ul>
+<li>请使用member function templates（成员函数模板）生成“可接受所有兼容类型”的函数。</li>
+<li>如果你声明member templates用于“泛化copy构造”或“泛化assignment操作”，你还是需要声明正常的copy构造函数和copy assignment操作符。</li>
+</ul>
+</li>
+<li>条款46：<strong>需要类型转换时请为模板定义非成员函数。</strong><ul>
+<li>当我们编写一个 class template，而它所提供之“与此 template 相关的”函数支持“所有参数隐式类型转换”时，请将那些函数定义为 “class template 内部的 friend 函数”。</li>
+</ul>
+</li>
+<li>条款47：<strong>请使用traits classes 表现类型信息。</strong><ul>
+<li>Traits classes使得“类型相关信息”在编译期可用。它们以templates和“templates特化”完成实现。</li>
+<li>整合重载技术后，traits classes有可能在编译期对类型执行if…else测试。</li>
+</ul>
+</li>
+<li>条款48：<strong>认识template元编程。</strong><ul>
+<li>Template metaprogramming（TMP，模板元编程）可将工作由运行期移到编译期，因而得以实现早期错误侦测和更高的执行效率。</li>
+<li>TMP可被用来生成“基于政策选择组合”（based on combinations of policy choices）的客户定制代码，也可用来避免生成对某些特殊类型并不适合的代码。</li>
+</ul>
+</li>
+<li>条款49：<strong>了解new-handler的行为。</strong><ul>
+<li>set_new_handle 允许用户指定一个函数，在内存分配无法获得满足时被调用</li>
+<li>nothrow new 是一个颇为局限的工具，因为它只适用于内存分配；后继的构造函数调用还是有可能抛出异常</li>
+</ul>
+</li>
+<li>条款50：<strong>了解new和delete的合理替换时机。</strong><ul>
+<li>有许多理由需要写个自定义的 new 和 delete，包括改善效能、对 heap 运用错误进行调试、收集 heap 使用信息。</li>
+</ul>
+</li>
+<li>条款51：<strong>编写new和delete时需固守常规。</strong><ul>
+<li>operator new 应该内含一个无穷循环，并在其中尝试分配内存，如果它无法满足内存需求，就该调用 new-handler。它也应该有能力处理 0 bytes 申请。class 专属版本的还应该处理“比正确大小更大的（错误）申请”</li>
+<li>operator delete 应该在收到 null 指针时不做任何事。class专属版本则还应该处理“比正确大小更大的（错误）申请”</li>
+</ul>
+</li>
+<li>条款52：<strong>写了placement new也要写placement delete。</strong><ul>
+<li>当你写一个 placement operator new，请确定也写出了对应的 placement operator delete。如果没有这样做，就可能造成隐蔽的内存泄漏。</li>
+<li>当你声明 placement new 和 placement delete ，请确定不要无意识（非故意）地遮掩了它们的正常版本。</li>
+</ul>
+</li>
+<li>条款53：<strong>不要轻忽编译器的警告。</strong><ul>
+<li>严肃对待编译器发出的警告信息。努力在你的编译器最高警告级别下争取”无任何警告“。</li>
+<li>不要过度依赖编译器的报警能力，因为不同编译器对待事情的态度并不相同。一段有警告的代码，移植到另一个编译器上，可能没有任何警告。</li>
+</ul>
+</li>
+<li>条款54：<strong>让自己熟悉包括TR1在内的标准程序库。</strong><ul>
+<li>C++标准程序库的主要机能由STL、iostreams、locales组成。并包含C99标准程序库。</li>
+<li>TR1添加了智能指针、一般化函数指针、hash-based容器、正则表达式以及另外10个组件的支持。</li>
+<li>TR1自身只是一份规范，为获得TR1提供的好处，你需要一份实物。一个好的实物来源是Boost。</li>
+</ul>
+</li>
+<li>条款55：<strong>让自己熟悉Boost。</strong><ul>
+<li>Boost 是一个社群，也是一个网站。致力于免费，源码开放，同僚复审的 C++ 程序库开发。 Boost 在 C++ 标准化过程中扮演深具影响力的角色。</li>
+<li>Boost 提供许多 TR1 组件实现品，以及其他许多程序库。</li>
+</ul>
+</li>
+</ul>
 <h1 id="条款01"><a href="#条款01" class="headerlink" title="条款01"></a>条款01</h1><blockquote>
 <p>视 c++ 为一个语言联邦。</p>
 </blockquote>
@@ -366,7 +643,7 @@
 </ul>
 </blockquote>
 <h1 id="条款04"><a href="#条款04" class="headerlink" title="条款04"></a>条款04</h1><blockquote>
-<p>确定对象被使用前已先被初始化</p>
+<p>确定对象被使用前已先被初始化。</p>
 </blockquote>
 <p>读取未初始化我值，有时可能让程序终止运行，更可能的情况是读入一些“半随机”bits。最佳的处理办法就是：永远在使用对象之前先将它初始化。对于无任何成员的内置类型，必须手工完成。而内置类型以外的任何其他东西，都交给构造函数来初始化，其规则是：确保每一个构造函数都将对象的每一个成员初始化。</p>
 <p>这个规则很简单，但重要的是别混淆了赋值和初始化。如果在类中先声明了成员，然后在构造函数的函数体赋值，则本质上这些成员变量执行的是声明-赋值，先调用默认的构造函数，然后执行赋值构造函数（两步，效率低）。更好的写法是用初始化列表替换赋值动作，对大多数类型而言，这样效率更高（一步，直接调用构造函数），有时甚至高效得多。对于内置类型对象，初始化和赋值成本相同，但为了一致性最好也通过初始化列表来初始化。</p>
@@ -401,7 +678,7 @@
 </ul>
 </blockquote>
 <h1 id="条款05"><a href="#条款05" class="headerlink" title="条款05"></a>条款05</h1><blockquote>
-<p>了解c++默默编写并调用哪些函数</p>
+<p>了解c++默默编写并调用哪些函数。</p>
 </blockquote>
 <p>如果没有声明拷贝构造、赋值构造、析构函数，编译器就会为它自动声明编译器版本的函数。此外如果没有声明任何构造函数，编译器也会自动声明一个默认构造函数。这些函数都是public且inline的。唯有当这些函数被需要（调用），它们才会被编译器创建出来。</p>
 <p>「具体参考语法记录博客」</p>
@@ -410,7 +687,7 @@
 <p>编译器可以暗自为class创建默认构造函数、拷贝构造函数、赋值操作符以及析构函数。</p>
 </blockquote>
 <h1 id="条款06"><a href="#条款06" class="headerlink" title="条款06"></a>条款06</h1><blockquote>
-<p>若不想使用编译器自动生成的函数，就该明确拒绝</p>
+<p>若不想使用编译器自动生成的函数，就该明确拒绝。</p>
 </blockquote>
 <p>所有编译器产出的函数都是public。为阻止这些函数被创建出来，你得自行声明它们，但这里并没有什么需求使你必须将它们声明为public。因此你可以将构造函数、析构函数声明为private。藉由明确声明一个成员函数，你阻止了编译器暗自创建其专属版本；而令这些函数为private，使得你成功阻止人们调用它。</p>
 <p>而成员函数和friend函数还是可以调用private函数，因此更进一步的做法是，在private声明而不去定义，这样即使调用，也会得到错误。</p>
@@ -2403,6 +2680,347 @@
 <ul>
 <li>Template metaprogramming（TMP，模板元编程）可将工作由运行期移到编译期，因而得以实现早期错误侦测和更高的执行效率。</li>
 <li>TMP可被用来生成“基于政策选择组合”（based on combinations of policy choices）的客户定制代码，也可用来避免生成对某些特殊类型并不适合的代码。</li>
+</ul>
+</blockquote>
+<h1 id="条款49"><a href="#条款49" class="headerlink" title="条款49"></a>条款49</h1><blockquote>
+<p>了解new-handler的行为。</p>
+</blockquote>
+<p>在operator new抛出异常以前，会先调用一个客户指定的错误处理函数：new-handler。（这其实并非全部事实，operator new 真正做的事更复杂，见条款51）。为了指定这个“用以处理内存不足”的函数，客户必须调用 set_new_handler，那是声明于 &lt;new&gt; 的标准程序库函数:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> std&#123;</span><br><span class="line">    <span class="function"><span class="keyword">typedef</span> <span class="title">void</span> <span class="params">(*new_handler)</span><span class="params">()</span></span>;<span class="comment">//*new_handler是个typedef,定义出一个指针指向函数，该函数没有参数也不返回任何东西</span></span><br><span class="line">    <span class="function">new_handler <span class="title">set_new_handler</span><span class="params">(new_handler p)</span> <span class="title">throw</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>set_new_handler 是“获得一个 new-handler 并返回一个 new-handler ” 的函数，后面的 throw() 是一份异常明细，表示该函数不抛出任何异常。</p>
+<p>set_new_handler 的参数是个指针，指向 operator new 无法分配足够内存时该被调用的函数；其返回值也是个指针，指向set_new_handler被调用前正在执行的那个 new-handler 函数。可以这样使用set_new_handler ：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">outOfMem</span><span class="params">()</span>	<span class="comment">//operator new 无法分配足够内存时该被调用的函数</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::cerr&lt;&lt;<span class="string">&quot;Unable to satisfy request for memoryn&quot;</span>;</span><br><span class="line">    std::<span class="built_in">abort</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::<span class="built_in">set_new_handler</span>(outOfMem);</span><br><span class="line">    <span class="type">int</span> *pBigDataArray = <span class="keyword">new</span> <span class="type">int</span>[<span class="number">100000000L</span>];</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果operator new无法为100000000个整数分配足够空间，outOfMem会被调用，于是程序在发出一个信息之后夭折(abort)。</p>
+<p>当operator new无法满足内存申请时，它会不断调用 new-handler 函数，直到找到足够内存。反复调用的代码在条款51讨论。这里先说一下，设计良好的new-handler必须做好以下事情：</p>
+<ul>
+<li>让更多内存可被使用：这样可以造成operator new内的下一次内存分配动作可能成功。一个做法是，程序一开始就分配一大块内存，当 new-handler 第一次被调用时将它释放。</li>
+<li>安装另一个new-handler：当前的 new-handler 无法取得更多可用内存时，或许它知道另外哪个new-handler有此能力。如果真这样，可用使用 set_new_handler 来替换有能力的那个。</li>
+<li>卸除 new-handler：即将null指针传给 set_new_handler，一旦没有安装任何 new-handler，operator new 在内存分配不成功时便抛出异常。</li>
+<li>抛出 bad_alloc(或派生自bad_alloc)的异常：这样的异常不会被 operator new 捕捉，因此不会被传播到内存索求处。</li>
+<li>不返回：通常 abort 或 exit 。</li>
+</ul>
+<hr>
+<p>有时候，我们希望处理内存分配失败的情况和类相关。例如:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">X</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">outOfMemory</span><span class="params">()</span></span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Y</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="title">outOfMemory</span><span class="params">()</span></span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">X* p1 = <span class="keyword">new</span> X;<span class="comment">//分配不成功，调用X::outOfMemory</span></span><br><span class="line">Y* p2 = <span class="keyword">new</span> Y;<span class="comment">//分配不成功，调用Y::outOfMemory</span></span><br></pre></td></tr></table></figure>
+
+<p>C++并不支持类专属的 new-handler，但是我们自己可以实现这种行为。令每一个类提供自己的 set_new_handler 和 operator new即可。其中 set_new_handler 使客户得以指定类专属的 new-handler，operator new则确保在分配类对象内存的过程中以类专属的 new-handler替换 global new-handler。</p>
+<p>假设打算处理 Widget 类 内存分配失败的情况。首先要有一个”当 operator new 无法为Widget 分配足够内存时”调用的函数，所以你需要声明一个类型为 new_handler 的 static 成员，用以指向 Widget 的 new-handler，看起来像这样：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Widget</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">static</span> std::new_handler <span class="title">set_new_handler</span><span class="params">(std::new_handler p)</span> <span class="title">throw</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span></span>;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">static</span> std::new_handler currentHandler;</span><br><span class="line">&#125;;</span><br><span class="line">std::new_handler Widget::currentHandler = <span class="number">0</span>;	<span class="comment">//static成员需要在类外定义</span></span><br><span class="line"></span><br><span class="line"><span class="function">std::new_handler <span class="title">Widget::set_new_handler</span><span class="params">(std::new_handler p)</span> <span class="title">throw</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    std::new_handler oldHandler = currentHandler;	<span class="comment">//存储之前的new-handler</span></span><br><span class="line">    currentHandler = p;								<span class="comment">//设置新的new-handler</span></span><br><span class="line">    reutrn oldHandler;								<span class="comment">//返回之前的new-handler</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Widget 的 operator new 做以下事情：</p>
+<ul>
+<li>调用标准 set_new_handler，告知 Widget 的错误处理函数。这会将 Widget 的 new-handler 安装为 global new-handler。</li>
+<li>调用 global operator new 分配内存。如果失败，global operator new 会调用 Widget 的 new-handler，因为那个函数才刚被安装为 global new-handler。如果 global operator new 最终无法分配足够内存，会抛出一个 bad_alloc 异常。这时 Widget 的operator new 必须恢复原本的 global new-handler，之后再传播该异常。为确保原本的 new-handler 总是能够被重新安装回去，使用资源管理对象防止资源泄漏（见条款13）。</li>
+<li>如果 global operator new 分配内存成功，Widget 的 operator new 会返回一个指针，指向分配的内存。Widget 析构函数会管理 global new-handler，它会自动将 Widget’s operator new 被调用前的那个 global new-handler 恢复回来。</li>
+<li>附：这里无论分配内存成功或失败，都要把旧的的new-handler用std::set_new_handler恢复（实际上安装也是使用set_new_handler，最终使用的都是std的，自定义的版本只是负责安装和回收），这是因为这个new只是针对Widget的，这件事情发生完，Widget安装的new-handler就应该换回去。</li>
+</ul>
+<p>下面以C++代码再阐述一次，将从资源管理类开始，那里只有基础性RAII操作，再构造过程中获得一笔资源，并在析构中释还（见条款13）：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">NewHandlerHolder</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">NewHandlerHolder</span><span class="params">(std::new_handler nh)</span> : handlere(nh)&#123;</span>&#125;<span class="comment">//存储旧handler</span></span><br><span class="line">    </span><br><span class="line">    ~<span class="built_in">NewHandlerHolder</span>() &#123; </span><br><span class="line">        std::<span class="built_in">set_new_handler</span>(handler); <span class="comment">//恢复handler</span></span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    std::new_handler handler;</span><br><span class="line">    <span class="comment">//阻止拷贝</span></span><br><span class="line">    <span class="built_in">NewHandlerHolder</span>(<span class="type">const</span> NewHandlerHolder&amp;);</span><br><span class="line">    NewHandlerHolder&amp; <span class="keyword">operator</span>=(<span class="type">const</span> NewHandlerHolder&amp;);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这使得<code>Widget</code>类的 operator new 函数的实现变得简单：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span>* Widget::<span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//使用std::set_new_handler()安装Widget的new-handler,并返回global new-handler 存储在资源管理类中</span></span><br><span class="line">    <span class="comment">//分配内存或抛出异常时，在资源管理类的析构函数中恢复global new-handler</span></span><br><span class="line">    <span class="function">NewHandlerHolder <span class="title">h</span><span class="params">(std::set_new_handler(currentHandler))</span></span>;</span><br><span class="line">    <span class="keyword">return</span> ::<span class="keyword">operator</span> <span class="built_in">new</span>(size);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Widget客户应该类似这样使用其new-handling：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">outOfMem</span><span class="params">()</span></span>;					<span class="comment">//函数声明，此函数在 Widget 对象分配失败时被调用</span></span><br><span class="line"></span><br><span class="line">Widget::<span class="built_in">set_new_handler</span>(outOfMem);	<span class="comment">//设定 outOfMem 为 Widget 的 new-handling 函数，set_new_handler是静态函数</span></span><br><span class="line">Widget* pw1 = <span class="keyword">new</span> Widget;			<span class="comment">//若内存分配失败，则调用 outOfMem 函数</span></span><br><span class="line"></span><br><span class="line">std::string* ps = <span class="keyword">new</span> std::string;	<span class="comment">//内存分配失败则调用 global new-handling（如果有的话）</span></span><br><span class="line"></span><br><span class="line">Widget::<span class="built_in">set_new_handler</span>(<span class="number">0</span>);			<span class="comment">//设定 Widget 专属 new-handling 为 null</span></span><br><span class="line">Widget* pw2 = <span class="keyword">new</span> Widget;			<span class="comment">//若内存分配失败则立刻抛出异常，因为 Widget 没有专属 new-handling函数</span></span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>实现这个方案的代码并不因 class 的不同而不同，因此在其它地方也复用这个代码是个合理的构想。一个简单的方式是建立起一个“mixin” 风格的基类，这种基类用来允许派生类继承单一特定能力——在本例中是“设定类专属的 new-handler 能力”。然后将这个基类转换为模板，如此一来每个派生类将获得实体互异的 class data 复件。</p>
+<p>这个基类让其派生类继承它获取 set_new_handler和 operator new函数，而模板部分确保每一个派生类获得一个实体互异的currentHandler 成员变量。实现代码和前一个版本的近似，唯一真正意义上不同的是，它现在可被任何有所需要的类使用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">NewHandlerSupport</span>&#123;		<span class="comment">// &quot;mixin&quot; 风格的基类，用以支持类专属的set_new_handler</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">static</span> std::new_handler <span class="title">set_new_handler</span><span class="params">(std::new_handler p)</span> <span class="title">throw</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span></span>;</span><br><span class="line">    ...							<span class="comment">//其它的 operator new 版本，见条款52</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">static</span> std::new_handler currentHandler;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">std::new_handler NewHandlerSupport&lt;T&gt;::<span class="built_in">set_new_handler</span>(std::new_handler p) <span class="keyword">throw</span>() &#123;</span><br><span class="line">    std::new_handler oldHandler = currentHandler;</span><br><span class="line">    currentHandler = p;</span><br><span class="line">    <span class="keyword">return</span> oldHandler;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt; </span><br><span class="line"><span class="type">void</span>* NewHandlerSupport&lt;T&gt;::<span class="function"><span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span> </span>&#123;</span><br><span class="line">    <span class="function">NewHandlerHolder <span class="title">h</span><span class="params">(std::set_new_handler(currentHandler);</span></span></span><br><span class="line"><span class="params"><span class="function">    <span class="keyword">return</span> ::<span class="keyword">operator</span> <span class="keyword">new</span>(size);</span></span></span><br><span class="line"><span class="params"><span class="function">&#125;</span></span></span><br><span class="line"><span class="params"><span class="function"><span class="comment">//以下将每一个实体互异的 currentHandler 初始化为null</span></span></span></span><br><span class="line"><span class="params"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span></span><br><span class="line"><span class="params"><span class="function">std::new_handler NewHandlerSupport&lt;T&gt;::currentHandler = <span class="number">0</span>;<span class="comment">//静态变量初始化</span></span></span></span><br></pre></td></tr></table></figure>
+
+<p>有了这个 类模板，为 <code>Widget</code> 添加 <code>set_new_handler</code>支持能力就容易了：只要令 <code>Widget</code> 继承自 <code>NewHandlerSupport&lt;Widget&gt;</code> 就好，像下面这样：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Widget</span>:<span class="keyword">public</span> NewHandlerSupport&lt;Widget&gt;&#123;</span><br><span class="line">	<span class="comment">//和先前一样，但不必声明 set_new_handler 和 operator new 函数</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>在 <code>NewHandlerSupport</code> 模板中，从未使用到 类型T，这是为什么呢？</p>
+<p>实际上 T 的确不需被使用。我们只希望继承 NewHandlerSupport 的每一个 类 拥有自己的 NewHandlerSupport 复件（其 static 成员变量 currentHandler ），类型参数 T 是用来区分不同的 派生类，模板机制会自动为每一个 T 生成一份 currentHandler 成员变量。</p>
+<p>虽然通过继承 <code>NewHandlerSupport</code> ，使得“为任何类添加一个它们专属的new-handler”成为一件很容易的事，但 “mixin” 风格的继承肯定导致 多重继承 的争议，要注意条款40所提到的内容。</p>
+<hr>
+<p>C++中新一代的 operator new 分配失败抛出异常 bad_alloc，但是旧标准是返回 null 指针，为了兼容以前使用旧标准的C++程序，C++委员会提供了另一种符合旧标准形式的 operator new ， 这个形式被称为 “nothrow” 形式：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Widget</span>&#123; ... &#125;;</span><br><span class="line"></span><br><span class="line">Widget* pw1 = <span class="keyword">new</span> Widget;				<span class="comment">//分配失败，抛出bad_alloc</span></span><br><span class="line"><span class="keyword">if</span>(pw1 == null) &#123; ... &#125;					<span class="comment">//判断是否分配成功。但是这个测试一定失败</span></span><br><span class="line"></span><br><span class="line">Widget* pw2 = <span class="built_in">new</span> (std::nothrow)Widget;	<span class="comment">//分配失败，返回null</span></span><br><span class="line"><span class="keyword">if</span>(pw2 == null) &#123; ... &#125;					<span class="comment">//这个测试可能成功</span></span><br></pre></td></tr></table></figure>
+
+<p>nothrow new 对 异常的强制保证性（见条款29）并不高。表达式 new (std::nothrow)Widget 会发生两件事：</p>
+<p>第一，分配内存给 Widget 对象，如果失败返回 null ；第二，如果成功，调用 Widget 的构造函数，在这个构造函数中可能又 new 一些内存，但没人可以强迫它再次使用 nothrow new。因此，虽然 new (std::nothrow)Widget 调用的 operator new 函数并不抛出异常，但 Widget 的构造函数可能会抛出异常 。</p>
+<p>结论是：使用 nothrow new 只能保证 operator new 不抛出异常，不能保证像new (std::nothrow)Widget这样的表达式不抛出异常。所以，并没有使用 nothrow 的需要。</p>
+<p>无论使用正常（会抛出异常）的 new，或是不抛出异常的 nothrow new ，重要的是需要了解 new-handler 的行为，因为两种形式都使用到 new-handler。</p>
+<p>记住：</p>
+<blockquote>
+<ul>
+<li>set_new_handle 允许用户指定一个函数，在内存分配无法获得满足时被调用</li>
+<li>nothrow new 是一个颇为局限的工具，因为它只适用于内存分配；后继的构造函数调用还是有可能抛出异常</li>
+</ul>
+</blockquote>
+<h1 id="条款50"><a href="#条款50" class="headerlink" title="条款50"></a>条款50</h1><blockquote>
+<p>了解new和delete的合理替换时机。</p>
+</blockquote>
+<p>有人会想要替换掉编译器提供的 operator new 或 operator delete，有三个理由：</p>
+<ul>
+<li>用来检测运用上的错误：如果将“new 所得内存” delete 掉却失败，会导致内存泄漏。如果在“new 所得内存”身上多次 delete 会导致不确定行为。使用编译器提供的operator new和operator delete不能检测上述行为。如果 operator new 持有一串动态分配所得地址，而 operator delete 将地址从中移走，这样容易检测出上述错误用法。此外各式各样的编程错误可能导致数据 “overruns”（写入点在分配区块尾端之后）或 “underruns”（写入点在分配区块起点之前）。这时可以自己定义operator new 便可超额分配内存，在额外空间（位于用户所得区块之前或之后）写上特定 byte patterns（即签名，signature），自己定义 operator delete 检 测签名是否更改，若被更改了表示在分配区的某个生命时间点发生了 overrun 或 underrun，这时 operator delete 可以记录（log）那个事实以及那个签名被更改的指针。</li>
+<li>为了强化效能：我们所用的编译器中自带的operator new和operator delete主要是用于一般的目的能够为各种类型的程序所接受，而不考虑特定的程序类型。它们必须处理一系列需求，必须接纳各种分配形态，必须要考虑破碎问题等等。因此编译器所带的operator new和operator delete采取中庸之道也是没办法的事情。它们的工作对每个人都是适度地好，但不对特定任何人有最佳表现。通常可以发现，定制版之operator new和operator delete性能胜过缺省版本。所谓的’胜过’，就是它们比较快，有时甚至快很多，而且它们需要内存比较少，最高可省50%。所以说对某些运用程序而言，将缺省new和delete替换为定制版本，是获得重大效能提升的办法之一。</li>
+<li>为收集使用上的统计数据：在自定义 operator new 和 operator delete 之前，应该首先了解软件如何使用动态内存。分配区块如何分布？寿命分布如何？它们是先进先出（FIFO）还是后进先出（LIFO）顺序或随机顺序来分配和归还？软件在不同执行阶段有不同的分配归还形态吗？任何时刻使用的最大动态分配量是多少？自定义的 operator new 和 operator delete 可以轻松收集到这些信息。</li>
+</ul>
+<p>写个定制的operator new和operator delete并不难。例如，写个global operator new，用于检测在分配区块的后面或前面写入数据。下面是个初步版本，有小错误，后面在完善。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">static</span> <span class="type">const</span> <span class="type">int</span> signature = <span class="number">0xDEADBEEF</span>;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">unsigned</span> <span class="type">char</span> Byte;</span><br><span class="line"><span class="comment">//下面代码有些小错误</span></span><br><span class="line"><span class="function"><span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line">    <span class="type">size_t</span> realSize = size + <span class="number">2</span> * <span class="built_in">sizeof</span>(<span class="type">int</span>);	<span class="comment">//增加大小，是能够塞入两个 signature </span></span><br><span class="line"></span><br><span class="line">    <span class="type">void</span>* pMem = <span class="built_in">malloc</span>(realSize);</span><br><span class="line">    <span class="keyword">if</span>(!pMem) </span><br><span class="line">        <span class="keyword">throw</span> <span class="built_in">bad_alloc</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//将 signarure 写入内存的最前段落和最后段落</span></span><br><span class="line">    *(<span class="built_in">static_cast</span>&lt;<span class="type">int</span>*&gt;(pMem)) = signarure;</span><br><span class="line">    <span class="comment">//static_cast&lt;Byte*&gt;(pMem)是为了指针做加法运算时是+1个字节</span></span><br><span class="line">    <span class="comment">//（指针加法运算+1是一个类型的大小，如int* p加1，实际加了4个字节）</span></span><br><span class="line">    *(<span class="built_in">reinterpret_cast</span>&lt;<span class="type">int</span>*&gt;(<span class="built_in">static_cast</span>&lt;Byte*&gt;(pMem) + realSize - <span class="built_in">sizeof</span>(<span class="type">int</span>))) = signature;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">static_cast</span>&lt;Byte*&gt;(pMem) + <span class="built_in">sizeof</span>(<span class="type">int</span>);	<span class="comment">//返回指针，指向恰位于第一个 signarure 之后的内存位置</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>暂且忽略上述代码中没有条款51所说的所有 operator new 都应该内含一个循环，反复调用某个 new-handling 函数。来说一下另外一个主题：对齐。</p>
+<hr>
+<p>许多计算机体系结构要求特定的类型必须放在特定的内存地址上。例如它可能要求指针的地址必须是4的倍数（four-byte aligned）或double 的地址是8的倍数（eight-byte aligned）。如果没有这些约束条件可能会导致运行期硬件异常。有些体系结构要求没这么严格，而是宣称如果满足对齐条件，便提供更佳的效率。</p>
+<p>C++要求所有 operator new 返回的指针都有适当的对齐（取决于数据类型）。malloc 就是在这样的要求下工作，所以令 operator new返回一个得自 malloc 的指针是安全的。但是上面 operator new 返回一个得自 malloc 且偏移一个 int 大小的指针，没人能保证它的安全。如果用户调用 operator new 企图获取足够给一个 double 所用的内存，而我们在一部 “int 为4位 且 double 必须为 8 位 对齐”的机器中跑程序，我们可能会获得没有对齐的指针，那可能造成程序崩溃或执行速度慢。</p>
+<p>像对齐这类技术细节，可以区分内存管理器的质量。写一个能够运行的内存管理器并不难，难的是让它总是能够高效优良的运作。一般来说，若非必要，不要去写内存管理器。</p>
+<p>很多时候也是非必要的。有些编译器已经在它们的内存管理函数中切换至调试状态（enable debugging）和志记状态（logging）。许多平台上有商业产品可以代替编译器自带的内存管理器，可以用它们来提高机能和改善效率，你唯一需要做的就是 重新链接。</p>
+<p>另外一个选择是开源领域中的内存管理器。它们对许多平台都可以用。Boost程序库（见条款 55）的Pool就是这样的一个分配器，它对常见的分配“大量小型对象”很有帮助。一些小型开源内存分配器大多都不完整，缺少移植、线程安全、对齐等考虑。</p>
+<hr>
+<p>本条款的主题是，了解何时可在“全局性的”或“class专属的”基础上合理替换默认的 new 和 delete：</p>
+<ul>
+<li>为了检测运用错误（如前所述）</li>
+<li>为了手机动态分配内存的使用统计信息（如前所述）</li>
+<li>为了增加分配和归还的速度。使用定制的针对特定类型对象的分配器，可以提高效率。类专属分配器是“区块尺寸固定”的分配器实例，例如 Boost 提供的 Pool 程序库便是。如果在单线程程序中，你的编译器所带的内存管理具备线程安全，你可以写个不具备线程安全的分配器而大幅度改善速度。</li>
+<li>为了降低默认内存管理器带来的空间额外开销。泛用型内存分配器往往（虽然并非总是）不只比定制型慢，还使用更多内存，因为它们常常在每一个分配区块上招引某些额外开销。针对小型对象开放的分配器（例如 Boost 库的Pool）本质上消除了这样的额外开销。</li>
+<li>为了弥补默认分配器中的非最佳对齐。X86体系结构上的 double 访问最快–如果它们是8-byte对齐。但是编译器自带的 operator new 并不保证对动态分配而得的 double 采取8-byte对齐。这种情况下，将默认的 operator new 替换位一个 8-byte 对齐的版本，可使程序效率提升。</li>
+<li>为了将相关对象成簇集中。如果特定的某个数据结构往往被一起使用，我们希望在处理这些数据时将“内存页错误”（page faults）的频率降至最低，那么为此数据结构创建另一个 heap 就有意义，这样就可以将它们成簇集中到尽可能少的内存页上。new 和 delete 的 “placement版本”（见条款52）有可能完成这一的集簇行为。</li>
+<li>为了获得非传统的行为。有时候我们需要 operator new 和 delete 做编译器附带版没做的某些事情。例如，在归还内存时将其数据覆盖为0，以此增加应用程序的数据安全。</li>
+</ul>
+<p>记住：</p>
+<blockquote>
+<p>有许多理由需要写个自定义的 new 和 delete，包括改善效能、对 heap 运用错误进行调试、收集 heap 使用信息。</p>
+</blockquote>
+<h1 id="条款51"><a href="#条款51" class="headerlink" title="条款51"></a>条款51</h1><blockquote>
+<p>编写new和delete时需固守常规。</p>
+</blockquote>
+<p>从operator new开始：</p>
+<ul>
+<li>实现一致性 operator new 必须返回正确的值</li>
+<li>内存不足时必须调用 new-handling 函数（见条款49）</li>
+<li>必须有对付零内存需求的准备</li>
+<li>避免不慎掩盖正常形式的 new</li>
+</ul>
+<p>这比较偏近 class 接口的要求而非实现要求。正常形式的 new 描述于条款 52。</p>
+<p>operator new 的返回值十分单纯。如果申请内存成功，就返回指向那块内存的指针，失败则遵循条款 49描述的规则，并抛出 bad_alloc 异常。</p>
+<p>然而也不是非常单纯。因为 operator new 实际上不止一次尝试分配内存，并在每次失败后都调用 new-handling 函数。这里假设 new-handling 函数能做某些动作将一些内存释放出来。只有当指向 new-handling 函数的指针为 null，operator new 才会抛出异常。但C++规定，即使客户要求0 byte，operator new 也要返回一个合法指针。下面是个non-member operator new的伪代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line">    <span class="keyword">if</span>(size == <span class="number">0</span>)	<span class="comment">//处理0-byte申请,将它视为 1 byte 申请</span></span><br><span class="line">        size = <span class="number">1</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">while</span>(<span class="literal">true</span>) &#123;</span><br><span class="line">        尝试分配size bytes;</span><br><span class="line">        <span class="keyword">if</span>(分配成功）</span><br><span class="line">            <span class="keyword">return</span> 指向分配得来的内存的指针;</span><br><span class="line">           </span><br><span class="line">        <span class="comment">//分配失败，找到当前的 new-handling 函数</span></span><br><span class="line">        new_handler globalHandler = <span class="built_in">set_new_handler</span>(<span class="number">0</span>);</span><br><span class="line">        <span class="built_in">set_new_handler</span>(globalHandler);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span>(globalHandler) </span><br><span class="line">           (*globalHandler)();	<span class="comment">//执行函数指针globalHandler指向的函数</span></span><br><span class="line">        <span class="keyword">else</span> </span><br><span class="line">           <span class="keyword">throw</span> std::<span class="built_in">bad_alloc</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于 0 byte 的内存申请视为 1 byte 的内存申请，做法简单、合法、可行。其中将 new-handling 函数指针设为 null 而后又立刻恢复原样，是因为我们没有任何办法可以直接取得 new-handling 函数指针，所以利用 set_new_handler 函数的返回值是前一个 new-handling 函数指针的特性。这种方法在单线程环境下很有效，但在多线程环境下，还需要某种锁机制，以便处理 new-handling 函数背后的（global）数据结构。</p>
+<p>条款49提到 operator new 内含一个无穷循环，而上述代码中的第 6 行（while(true)）就是那个无穷循环。退出此循环唯一办法是：内存分配成功或 new-handling 函数做了一件描述于条款49的事：让更多内存可用、安装另一个 new-handler、卸载 new-handler、抛出 bad_alloc异常（或其派生类），或承认失败直接 return。</p>
+<hr>
+<p>上面的 operator new 成员函数可能会被derived classes继承。注意分配内存大小size，它是函数接收的实参。条款50提到，定制内存分配器往往是为了特定的 class 对象，以此来优化，而不是为了该 class 的任何派生类。也就是说，针对 class X 而设计的 operator new ，其行为只为大小刚好为 sizeof(X) 的对象而设计。然而一旦被继承，有可能基类的 operator new 被调用用于分配派生类对象：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span></span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span>:<span class="keyword">public</span> Base&#123; ... &#125;;	<span class="comment">//假设派生类未定义 operator new</span></span><br><span class="line"></span><br><span class="line">Derived* p = <span class="keyword">new</span> Derived;			<span class="comment">//这里调用了Base::operator new</span></span><br></pre></td></tr></table></figure>
+
+<p>如果基类专属的 operator new 并非被设计用来应对上述情况（实际上往往如此），处理这种情况的方法是：将“内存申请量错误”的调用行为改为标准 operator new，就像这样：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span>* Base::<span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(size != <span class="built_in">sizeof</span>(Base))			<span class="comment">//如果大小错误</span></span><br><span class="line">        <span class="keyword">return</span> ::<span class="keyword">operator</span> <span class="built_in">new</span>(size);	<span class="comment">//使用标准的 operator new</span></span><br><span class="line">    ...									<span class="comment">//否则在这处理</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>不需要再检验size是否为0，C++裁定所有非附属（独立式）对象必须有非零大小（见条款39）。因此sizeof(Base)无论如何不能为零。</p>
+<p>如果你打算控制 class 专属的 “arrays 内存分配行为”，那么你需要实现 operator new[]（这个函数通常被称为 “array new”）。编写operator new[] 时，唯一要做的事就是分配一块未加工的内存，因为你无法对 array 之内迄今尚未存在的元素对象做任何事。甚至我们无法知道这个 array 含有多少个元素对象。首先你不知道每个对象多大，毕竟 基类 的 operator new[] 有可能经由继承被调用，将内存分配给 “元素为 派生类 对象” 的 array使用。</p>
+<p>因此，你不能在 Base::operator new[] 中假设 array 的每个元素对象大小是 sizeof(Base)，这样就是说你不能假设 array 元素个数是(bytes申请数 &#x2F; sizeof(Base))。此外，传递给 operator new[] 的 size_t 参数，其值有可能比“将被填以对象”的内存更大，因为条款 16提过，动态分配的 arrays 可能包含额外空间用来存放元素个数。</p>
+<hr>
+<p>上面就是自定义 operator new 需要遵守的规矩。operator delete 情况更简单，你需要记住的唯一事情就是</p>
+<ul>
+<li>C++保证删除 null 指针永远安全</li>
+</ul>
+<p>下面是 non-member operator delete的伪代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>* rawMemory)</span> <span class="title">throw</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(rawMemory == <span class="number">0</span>) <span class="keyword">return</span>;	<span class="comment">//如果被删除的是个 null 指针，那就什么都不做</span></span><br><span class="line"></span><br><span class="line">   现在， 归还 rawMemory 所指内存;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个函数的 member 版本也很简单，只需多加一个动作——检查删除数量。万一你的 class 专属的 operator new 将大小有误的分配行为转交 <code>::operator new</code> 执行，你也必须将大小有误的删除行为转交 <code>operator delete</code> 执行：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>* rawMemory,std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">()</span></span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> Base::<span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span> rawMemory, std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(rawMemory == <span class="number">0</span>) 					<span class="comment">//检测是否为 null 指针</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    <span class="keyword">if</span>(size != <span class="built_in">sizeof</span>(Base)) &#123;				<span class="comment">//如果大小错误，让标准 operator delete 处理此一申请</span></span><br><span class="line">        ::<span class="function"><span class="keyword">operator</span> <span class="title">delete</span><span class="params">(rawMemory)</span></span>;</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    现在，归还rawMemory所指内存;</span><br><span class="line">    <span class="keyword">return</span> ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果即将被删除的对象派生自某个基类 ，而后者没有虚析构函数，那么 C++ 传给 operator delete 的 size_t 数值可能不正确。也就是说，如果基类遗漏虚析构函数，operator delete 可能无法正常运作。</p>
+<p>记住：</p>
+<blockquote>
+<ul>
+<li>operator new 应该内含一个无穷循环，并在其中尝试分配内存，如果它无法满足内存需求，就该调用 new-handler。它也应该有能力处理 0 bytes 申请。class 专属版本的还应该处理“比正确大小更大的（错误）申请”</li>
+<li>operator delete 应该在收到 null 指针时不做任何事。class专属版本则还应该处理“比正确大小更大的（错误）申请”</li>
+</ul>
+</blockquote>
+<h1 id="条款52"><a href="#条款52" class="headerlink" title="条款52"></a>条款52</h1><blockquote>
+<p>写了placement new也要写placement delete。</p>
+</blockquote>
+<p>placement new 和 placement delete 在C++中并不常见，如果你不熟悉它们，也不用担心。当你写一个 new 表达式时：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Widget* pw = <span class="keyword">new</span> Widget;</span><br></pre></td></tr></table></figure>
+
+<p>共有两个函数被调用：一个是以分配内存的 operator new，一个是 <code>Widget</code> 的默认构造函数。</p>
+<p>假如第一个函数调用成功，但第二个函数却抛出异常，这时需要释放第一步分配得到的内存，否则就造成了内存泄漏。这个时候，用户没有能力去归还内存，因为如果 Widget构造函数抛出异常，那么 pw 尚未被赋值，用户手中的指针还没有指向开辟的内存。因此释放第一步分配得到的内存的任务落到了C++运行期系统身上。</p>
+<p>运行期系统会调用第一个函数 operator new 所对应的 operator delete 版本，前提当然是它必须知道哪一个 operator delete（因为可能有多个）版本。如果目前面对的是拥有正常签名式的 new 和 delete，这并不是问题，正常的 operator new 和对应于正常的 operator delete：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> *<span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span>)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span></span>;	<span class="comment">//正常形式</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>* rawMemory)</span> <span class="title">throw</span><span class="params">()</span></span>;					<span class="comment">//global 作用域中正常的签名式</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>* rawMemory,std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">()</span></span>;	<span class="comment">//class 作用域中典型的签名式</span></span><br></pre></td></tr></table></figure>
+
+<p>如果使用正常的 operator new 和 operator delete，运行期系统可以找到如何释放 new 开辟内存的 delete 函数。但是如果使用非正常形式的 operator new，究竟使用哪个 delete 的问题就出现了。</p>
+<p>举个例子，假设编写一个 class 专属的 operator new，要求接受一个 ostream，用来记录（logged）相关分配信息，同时又写了一个正常形式的 class 专属 operator delete：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Widget</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">	...</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size, std::ostream&amp; logStream)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span></span>;<span class="comment">//非正常形式的new</span></span><br><span class="line">        </span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>* pMemory, std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">()</span></span>; <span class="comment">//正常的class专属delete</span></span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这个设计有问题，但我们探讨原因之前，需要先绕道，简单讨一些术语。</p>
+<p>如果 operator new 接受的参数除了必有的 size_t 之外还有其他，这便是 placement new。因此，上述的 operator new 是个 placement 版本。众多 placement new 版本中，有一个特别有用的是 “接受一个指针指向对象该被构造之处”，vector使用它在未使用的内存上创建对象，那样的 operator new 形式如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span>, <span class="type">void</span>* pMemory)</span> <span class="title">throw</span><span class="params">()</span></span>; <span class="comment">//placement new</span></span><br></pre></td></tr></table></figure>
+
+<p>placement new 有多重定义，一是带任意额外参数的new ，二是只有一个额外参数 void*。当人们谈到 placement new ，大多数是指后者。</p>
+<hr>
+<p>现在让我们回到 <code>Widget</code> 的声明式，也就是之前我说设计有问题的那个。这里的难点是，那个类将引起微妙的内存泄漏。看下面的例子，它在动态创建一个 <code>Widget</code> 时将相关的分配信息记录(logs)于 cerr：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Widget* pw = <span class="built_in">new</span> (std:cerr) Widget;<span class="comment">//调用operator new并传递cerr作为ostream实参,</span></span><br><span class="line">				<span class="comment">//这个动作会在Widget构造函数抛出异常时泄漏内存</span></span><br></pre></td></tr></table></figure>
+
+<p>如果内存分配成功，而 Widget 构造函数抛出异常，运行期系统要释放 operator new 开辟的内存。但运行期系统不知道真正被调用的 operator new 如何运作，因此它无法释放内存。所以上述做法行不通。取而代之的是，运行期系统寻找参数个数和类型都与 operator new 相同的 operator delete，如果找到，那就是它的调用对象。上述代码中调用的 operator new 对应的 operator delete为：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>*, std::ostream&amp;)</span> <span class="title">throw</span><span class="params">()</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>类似于 new 的 placement 版本，operator delete 如果接收额外参数，便称为 placement delete。上面 Widget 没有 placement 版本的operator delete，所以运行期系统不知道如何释放 operator new 开辟的内存，于是什么都不做。所以，如果 Widget 构造函数抛出异常，不会有任何的 operator delete 被调用。</p>
+<p>为了解决上述问题，<code>Widget</code> 有必要声明一个 placement delete，对应那个有记录功能（logging）的 placement new：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Widget</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size, std::ostream&amp; logStream)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>* pMemory)</span> <span class="title">throw</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>* pMemory, std::ostream&amp; logStream)</span> <span class="title">throw</span><span class="params">()</span></span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这样改变之后，如果以下语句导致<code>Widget</code> 构造函数抛出异常，就不会造成内存泄漏了：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Widget* pw = <span class="built_in">new</span> (std:cerr) Widget;		<span class="comment">//这次内存不在泄漏</span></span><br></pre></td></tr></table></figure>
+
+<p>如果 <code>Widget</code> 构造函数抛出异常，就会调用对应版本的placement delete；如果没有异常，就会调用正常形式的 operator delete，如下:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> pw;<span class="comment">//客户调用</span></span><br></pre></td></tr></table></figure>
+
+<p>需要注意的是：placement delete 只有在 placement new 调用构造函数抛出异常时才会被调用。对着一个指针（例如上述的pw）施行 delete 绝不会导致调用 placement delete。</p>
+<p>这意味着：如果要对所有与 placement new 相关的内存泄漏宣战，我们必须同时提供一个正常的 operator delete （用于构造期间无任何异常被抛出）和一个 placement 版本（用于构造期间有异常被抛出）， placement 版本的额外参数必须和 operator new 一样。</p>
+<hr>
+<p>需要注意的是，因为成员函数的名称会掩盖其外围作用域中相同名称的函数（见条款33），所以要小心避免 class 专属的 new 掩盖用户希望调用的 new。例如，你有一个 Base class，其中声明唯一一个 placement，用户会发现他们无法使用正常形式的 new：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Base</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size, std::ostream&amp; logStream)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span></span>;<span class="comment">//这个new会掩盖正常的global new</span></span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Base* pb = <span class="keyword">new</span> Base;				<span class="comment">//错误，因为正常形式的operator new被掩盖</span></span><br><span class="line">Base* pb1 = <span class="built_in">new</span> (std::cerr) Base;	<span class="comment">//正确，调用Base的placement new</span></span><br></pre></td></tr></table></figure>
+
+<p>同样道理，派生类 的 operator new 会掩盖继承而来的 operator new 和 global 版本的 new：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Derived</span>: <span class="keyword">public</span> Base&#123;			<span class="comment">//继承自先前的Base</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ...</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span></span>;<span class="comment">//重新声明正常形式的new</span></span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Derived* pd = <span class="built_in">new</span> (std::clog) Derived;	<span class="comment">//错误，因为Base的placement new被掩盖了</span></span><br><span class="line">Derived* pd1 = <span class="keyword">new</span> Derived;				<span class="comment">//正确,调用了 Derived 的 operator new</span></span><br></pre></td></tr></table></figure>
+
+<p>条款33更详细讨论了这种名称遮掩问题。对于撰写内存分配函数，你需要记住的是，默认情况下C++在 global 作用域内提供以下形式的operator new：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span>)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span></span>;				<span class="comment">//normal new</span></span><br><span class="line"><span class="function"><span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span>, <span class="type">void</span>*)</span> <span class="title">throw</span><span class="params">()</span></span>;						<span class="comment">//placement new</span></span><br><span class="line"><span class="function"><span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span>, <span class="type">const</span> std::<span class="type">nothrow_t</span>&amp;)</span> <span class="title">throw</span><span class="params">()</span></span>;		<span class="comment">//nothrow new(见条款49)</span></span><br></pre></td></tr></table></figure>
+
+<p>如果你在 class 内声明任何形式的 operator new ，它都遮掩上述这些标准形式。除非你想要阻止 class 的用户使用这些形式，否则请确保它们在你所生成的任何自定义 operator new 之外还可用。对于每一个可用的 operator new，也要确保提供了对应形式的 operator delete。如果你希望这些函数有着平常的行为，只要令你的 class 专属版本调用 global 版本即可。</p>
+<p>完成上面所说的一个简单的做法是，建立一个基类，内含所有正常形式的new和delete</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">StadardNewDeleteForms</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">//normal</span></span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size)</span> <span class="title">throw</span><span class="params">(std::bad_alloc)</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ::<span class="keyword">operator</span> <span class="built_in">new</span>(size);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>* pMemory)</span> <span class="title">throw</span><span class="params">()</span></span>&#123;</span><br><span class="line">        ::<span class="function"><span class="keyword">operator</span> <span class="title">delete</span><span class="params">(pMemory)</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//placement</span></span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size, <span class="type">void</span>* ptr)</span> <span class="title">throw</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ::<span class="keyword">operator</span> <span class="built_in">new</span>(size, ptr);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>* pMemory, <span class="type">void</span>* ptr)</span> <span class="title">throw</span><span class="params">()</span></span>&#123;</span><br><span class="line">        ::<span class="function"><span class="keyword">operator</span> <span class="title">delete</span><span class="params">(pMemory, ptr)</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//nothrow</span></span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size, <span class="type">const</span> std::<span class="type">nothrow_t</span>&amp; nt)</span> <span class="title">throw</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> ::<span class="keyword">operator</span> <span class="built_in">new</span>(size,nt);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>* pMemory,<span class="type">const</span> std::<span class="type">nothrow_t</span>&amp;)</span> <span class="title">throw</span><span class="params">()</span></span>&#123;</span><br><span class="line">        ::<span class="function"><span class="keyword">operator</span> <span class="title">delete</span><span class="params">(pMemory)</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>如果想以自定义方式扩充标准形式，可以使用继承机制和using声明式（见条款33）取得标准形式：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Widget</span>: <span class="keyword">public</span> StandardNewDeleteForms&#123;		<span class="comment">//继承标准形式</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">//让这些形式可见</span></span><br><span class="line">    <span class="keyword">using</span> StandardNewDeleteForms::<span class="keyword">operator</span> <span class="keyword">new</span>;</span><br><span class="line">    <span class="keyword">using</span> StandardNewDeleteForms::<span class="keyword">operator</span> <span class="keyword">delete</span>;</span><br><span class="line">    <span class="comment">//添加自己定义的 new/delete</span></span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span>* <span class="keyword">operator</span> <span class="title">new</span><span class="params">(std::<span class="type">size_t</span> size, std::ostream&amp; logStream)</span> <span class="title">throw</span><span class="params">(std:;bad_alloc)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">static</span> <span class="type">void</span> <span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="type">void</span>* pMemory, std::ostream&amp; logStream)</span> <span class="title">throw</span><span class="params">()</span></span>;</span><br><span class="line">    ...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>记住：</p>
+<blockquote>
+<ul>
+<li>当你写一个 placement operator new，请确定也写出了对应的 placement operator delete。如果没有这样做，就可能造成隐蔽的内存泄漏。</li>
+<li>当你声明 placement new 和 placement delete ，请确定不要无意识（非故意）地遮掩了它们的正常版本。</li>
+</ul>
+</blockquote>
+<h1 id="条款53"><a href="#条款53" class="headerlink" title="条款53"></a>条款53</h1><blockquote>
+<p>不要轻忽编译器的警告。</p>
+</blockquote>
+<p>许多程序员习惯性的忽略编译器的警告。他们认为，如果问题很严重，那么编译器应该给一个错误而不是警告。这种想法在C++是不可取的，以一个例子来说明：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">B</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">f</span><span class="params">()</span> <span class="type">const</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">D</span>: <span class="keyword">public</span> B&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="type">void</span> <span class="title">f</span><span class="params">()</span></span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>这里希望 <code>D::f()</code>重新定义 虚函数 <code>B::f()</code>，但其中有个错误，<code>B::f()</code> 是个 const成员函数，而 D 不是。编译器不会报错，可能会给如下警告：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">warning: D::<span class="built_in">f</span>() <span class="function">hides <span class="keyword">virtual</span> <span class="title">B::f</span><span class="params">()</span></span></span><br></pre></td></tr></table></figure>
+
+<p>经验不足的程序员认为这是 “D::f 遮掩了 B::f” ，这正是他们想要的。但这是错的，编译器是在告诉你声明于 B 中 的 f 并未在 D 中被重新声明，而是被整个遮掩了（条款33解释为什么会这样）。如果忽略这个警告，几乎肯定导致错误的程序行为，然后为了找出这个编译器已经告诉你的错误而进行许多调试。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">c++多态规定，基类和派生类中同名虚函数的函数名、返回值类型、函数参数个数及参数类型等必须完全相同。</span><br><span class="line"></span><br><span class="line">如果基类的虚函数后面没有加const，派生类同名的函数后面加了const，那么派生类的函数没有起到虚函数的作用(前提是除了const外，函数的其他参数一样)；同理，如果基类的虚函数后面加了const，而派生类同名函数后面没有加const，派生类的同名函数也没有起到虚函数的作用；如果基类的虚函数后面加了const，派生类同名函数也加了const，那么派生类同名函数起到了虚函数的作用。</span><br><span class="line"></span><br><span class="line">c++规定，同一个函数加不加const，经过编译器编译之后是两个不同的函数，所以基类和派生类的同一个函数，后面加不加const，编译后是两个不同的函数，也就不存在多态。</span><br></pre></td></tr></table></figure>
+
+<p>一旦从编译器的警告信息中获得经验，你将学会了解不同的警告信息意味什么，那往往和它们“看起来“的意义并十分不同。一般认为，写出一个在最高警告级别下也没有任何警告信息的程序是最理想的，然而你一旦对警告信息有了深刻理解，可以选择忽略某些警告信息。但是一定记住在忽略这个警告之前，一定要了解它的真正意义。</p>
+<p>警告信息和编译器相依，不同的编译器有不同的警告标准。所以，草率编程然后倚赖编译器为你指出错误的行为并不可取。例如上面代码中的函数遮掩在另一个编译器中编译，可能没有任何警告。</p>
+<p>记住：</p>
+<blockquote>
+<ul>
+<li>严肃对待编译器发出的警告信息。努力在你的编译器最高警告级别下争取”无任何警告“。</li>
+<li>不要过度依赖编译器的报警能力，因为不同编译器对待事情的态度并不相同。一段有警告的代码，移植到另一个编译器上，可能没有任何警告。</li>
+</ul>
+</blockquote>
+<h1 id="条款54"><a href="#条款54" class="headerlink" title="条款54"></a>条款54</h1><blockquote>
+<p>让自己熟悉包括TR1在内的标准程序库。</p>
+</blockquote>
+<p> C++98列入的C++标准 程序库有哪些主要成分：</p>
+<ul>
+<li>STL(Standard Template Library)：覆盖容器、迭代器、算法、函数对象、各种容器适配器和函数对象适配器。</li>
+<li>Iostreams：覆盖用户自定缓冲功能、国际化I&#x2F;O，以及预先定义好的对象cin，cout，cerr和clog。</li>
+<li>国际化支持：包括多区域能力，像wchar_t和wstring等类型都对促进unicode有所帮助。</li>
+<li>数值处理：包括复数模板和纯数值数组。</li>
+<li>异常阶层体系：包括base class exception及其derived classes logic_error和runtime_error，以及更深继承的各个classes。</li>
+<li>C89标准程序库：1989 C标准程序库内的每个东西也都被覆盖于C++内。</li>
+</ul>
+<p>TR1详细叙述了14个新组件，统统都放在std命名空间内，更正确地说是在其嵌套命名空间tr1内。因此TR1组件shared_ptr的全名是std::tr1::shared_ptr。本书通常在讨论标准程序库组件时略而不写std::，但我总是会在TR1组件之前加上tr1::。</p>
+<p>本书展示以下TR1组件实例：</p>
+<ul>
+<li><p>智能指针tr1::shared_ptr和tr1::weak_ptr。前者的作用有如内置指针，但会记录有多少个tr1::shared_ptrs共同指向同一个对象。所谓的reference counting（引用计数）。一旦最后一个这样的指针被销毁，这个对象被自动删除。但是如果两个或多个这样的指针形成环，这会造成每个对象的引用次数都超过0——即使这个环形的指所有指针都已被销毁。tr1::weak_ptr的设计使其表现像是“非环形tr1::shared_ptr-based数据结构”中的环形感生指针（cycle-including pointers）。tr1::weak_ptr并不参与引用计数的计算；当最后一个指向某对象的tr1::shared_ptr被销毁，纵使还有个tr1::weak_ptrs继续指向同一对象，该对象仍旧会被删除。这种情况下的tr1::weak_ptr会被自动标示无效。</p>
+</li>
+<li><p>tr1::function：此物得以表示任何callable entity（可调用物，也就是任何函数或函数对象），只要其签名符合目标。假设我们想注册一个callback函数，该函数接受一个int并返回一个string，我们可以这么写：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">registerCallback</span><span class="params">(string func(<span class="type">int</span>))</span></span>; <span class="comment">//参数类型是函数，该函数接受一个int并返回一个string</span></span><br></pre></td></tr></table></figure>
+
+<p>其中参数名称func可有可无，所以上述的registerCallback也可以这样声明：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">registerCallback</span><span class="params">(string (<span class="type">int</span>))</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>tr1::function使上述的RegisterCallback有可能更富弹性地接受可调用物，只要这个可调用物接受一个int或任何可转换为int的东西，并返回一个string或任何可被转换为string的东西。tr1::function是个template，以其目标函数的签名为参数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">registerCallback</span><span class="params">(tr1::function&lt;string (<span class="type">int</span>)&gt;func)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>tr1::bind：它能够做STL绑定器bindlst和bind2nd所作的每一件事，而又更多。</p>
+</li>
+</ul>
+<p>其他TR1组件划分为两组。第一组提供彼此不相干的独立机能：</p>
+<ul>
+<li>Hash tables：用来实现sets，multisets，maps和multi-maps。每个新容器的接口都以前任（TR1之前的）对应容器塑膜而成。</li>
+<li>正则表达式：包括以正则表达式为基础的字符串查找和替换，或是从某个匹配字符串到另一个匹配字符串的逐一迭代等等。</li>
+<li>Tuples：这是标准程序库中的pair_template的新一代制品。pair只能持有两个对象，tr1::tuple可持有任意个数的对象。</li>
+<li>tr1::array：本质上是个“STL化”数组，即一个支持成员函数如begin和end的数组，不过tr1::array的大小固定，并不适用动态内存。</li>
+<li>tr1::mem_fn：这是个语句构造上与成员函数指针一致的东西。tr1::mem_fn纳入并扩充了C++98的men_fun和mem_fun_ref的能力。</li>
+<li>tr1::reference_wrapper：一个“让references的行为更像对象”的设施。它可以造成容器“犹如持有references”。而容器实际上只能持有对象或指针。</li>
+<li>随机数生成工具：它大大超越了rand，那是C++继承自C标准程序库的一个函数。</li>
+<li>数学特殊函数：包括Lagnuerre多项式、Bessel函数、完全椭圆积分，以及更多数学函数。</li>
+<li>C99兼容扩充：这是一大堆函数和模板，用来将许多新的C99程序库特性带进C++。</li>
+</ul>
+<p>第二组TR1组件由更精巧的template编程技术（包括template metaprogramming）构成：</p>
+<ul>
+<li>Type traits：一组traits class，用以提供类型的编译期信息。（见条款47）</li>
+<li>tr1::result_of：这是个template，用来推导函数调用的返回类型。当我们编写template时，能够“指涉函数调用动作所返回的对象的类型”往往很重要，但是该类型有可能以复杂的方式取决于函数的参数类型。tr1::result_of使得“指涉函数返回类型”变得十分容易。</li>
+</ul>
+<p>记住：</p>
+<blockquote>
+<ul>
+<li>C++标准程序库的主要机能由STL、iostreams、locales组成。并包含C99标准程序库。</li>
+<li>TR1添加了智能指针、一般化函数指针、hash-based容器、正则表达式以及另外10个组件的支持。</li>
+<li>TR1自身只是一份规范，为获得TR1提供的好处，你需要一份实物。一个好的实物来源是Boost。</li>
+</ul>
+</blockquote>
+<h1 id="条款55"><a href="#条款55" class="headerlink" title="条款55"></a>条款55</h1><blockquote>
+<p>让自己熟悉Boost。</p>
+</blockquote>
+<p>你正在寻找一个高质量，源码开放，平台独立，编译器独立的程序库吗？看看 Boost 吧。有兴趣加入一个由雄心勃勃，充满才干的 C++ 开发人员组成的社群，致力发展当前最高技术水平的程序库吗？看看 Boost 吧。想要一瞥未来 C++ 的面目吗？看看 Boost 吧。</p>
+<p>Boost网址：<a target="_blank" rel="noopener" href="https://www.boost.org/">Boost C++ Libraries</a></p>
+<p>Boost有两点被认为是其它组织所不能比拟的：</p>
+<ul>
+<li>Boost 委员会和 C++ 标准委员会成员有很密切的关系，并对其有着深刻的影响能力。Boost 由标准委员会创立，因此两者成员有着很大重叠。Boost 有个目标：作为一个可被加入到标准 C++ 的功能测试场。这层关系造就的结果是：以 TR1 为例，进入标准 C++ 的 14个新程序库中，超过三分之二奠基于 Boost 的工作成果。</li>
+<li>Boost 接纳新程序库的过程也很有意思。它以公开进行的同僚复审为基础。如果你有意贡献一个程序库给 Boost，首先要对 Boost 开发者邮递开发作品，在评价这个程序库的重要性之后，启动初步审查程序。<ul>
+<li>当你最终正式提交时，你要满足一些最低条件。例如它必须通过至少两个编译器，以展示至此微不足道的可移植性，你必须证明你的程序库是在一个可接受的授权许可下是可用的，例如必须免费商业化和非商业化用途…</li>
+<li>进入复审阶段，会有志愿者查看你的程序库和各种素材，例如源码，设计文档，使用说明等，并考虑以下问题：<ul>
+<li>这份设计和实现有多么好？</li>
+<li>这些代码可跨编译器和操作系统吗？</li>
+<li>这个程序库有可能被它所设定的用户使用吗？</li>
+</ul>
+</li>
+<li>这些对于阻挡低劣的程序库很有帮助，并且<code>启发程序库作者认真考虑一个工业强度，跨平台的程序库设计，实现和文档工程</code>。</li>
+</ul>
+</li>
+</ul>
+<p>Boost 程序库涉及的领域很多：</p>
+<ul>
+<li><p>字符串和文本处理：包括类型安全(type-safe) 的形如printf的格式化库，正则表达式(TR1中相似的功能的基础，看条款54)，tokenizing 和 parsing 。</p>
+</li>
+<li><p>容器：包括STL风格接口的大小固定的数组(fixed-size arrays)，可变大小bitsets,和多维数组(multidimensional arrays.)。</p>
+</li>
+<li><p>函数对象(Function objects)和高阶编程(higher-order programming)：包括几个TR1中作为功能性基础使用的库。一个有趣的库是 Lambda, 它使得凭空创建一个函数对象(function objects)如此容易，你甚至不需要知道到你做了什么：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> boost::lambda;    <span class="comment">//使 boost::lambda可见</span></span><br><span class="line">          std::vector&lt;<span class="type">int</span>&gt; v;</span><br><span class="line">          ...</span><br><span class="line">          std::for_each(v.<span class="built_in">begin</span>(), v.<span class="built_in">end</span>(),     <span class="comment">//遍历v中的元素x，</span></span><br><span class="line">          std::cout &lt;&lt; _1 * <span class="number">2</span> + <span class="number">10</span> &lt;&lt; <span class="string">&quot;n&quot;</span>); <span class="comment">//输出 x*2+10;</span></span><br><span class="line">                                                              <span class="comment">// &quot;_1&quot;是Lambda</span></span><br><span class="line">                                                              <span class="comment">//为当前元素设置的置位符</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>泛型编程(Generic programming)：包括一个traits类的扩展集(看条款 47关于traits 的资料)。 </p>
+</li>
+<li><p>模板元编程(Template metaprogramming TMP 看条款 48)：包括一个Boost MPL 这样的编译期断言库(compile-time assertions)。在MPL极好事情之一是支持STL风格的形如类型(types)的编译期实体的数据结构。 </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建一个形如list(list-like)的编译期容器，容器包括3种数据类型（float, double 和 long double），并命名为&quot;floats&quot;。</span></span><br><span class="line"><span class="keyword">typedef</span> boost::mpl::list&lt;<span class="type">float</span>, <span class="type">double</span>, <span class="type">long</span> <span class="type">double</span>&gt; floats;</span><br><span class="line"><span class="comment">//创建一个新的编译期的由&quot;floats&quot;及在其前端插入的&quot;int&quot;所组成类型的list；并命名新的容器为&quot;types&quot;。</span></span><br><span class="line"><span class="keyword">typedef</span> boost::mpl::push_front&lt;floats, <span class="type">int</span>&gt;::type types; </span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">这样的“类型容器”（经常被称为typelists，虽然他们也基于mpl::list和mpl::vector创建) </span></span><br><span class="line"><span class="comment">打开了通向强大且重要的TMP应用的广阔天地。</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>数学和数值(Math and numerics)：包括有理数库(rational numbers)；octonions和四元数(quaternions)；最大公约数(greatest common divisor)和最小公倍数(common multiple computations)；随机数(另一个影响TR1相关功能的库)。</p>
+</li>
+<li><p>正确性和测试(Correctness and testing)：包括形式化隐式模板接口(formalizing implicit template interfaces (阅读条款 41)) 方便测试优先(test-first) 编程。</p>
+</li>
+<li><p>数据结构(Data structures)：包括类型安全的unions库(例：存储变量的”any”类型)和导致相应TR1功能的tuple库。</p>
+</li>
+<li><p>交互语言支持(Inter-language support)：包括充许在C++和Python之间进行无缝协作的库。</p>
+</li>
+<li><p>内存：包括高性能的固定大小分配的Pool库；多样的智能指针，包括(但不限于)在TR1中的智能指针。非TR1智能指针是scoped array, 为动态分配数组的auto_ptr风格的智能指针; 条款44展示一个使用的例子。</p>
+</li>
+</ul>
+<p>请记住，这只是一份抽样，并不是一份详尽清单。</p>
+<p>Boost 提供的程序库可做的事情有很多，但它并未覆盖编程的所有领域，不过纵使你没能找到刚好符合需求的作品，也一定会在其中发现<code>一些有趣的东西</code>。</p>
+<p>记住：</p>
+<blockquote>
+<ul>
+<li>Boost 是一个社群，也是一个网站。致力于免费，源码开放，同僚复审的 C++ 程序库开发。 Boost 在 C++ 标准化过程中扮演深具影响力的角色。</li>
+<li>Boost 提供许多 TR1 组件实现品，以及其他许多程序库。</li>
 </ul>
 </blockquote>
 
@@ -7348,12 +7966,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">215k</span>
+    <span title="站点总字数">238k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">3:15</span>
+    <span title="站点阅读时长">3:37</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
   </div>
