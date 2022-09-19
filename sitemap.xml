@@ -2,18 +2,18 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://jysama.cn/2022/09/09/TinyWebServer/</loc>
+    <loc>https://jysama.cn/2022/08/23/%E5%8A%9B%E6%89%A3/</loc>
     
-    <lastmod>2022-09-14</lastmod>
+    <lastmod>2022-09-19</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>https://jysama.cn/2022/08/23/%E5%8A%9B%E6%89%A3/</loc>
+    <loc>https://jysama.cn/2022/09/09/TinyWebServer/</loc>
     
-    <lastmod>2022-09-14</lastmod>
+    <lastmod>2022-09-18</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -175,7 +175,7 @@
 
   <url>
     <loc>https://jysama.cn/</loc>
-    <lastmod>2022-09-14</lastmod>
+    <lastmod>2022-09-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
