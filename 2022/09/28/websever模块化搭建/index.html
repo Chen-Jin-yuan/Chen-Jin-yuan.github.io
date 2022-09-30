@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jysama.cn","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前言看完了webserver的c++11（14）的写法并添加了大量注释后，也要开始自己手写一个了。整体的逻辑还没有研究透彻，虽然在写完注释后对思路已经挺清楚了，但是细节上还是很欠缺。 这一篇博客是为动手撸一个服务器而准备的，在这篇博客里，会动手写一些基本的模块，并进行正确性验证。 变量命名没有很规范，因为有时想随意一点，有时又觉得想认真点，(●’◡’●) 环境：ubuntu20.04，c++11及">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WebServer模块单元测试">
+<meta property="og:url" content="https://jysama.cn/2022/09/28/websever%E6%A8%A1%E5%9D%97%E5%8C%96%E6%90%AD%E5%BB%BA/index.html">
+<meta property="og:site_name" content="JySama">
+<meta property="og:description" content="前言看完了webserver的c++11（14）的写法并添加了大量注释后，也要开始自己手写一个了。整体的逻辑还没有研究透彻，虽然在写完注释后对思路已经挺清楚了，但是细节上还是很欠缺。 这一篇博客是为动手撸一个服务器而准备的，在这篇博客里，会动手写一些基本的模块，并进行正确性验证。 变量命名没有很规范，因为有时想随意一点，有时又觉得想认真点，(●’◡’●) 环境：ubuntu20.04，c++11及">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-09-28T11:49:06.623Z">
+<meta property="article:modified_time" content="2022-09-30T15:13:49.644Z">
+<meta property="article:author" content="Jy">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://jysama.cn/2022/09/28/websever%E6%A8%A1%E5%9D%97%E5%8C%96%E6%90%AD%E5%BB%BA/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>WebServer模块单元测试 | JySama</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JySama</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/09/28/websever%E6%A8%A1%E5%9D%97%E5%8C%96%E6%90%AD%E5%BB%BA/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          WebServer模块单元测试
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-09-28 19:49:06" itemprop="dateCreated datePublished" datetime="2022-09-28T19:49:06+08:00">2022-09-28</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-09-30 23:13:49" itemprop="dateModified" datetime="2022-09-30T23:13:49+08:00">2022-09-30</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>看完了webserver的c++11（14）的写法并添加了大量注释后，也要开始自己手写一个了。整体的逻辑还没有研究透彻，虽然在写完注释后对思路已经挺清楚了，但是细节上还是很欠缺。</p>
+<p>这一篇博客是为动手撸一个服务器而准备的，在这篇博客里，会动手写一些基本的模块，并进行正确性验证。</p>
+<p>变量命名没有很规范，因为有时想随意一点，有时又觉得想认真点，(●’◡’●)</p>
+<p>环境：ubuntu20.04，c++11及以上（14更好，c++11的话编译器会对lambda表达式按值捕获发出警告，尽管代码还是能正确运行）</p>
+<h1 id="线程池"><a href="#线程池" class="headerlink" title="线程池"></a>线程池</h1><p>线程池是最简单的，就先从这入手。</p>
+<p>考虑整体的思路：</p>
+<ul>
+<li>首先有一个池初始化若干个线程，每个线程配备一个运行的work函数，这个work函数要循环取任务去执行。</li>
+<li>取任务就有个任务队列，在设计任务队列前，我们想一下任务的形式是什么，要传什么样的什么类型的任务进来。<ul>
+<li>一种选择是传入一个类对象，然后调用类对象的一些工作处理函数，并且还能根据类对象的一些参数来进行不同的处理。</li>
+<li>上面的方式也许是传统的c98的模式，它并不是那么的具有鲁棒性，因为尽管可以通过模板传入不同的类对象，但是类对象必须拥有一个处理函数。如果只是运行这些处理函数，为什么不直接传入一个函数进来呢，这样就可以执行任意的工作了。</li>
+<li>c++11开始，std::function&lt;&gt;就提供了我们想要的功能，无论是函数指针还是函数对象等，都可以使用一个function对象保存然后传入。而那些细节处理交由上层，函数执行所需要的参数由std::bind来绑定给function对象，function本身不需要额外参数，更有灵活性。</li>
+</ul>
+</li>
+<li>因此，我们的任务队列的元素就是std::function。然后，在取队列元素时和加入队列元素时，都需要互斥。队列是一个无界生产者，当队列大小为0时，一般用一个信号量阻塞即可，但我们也知道可以用条件变量来完成这件事，因此这里会用条件变量。<ul>
+<li>在取任务时，首先互斥锁住（判断是否非空前就要锁），然后如果队列非空就取一个任务，解锁，执行任务。如果没有任务，就阻塞，这里用条件变量阻塞。因为要锁和解锁以及给条件变量使用，所以用unique_lock好，但unique_lock不要写在while内，这样会重复定义。</li>
+</ul>
+</li>
+<li>这里先不考虑左值右值，因为本身项目中就不需要用到，从理论上讲考虑的话就更灵活，但没有实例还是不好理解，就先不用了。</li>
+</ul>
+<p>现在，我们可以开始写代码了，这里提一下头文件（注意标准库一般都是std命名空间）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;mutex&gt;:互斥锁等</span><br><span class="line">&lt;thread&gt;:线程</span><br><span class="line">&lt;condition_variable&gt;:条件变量</span><br><span class="line">&lt;functional&gt;:std::function</span><br><span class="line">&lt;queue&gt;:队列</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//threadpool.h</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> THREADPOOL_H</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> THREADPOOL_H</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;condition_variable&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;functional&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;queue&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cassert&gt;</span><span class="comment">//使用assert函数</span></span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">threadpool</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">	std::mutex mtx;<span class="comment">//互斥锁</span></span><br><span class="line">    std::queue&lt;std::function&lt;<span class="type">void</span>()&gt;&gt; taskQueue;<span class="comment">//任务队列，无参数的function，调用时不用传参</span></span><br><span class="line">    std::condition_variable cond;<span class="comment">//条件变量</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">threadpool</span>(<span class="type">int</span> threadnum = <span class="number">8</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">assert</span>(threadnum &gt; <span class="number">0</span>);<span class="comment">//没有线程就报错</span></span><br><span class="line">    	<span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;threadnum;i++)<span class="comment">//创建线程池</span></span><br><span class="line">    		std::<span class="built_in">thread</span>([&amp;]&#123;<span class="comment">//lambda表达式，按引用捕获变量（确保同一地址），无参数无返回值</span></span><br><span class="line">    			std::unique_lock&lt;std::mutex&gt; <span class="built_in">locker</span>(mtx);<span class="comment">//定义一个locker对象，现在已经锁住了</span></span><br><span class="line">                 <span class="keyword">while</span>(<span class="literal">true</span>)</span><br><span class="line">                 &#123;</span><br><span class="line">                     <span class="keyword">if</span>(!taskQueue.<span class="built_in">empty</span>())<span class="comment">//如果有任务</span></span><br><span class="line">                     &#123;</span><br><span class="line">                         <span class="keyword">auto</span> task = taskQueue.<span class="built_in">front</span>();</span><br><span class="line">                         taskQueue.<span class="built_in">pop</span>();</span><br><span class="line">                         locker.<span class="built_in">unlock</span>();</span><br><span class="line">                       	 <span class="comment">//解锁后再执行</span></span><br><span class="line">                         <span class="built_in">task</span>();</span><br><span class="line">                         <span class="comment">//执行完了，进入下一轮循环，注意要锁住</span></span><br><span class="line">                         locker.<span class="built_in">lock</span>();</span><br><span class="line">                     &#125;</span><br><span class="line">                     <span class="keyword">else</span><span class="comment">//如果没有任务</span></span><br><span class="line">                         cond.<span class="built_in">wait</span>(locker);<span class="comment">//解锁并等待，唤醒后会抢占互斥锁</span></span><br><span class="line">                 &#125;</span><br><span class="line">            &#125;).<span class="built_in">detach</span>();<span class="comment">//把thread分离，不用手动join，结束自动回收</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">addTask</span><span class="params">(std::function&lt;<span class="type">void</span>()&gt; task)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">locker</span><span class="params">(mtx)</span></span>;<span class="comment">//定义一个locker对象</span></span><br><span class="line">        taskQueue.<span class="built_in">emplace</span>(task);<span class="comment">//这种方式，使用emplace和push没啥区别，task本身就是临时对象</span></span><br><span class="line">        <span class="comment">//如果要真正使用到emplace调用构造函数，还要配合std::forward完美转发，此时无论构造函数是不是explicit（不能隐式转换），都可以正常工作</span></span><br><span class="line">        cond.<span class="built_in">notify_one</span>();<span class="comment">//插入一个元素唤醒一个线程</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ~<span class="built_in">threadpool</span>()<span class="comment">//析构函数</span></span><br><span class="line">    &#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p>上面的版本基本上已经写好了一个线程池，但还有析构函数没有写。析构函数要析构什么呢，这里好像并没有要手动释放的东西——没有手动使用堆空间，不需要delete。但别忘了，我们的线程是分离的，这里没有去join回收，线程使用的全局变量会产生所谓的detch陷进。</p>
+<p>当进程要退出时，不会再添加任务了，我们更希望线程把这些已有任务都做完再退出，但是主进程退出了会把队列、互斥锁、条件变量都析构掉，使得线程调用这些资源会出错，这就是detch()带来的陷进。在讨论解决方案前，我们再想想为什么要使用detch()：其实就是为了把已有的任务都做完。</p>
+<p>为了做完这些任务，我们就得把线程访问的资源放在堆空间上，这样才不会在进程退出时析构掉资源。因为每个线程都访问这三个资源，因此再用一个结构体封装，线程捕获结构体指针就可以了。为了控制堆上的资源，我们还可以使用共享指针（共享很显然，因为这些线程用的是同一个）。</p>
+<ul>
+<li>创建共享指针的方式有两种，一种是用new，一种是用make_shared函数。尽量使用make_shared，因为new本质上会分配两次内存，一个是new的对象，一个是shared_ptr本身new的计数器（控制块）。而使用make_shared申请一个单独的内存块来存放对象和控制块，更高效，且因为没有顺序是同一时间开辟空间的，具有异常安全。<a target="_blank" rel="noopener" href="https://www.jianshu.com/p/03eea8262c11">C++11 make_shared - 简书 (jianshu.com)</a></li>
+<li>使用make_shared函数要显式指出类型，因为返回值是<code>shared_ptr&lt;T&gt;</code>，返回值类型无法推导，要<code>make_shared&lt;T&gt;</code>指出。</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//改良版threadpool.h</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> THREADPOOL_H</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> THREADPOOL_H</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;condition_variable&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;functional&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;queue&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cassert&gt;</span><span class="comment">//使用assert函数</span></span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">threadpool</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">pool</span><span class="comment">//封装三个资源</span></span><br><span class="line">    &#123;</span><br><span class="line">        std::mutex mtx;<span class="comment">//互斥锁</span></span><br><span class="line">        std::queue&lt;std::function&lt;<span class="type">void</span>()&gt;&gt; taskQueue;<span class="comment">//任务队列，无参数的function，调用时不用传参</span></span><br><span class="line">        std::condition_variable cond;<span class="comment">//条件变量</span></span><br><span class="line">    &#125;;</span><br><span class="line">    std::shared_ptr&lt;pool&gt; pool_;<span class="comment">//共享指针，pool_是一个指针指向pool结构体，这个指针用于线程池操作资源</span></span><br><span class="line">    </span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">threadpool</span>(<span class="type">int</span> threadnum = <span class="number">8</span>):<span class="built_in">pool_</span>(std::<span class="built_in">make_shared</span>&lt;pool&gt;())<span class="comment">//以make_shared的方式new一个对象给pool_指针</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">assert</span>(threadnum &gt; <span class="number">0</span>);<span class="comment">//没有线程就报错</span></span><br><span class="line">    	<span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;threadnum;i++)<span class="comment">//创建线程池</span></span><br><span class="line">    		std::<span class="built_in">thread</span>([<span class="type">pool_t</span> = pool_]&#123;<span class="comment">//现在要按值捕获，相当于拷贝构造共享指针，计数+1，且指向相同内容</span></span><br><span class="line">    			std::unique_lock&lt;std::mutex&gt; <span class="built_in">locker</span>(<span class="type">pool_t</span>-&gt;mtx);<span class="comment">//定义一个locker对象，现在已经锁住了</span></span><br><span class="line">                 <span class="keyword">while</span>(<span class="literal">true</span>)</span><br><span class="line">                 &#123;</span><br><span class="line">                     <span class="keyword">if</span>(!<span class="type">pool_t</span>-&gt;taskQueue.<span class="built_in">empty</span>())<span class="comment">//如果有任务</span></span><br><span class="line">                     &#123;</span><br><span class="line">                         <span class="keyword">auto</span> task = <span class="type">pool_t</span>-&gt;taskQueue.<span class="built_in">front</span>();</span><br><span class="line">                         <span class="type">pool_t</span>-&gt;taskQueue.<span class="built_in">pop</span>();</span><br><span class="line">                         locker.<span class="built_in">unlock</span>();</span><br><span class="line">                       	 <span class="comment">//解锁后再执行</span></span><br><span class="line">                         <span class="built_in">task</span>();</span><br><span class="line">                         <span class="comment">//执行完了，进入下一轮循环，注意要锁住</span></span><br><span class="line">                         locker.<span class="built_in">lock</span>();</span><br><span class="line">                     &#125;</span><br><span class="line">                     <span class="keyword">else</span><span class="comment">//如果没有任务</span></span><br><span class="line">                         <span class="type">pool_t</span>-&gt;cond.<span class="built_in">wait</span>(locker);<span class="comment">//解锁并等待，唤醒后会抢占互斥锁</span></span><br><span class="line">                 &#125;</span><br><span class="line">            &#125;).<span class="built_in">detach</span>();<span class="comment">//把thread分离，不用手动join，结束自动回收</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">addTask</span><span class="params">(std::function&lt;<span class="type">void</span>()&gt; task)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">locker</span><span class="params">(pool_-&gt;mtx)</span></span>;<span class="comment">//定义一个locker对象</span></span><br><span class="line">        pool_-&gt;taskQueue.<span class="built_in">emplace</span>(task);<span class="comment">//这种方式，使用emplace和push没啥区别，task本身就是临时对象</span></span><br><span class="line">        <span class="comment">//如果要真正使用到emplace调用构造函数，还要配合std::forward完美转发，此时无论构造函数是不是explicit（不能隐式转换），都可以正常工作</span></span><br><span class="line">        pool_-&gt;cond.<span class="built_in">notify_one</span>();<span class="comment">//插入一个元素唤醒一个线程</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ~<span class="built_in">threadpool</span>()<span class="comment">//析构函数</span></span><br><span class="line">    &#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p>现在，我们已经解决了detch陷进，只要线程执行完任务，我们就退出线程，那么我们的析构函数只需要传递一个信号，让线程得知主进程已经退出了，线程根据信号作出反应即可。注意，因为线程要把工作做完再退出，所以优先级是!empty()，如果没有任务，我们是先看要不要退出，再进行等待，所以在if-else中插入一个else if判断即可。</p>
+<p>注意，线程有可能卡在条件变量的wait处，所以析构函数还要唤醒所有的线程，让它们处理任务（如果有）并退出。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//最终版threadpool.h</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> THREADPOOL_H</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> THREADPOOL_H</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;mutex&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;condition_variable&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;functional&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;queue&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cassert&gt;</span><span class="comment">//使用assert函数</span></span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">threadpool</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">pool</span><span class="comment">//封装三个资源</span></span><br><span class="line">    &#123;</span><br><span class="line">        std::mutex mtx;<span class="comment">//互斥锁</span></span><br><span class="line">        std::queue&lt;std::function&lt;<span class="type">void</span>()&gt;&gt; taskQueue;<span class="comment">//任务队列，无参数的function，调用时不用传参</span></span><br><span class="line">        std::condition_variable cond;<span class="comment">//条件变量</span></span><br><span class="line">        <span class="type">bool</span> isclose = <span class="literal">false</span>;<span class="comment">//默认值是false</span></span><br><span class="line">    &#125;;</span><br><span class="line">    std::shared_ptr&lt;pool&gt; pool_;<span class="comment">//共享指针，pool_是一个指针指向pool结构体，这个指针用于线程池操作资源</span></span><br><span class="line">    </span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">threadpool</span>(<span class="type">int</span> threadnum = <span class="number">8</span>):<span class="built_in">pool_</span>(std::<span class="built_in">make_shared</span>&lt;pool&gt;())<span class="comment">//以make_shared的方式new一个对象给pool_指针</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">assert</span>(threadnum &gt; <span class="number">0</span>);<span class="comment">//没有线程就报错</span></span><br><span class="line">    	<span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">0</span>;i&lt;threadnum;i++)<span class="comment">//创建线程池</span></span><br><span class="line">    		std::<span class="built_in">thread</span>([<span class="type">pool_t</span> = pool_]&#123;<span class="comment">//现在要按值捕获，相当于拷贝构造共享指针，计数+1，且指向相同内容</span></span><br><span class="line">    			std::unique_lock&lt;std::mutex&gt; <span class="built_in">locker</span>(<span class="type">pool_t</span>-&gt;mtx);<span class="comment">//定义一个locker对象，现在已经锁住了</span></span><br><span class="line">                 <span class="keyword">while</span>(<span class="literal">true</span>)</span><br><span class="line">                 &#123;</span><br><span class="line">                     <span class="keyword">if</span>(!<span class="type">pool_t</span>-&gt;taskQueue.<span class="built_in">empty</span>())<span class="comment">//如果有任务</span></span><br><span class="line">                     &#123;</span><br><span class="line">                         <span class="keyword">auto</span> task = <span class="type">pool_t</span>-&gt;taskQueue.<span class="built_in">front</span>();</span><br><span class="line">                         <span class="type">pool_t</span>-&gt;taskQueue.<span class="built_in">pop</span>();</span><br><span class="line">                         locker.<span class="built_in">unlock</span>();</span><br><span class="line">                       	 <span class="comment">//解锁后再执行</span></span><br><span class="line">                         <span class="built_in">task</span>();</span><br><span class="line">                         <span class="comment">//执行完了，进入下一轮循环，注意要锁住</span></span><br><span class="line">                         locker.<span class="built_in">lock</span>();<span class="comment">//抢占锁</span></span><br><span class="line">                     &#125;</span><br><span class="line">                     <span class="keyword">else</span> <span class="keyword">if</span>(<span class="type">pool_t</span>-&gt;isclose)</span><br><span class="line">                         <span class="keyword">break</span>;</span><br><span class="line">                     <span class="keyword">else</span><span class="comment">//如果没有任务</span></span><br><span class="line">                         <span class="type">pool_t</span>-&gt;cond.<span class="built_in">wait</span>(locker);<span class="comment">//解锁并等待，唤醒后会抢占互斥锁</span></span><br><span class="line">                 &#125;</span><br><span class="line">            &#125;).<span class="built_in">detach</span>();<span class="comment">//把thread分离，不用手动join，结束自动回收</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">addTask</span><span class="params">(std::function&lt;<span class="type">void</span>()&gt; task)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">locker</span><span class="params">(pool_-&gt;mtx)</span></span>;<span class="comment">//定义一个locker对象</span></span><br><span class="line">        pool_-&gt;taskQueue.<span class="built_in">emplace</span>(task);<span class="comment">//这种方式，使用emplace和push没啥区别，task本身就是临时对象</span></span><br><span class="line">        <span class="comment">//如果要真正使用到emplace调用构造函数，还要配合std::forward完美转发，此时无论构造函数是不是explicit（不能隐式转换），都可以正常工作</span></span><br><span class="line">        pool_-&gt;cond.<span class="built_in">notify_one</span>();<span class="comment">//插入一个元素唤醒一个线程</span></span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    ~<span class="built_in">threadpool</span>()<span class="comment">//析构函数</span></span><br><span class="line">    &#123;</span><br><span class="line">        pool_-&gt;isclose = <span class="literal">true</span>;</span><br><span class="line">        pool_-&gt;cond.<span class="built_in">notify_all</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<h2 id="test"><a href="#test" class="headerlink" title="test"></a>test</h2><p>以上基本就大功告成了，现在，我们来写一个test函数。</p>
+<p>为了确认线程是否正确退出，我们在else if那打印退出信息：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span>(<span class="type">pool_t</span>-&gt;isclose)</span><br><span class="line">&#123;</span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;thread exit!&quot;</span>&lt;&lt;std::endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//test_threadpool.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;threadpool.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span><span class="comment">//使用sleep</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostraem&gt;</span><span class="comment">//cout</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span><span class="comment">//pthread_exit</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">task</span><span class="params">(<span class="type">int</span> id)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;this is [&quot;</span>&lt;&lt;id&lt;&lt;<span class="string">&quot;] task&quot;</span>&lt;&lt;endl;</span><br><span class="line">    <span class="built_in">sleep</span>(id);<span class="comment">//睡眠id秒</span></span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;[&quot;</span>&lt;&lt;id&lt;&lt;<span class="string">&quot;] task quit！&quot;</span>&lt;&lt;endl;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">threadpool <span class="title">threadp</span><span class="params">(<span class="number">10</span>)</span></span>;<span class="comment">//十个线程</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">5</span>;i&lt;<span class="number">20</span>;i++)</span><br><span class="line">    	threadp.<span class="built_in">addTask</span>(<span class="built_in">bind</span>(task,i));<span class="comment">//bind 绑定task函数，并赋参数i，返回一个function对象</span></span><br><span class="line">    <span class="built_in">pthread_exit</span>(<span class="literal">NULL</span>);<span class="comment">//告知系统不用回收进程所有资源，等待子线程退出</span></span><br><span class="line">   	<span class="keyword">return</span> <span class="number">0</span>;<span class="comment">//不能直接return！会把所有线程都回收</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意std::thread内部调用了pthread，linux不一定把pthread作为默认库，所以编译时候要链接，编译的命令为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g++ -std=c++14 -o test_threadpool test_threadpool.cpp -lpthread</span><br></pre></td></tr></table></figure>
+
+<p>再者，当主进程return后，即使子线程是detch的，也会被系统回收资源。在 《UNIX 网络编程》卷一 第 537 页，有这么一句话：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">如果进程的main函数返回或者任何线程调用了 exit， 整个进程就终止，其中包括它的任何线程。</span><br></pre></td></tr></table></figure>
+
+<p>程序return，间接调用了exit()函数，因为一个线程调用exit函数，导致整个进程的退出。要想系统并不回收进程的所有资源，可以调用pthread_exit()；然后等其他线程终止退出。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//运行结果，数一下线程有没有正常退出</span></span><br><span class="line">sun2@ubuntu:~/Desktop/websever_test$ g++ -std=c++<span class="number">14</span> -o test_threadpool test_threadpool.cpp -lpthread</span><br><span class="line">sun2@ubuntu:~/Desktop/websever_test$ ./test_threadpool</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">5</span>] task</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">6</span>] task</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">7</span>] task</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">8</span>] task</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">9</span>] task</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">10</span>] task</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">11</span>] task</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">12</span>] task</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">13</span>] task</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">14</span>] task</span><br><span class="line">[<span class="number">5</span>] task quit！</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">15</span>] task</span><br><span class="line">[<span class="number">6</span>] task quit！</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">16</span>] task</span><br><span class="line">[<span class="number">7</span>] task quit！</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">17</span>] task</span><br><span class="line">[<span class="number">8</span>] task quit！</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">18</span>] task</span><br><span class="line">[<span class="number">9</span>] task quit！</span><br><span class="line"><span class="keyword">this</span> is [<span class="number">19</span>] task</span><br><span class="line">[<span class="number">10</span>] task quit！</span><br><span class="line">thread exit!	<span class="comment">//1</span></span><br><span class="line">[<span class="number">11</span>] task quit！</span><br><span class="line">thread exit!	<span class="comment">//2</span></span><br><span class="line">[<span class="number">12</span>] task quit！</span><br><span class="line">thread exit!	<span class="comment">//3</span></span><br><span class="line">[<span class="number">13</span>] task quit！</span><br><span class="line">thread exit!	<span class="comment">//4</span></span><br><span class="line">[<span class="number">14</span>] task quit！</span><br><span class="line">thread exit!	<span class="comment">//5</span></span><br><span class="line">[<span class="number">15</span>] task quit！</span><br><span class="line">thread exit!	<span class="comment">//6</span></span><br><span class="line">[<span class="number">16</span>] task quit！</span><br><span class="line">thread exit!	<span class="comment">//7</span></span><br><span class="line">[<span class="number">17</span>] task quit！</span><br><span class="line">thread exit!	<span class="comment">//8</span></span><br><span class="line">[<span class="number">18</span>] task quit！</span><br><span class="line">thread exit!	<span class="comment">//9</span></span><br><span class="line">[<span class="number">19</span>] task quit！</span><br><span class="line">thread exit!	<span class="comment">//10</span></span><br><span class="line"><span class="comment">//test成功</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="日志系统"><a href="#日志系统" class="headerlink" title="日志系统"></a>日志系统</h1><p>这一块比较复杂，分解知识点，一点点细学。</p>
+<h2 id="时间类chrono"><a href="#时间类chrono" class="headerlink" title="时间类chrono"></a>时间类chrono</h2><p>这个在日志系统用了一点，不过也可以用来输出时间，就在这里学习了。</p>
+<h3 id="Duration"><a href="#Duration" class="headerlink" title="Duration"></a>Duration</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//duration表示一段时间间隔，用来记录时间长度，可以表示几秒钟、几分钟或者几个小时的时间间隔，duration的原型是：</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">class</span> <span class="title class_">Rep</span>, <span class="keyword">class</span> <span class="title class_">Period</span> = std::ratio&lt;<span class="number">1</span>&gt;&gt; <span class="keyword">class</span> duration;</span><br><span class="line"><span class="comment">//第一个模板参数Rep是一个数值类型，表示时钟个数；第二个模板参数是一个默认模板参数std::ratio，它的原型是：</span></span><br><span class="line"><span class="keyword">template</span>&lt;std::<span class="type">intmax_t</span> Num, std::<span class="type">intmax_t</span> Denom = <span class="number">1</span>&gt; <span class="keyword">class</span> ratio;</span><br></pre></td></tr></table></figure>
+
+<p>ratio表示每个时钟周期的秒数，其中第一个模板参数Num代表分子，Denom代表分母，分母默认为1，ratio代表的是一个分子除以分母的分数值，比如ratio&lt;2&gt;代表一个时钟周期是两秒，ratio&lt;60&gt;代表了一分钟，ratio&lt;60*60&gt;代表一个小时，ratio&lt;60*60*24&gt;代表一天。而ratio&lt;1, 1000&gt;代表的则是1&#x2F;1000秒即一毫秒，ratio&lt;1, 1000000&gt;代表一微秒，ratio&lt;1, 1000000000&gt;代表一纳秒。标准库为了方便使用，就定义了一些常用的时间间隔，如时、分、秒、毫秒、微秒和纳秒，在chrono命名空间下，它们的定义如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> duration &lt;Rep, ratio&lt;<span class="number">3600</span>,<span class="number">1</span>&gt;&gt; hours;</span><br><span class="line"><span class="keyword">typedef</span> duration &lt;Rep, ratio&lt;<span class="number">60</span>,<span class="number">1</span>&gt;&gt; minutes;</span><br><span class="line"><span class="keyword">typedef</span> duration &lt;Rep, ratio&lt;<span class="number">1</span>,<span class="number">1</span>&gt;&gt; seconds;</span><br><span class="line"><span class="keyword">typedef</span> duration &lt;Rep, ratio&lt;<span class="number">1</span>,<span class="number">1000</span>&gt;&gt; milliseconds;</span><br><span class="line"><span class="keyword">typedef</span> duration &lt;Rep, ratio&lt;<span class="number">1</span>,<span class="number">1000000</span>&gt;&gt; microseconds;</span><br><span class="line"><span class="keyword">typedef</span> duration &lt;Rep, ratio&lt;<span class="number">1</span>,<span class="number">1000000000</span>&gt;&gt; nanoseconds;</span><br><span class="line"> </span><br><span class="line"><span class="comment">//通过定义这些常用的时间间隔类型，我们能方便的使用它们，比如线程的休眠：</span></span><br><span class="line">std::this_thread::<span class="built_in">sleep_for</span>(std::chrono::<span class="built_in">seconds</span>(<span class="number">3</span>)); <span class="comment">//休眠三秒</span></span><br><span class="line">std::this_thread::<span class="built_in">sleep_for</span>(std::chrono:: <span class="built_in">milliseconds</span> (<span class="number">100</span>)); <span class="comment">//休眠100毫秒</span></span><br></pre></td></tr></table></figure>
+
+<p> chrono还提供了获取时间间隔的时钟周期个数的方法count() ，count()返回的间隔要向0取整，可以为负数:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//chrono还提供了获取时间间隔的时钟周期个数的方法count()，它的基本用法：</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::chrono::milliseconds ms&#123;<span class="number">3</span>&#125;; <span class="comment">// 3 毫秒</span></span><br><span class="line">    <span class="comment">// 6000 microseconds constructed from 3 milliseconds</span></span><br><span class="line">    std::chrono::microseconds us = <span class="number">2</span>*ms; <span class="comment">//6000微秒</span></span><br><span class="line">    <span class="comment">// 30Hz clock using fractional ticks</span></span><br><span class="line">    std::chrono::duration&lt;<span class="type">double</span>, std::ratio&lt;<span class="number">1</span>, <span class="number">30</span>&gt;&gt; <span class="built_in">hz30</span>(<span class="number">3.5</span>);</span><br><span class="line">    std::cout &lt;&lt;  <span class="string">&quot;3 ms duration has &quot;</span> &lt;&lt; ms.<span class="built_in">count</span>() &lt;&lt; <span class="string">&quot; ticks\n&quot;</span>&lt;&lt;  <span class="string">&quot;6000 us duration has &quot;</span> &lt;&lt; us.<span class="built_in">count</span>() &lt;&lt; <span class="string">&quot; ticks\n&quot;</span></span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line">输出：</span><br><span class="line"><span class="number">3</span> ms duration has <span class="number">3</span> ticks</span><br><span class="line"><span class="number">6000</span> us duration has <span class="number">6000</span> ticks</span><br></pre></td></tr></table></figure>
+
+<p>时间间隔之间可以做运算，比如下面的例子中计算两端时间间隔的差值： </p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//都是duration类型</span></span><br><span class="line">std::<span class="function">chrono::minutes <span class="title">t1</span><span class="params">( <span class="number">10</span> )</span></span>;</span><br><span class="line">std::<span class="function">chrono::seconds <span class="title">t2</span><span class="params">( <span class="number">60</span> )</span></span>;</span><br><span class="line">std::chrono::seconds t3 = t1 - t2;</span><br><span class="line">std::cout &lt;&lt; t3.<span class="built_in">count</span>() &lt;&lt; <span class="string">&quot; second&quot;</span> &lt;&lt; std::endl;</span><br></pre></td></tr></table></figure>
+
+<p>其中，t1 是代表 10 分钟、t2 是代表 60 秒，t3 则是 t1 減去 t2，也就是 600 - 60 &#x3D; 540 秒。通过t1-t2的count输出差值为540个时钟周期即540秒（因为每个时钟周期为一秒）。</p>
+<p>还可以通过**duration_cast&lt;&gt;()**来将当前的时钟周期转换为其它的时钟周期，比如我可以把秒的时钟周期转换为分钟的时钟周期，然后通过count来获取转换后的分钟时间间隔：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cout &lt;&lt; chrono::<span class="built_in">duration_cast</span>&lt;chrono::minutes&gt;( t3 ).<span class="built_in">count</span>() &lt;&lt;” minutes”&lt;&lt; endl;</span><br><span class="line">将会输出:</span><br><span class="line"><span class="number">9</span> minutes</span><br></pre></td></tr></table></figure>
+
+<p>使用转型后，数值就不一定是整数个tick()了，比如t2&#x3D;30s时，转型后就是9分半，这时使用count()会向下取整，只取到9。</p>
+<h3 id="clock"><a href="#clock" class="headerlink" title="clock"></a>clock</h3><p>谈到时间，总需要找一个时钟作为参照。clock就是这个时钟，在计算机中一般都会有一套或多套时钟系统供程序使用。在std::chrono库中，有3种时钟：</p>
+<ul>
+<li>system_clock</li>
+<li>steady_clock</li>
+<li>hight_definition_clock</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">system_clock</span></span><br><span class="line">&#123;	<span class="comment">// wraps GetSystemTimePreciseAsFileTime/GetSystemTimeAsFileTime</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">long</span> <span class="type">long</span> rep;</span><br><span class="line"><span class="keyword">typedef</span> ratio_multiply&lt;ratio&lt;_XTIME_NSECS_PER_TICK, <span class="number">1</span>&gt;, nano&gt; period;</span><br><span class="line"><span class="keyword">typedef</span> chrono::duration&lt;rep, period&gt; duration;</span><br><span class="line"><span class="keyword">typedef</span> chrono::time_point&lt;system_clock&gt; time_point;</span><br><span class="line"><span class="type">static</span> <span class="keyword">constexpr</span> <span class="type">bool</span> is_steady = <span class="literal">false</span>;<span class="comment">//steady_clock是true</span></span><br><span class="line"><span class="comment">//函数定义，注意都是静态成员函数，使用时用system_clock::func()调用</span></span><br></pre></td></tr></table></figure>
+
+<p>一般情况下，他们3个没有太大的区别，hight_definition_clock、steady_clock仅仅是system_clock的typedef，但是有为什么要区分呢，因为在有些情况下，他们是存在差异的。</p>
+<ul>
+<li>情况1：system_clock和steady_clock的差异<ul>
+<li>比如windows系统可以提供时钟，如果认为时间不准，我们还可以进行调整。在没有调整时间前，system_clock和steady_clck是一样的，他们的读数都是单调匀速增加的；但是如果调整时间后，它们两者的读数就会出现差异，system_clock的读数就会出现跳变，而steady_clock依然保持线性单调递增，不受clock调整的影响，这个特点非常方便我们统计时间耗时（duration）。</li>
+</ul>
+</li>
+<li>情况2：system_clock与hight_definition_clock的差异<ul>
+<li>如果系统提供的时钟（clock）不止一种，有的时钟精度高（分辨率），有的精度低，hight_definition_clock使用时精度最高的clock，但是system_clock就不一定了。</li>
+</ul>
+</li>
+</ul>
+<p>clock主要用于获取当前的时间，通过now()方法获取，返回一个time_point，方法如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">std::chrono::system_clock::time_point current_time = std::chrono::system_clock::<span class="built_in">now</span>();</span><br></pre></td></tr></table></figure>
+
+<p>还有两个函数方法：to_time_t()：参数是time_point，转换到time_t；from_time_t()：从time_t转换过来。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// system_clock example</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;chrono&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::chrono::duration&lt;<span class="type">int</span>, std::ratio&lt;<span class="number">60</span>*<span class="number">60</span>*<span class="number">24</span>&gt; &gt; <span class="built_in">one_day</span>(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 根据时钟得到现在时间</span></span><br><span class="line">    std::chrono::system_clock::time_point today = std::chrono::system_clock::<span class="built_in">now</span>();</span><br><span class="line">    std::<span class="type">time_t</span> time_t_today = std::chrono::system_clock::<span class="built_in">to_time_t</span>(today);</span><br><span class="line">    std::cout &lt;&lt;  <span class="string">&quot;now time stamp is &quot;</span> &lt;&lt; time_t_today &lt;&lt; std::endl;</span><br><span class="line">    std::cout &lt;&lt;  <span class="string">&quot;now time is &quot;</span> &lt;&lt; <span class="built_in">ctime</span>(&amp;time_t_today) &lt;&lt; std::endl;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 看看明天的时间，time_point支持一些算术元算，比如两个time_point的差值时钟周期数，还可以和duration相加减</span></span><br><span class="line">    std::chrono::system_clock::time_point tomorrow = today + one_day;</span><br><span class="line">    std::<span class="type">time_t</span> time_t_tomorrow = std::chrono::system_clock::<span class="built_in">to_time_t</span>(tomorrow);</span><br><span class="line">    std::cout &lt;&lt;  <span class="string">&quot;tomorrow time stamp is &quot;</span> &lt;&lt; time_t_tomorrow &lt;&lt; std::endl;</span><br><span class="line">    std::cout &lt;&lt;  <span class="string">&quot;tomorrow time is &quot;</span> &lt;&lt; <span class="built_in">ctime</span>(&amp;time_t_tomorrow) &lt;&lt; std::endl;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 计算下个小时时间</span></span><br><span class="line">    std::chrono::system_clock::time_point next_hour = today + std::chrono::<span class="built_in">hours</span>(<span class="number">1</span>);</span><br><span class="line">    std::<span class="type">time_t</span> time_t_next_hour = std::chrono::system_clock::<span class="built_in">to_time_t</span>(next_hour);</span><br><span class="line">    std::chrono::system_clock::time_point next_hour2 = std::chrono::system_clock::<span class="built_in">from_time_t</span>(time_t_next_hour);</span><br><span class="line"></span><br><span class="line">    std::<span class="type">time_t</span> time_t_next_hour2 = std::chrono::system_clock::<span class="built_in">to_time_t</span>(next_hour2);</span><br><span class="line">    std::cout &lt;&lt;  <span class="string">&quot;tomorrow time stamp is &quot;</span> &lt;&lt; time_t_next_hour2 &lt;&lt; std::endl;</span><br><span class="line">    std::cout &lt;&lt;  <span class="string">&quot;tomorrow time is &quot;</span> &lt;&lt; <span class="built_in">ctime</span>(&amp;time_t_next_hour2) &lt;&lt; std::endl;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//</span></span><br><span class="line">now time stamp is <span class="number">1586662332</span></span><br><span class="line">now time is Sun Apr <span class="number">12</span> <span class="number">11</span>:<span class="number">32</span>:<span class="number">12</span> <span class="number">2020</span></span><br><span class="line"></span><br><span class="line">tomorrow time stamp is <span class="number">1586748732</span></span><br><span class="line">tomorrow time is Mon Apr <span class="number">13</span> <span class="number">11</span>:<span class="number">32</span>:<span class="number">12</span> <span class="number">2020</span></span><br><span class="line"></span><br><span class="line">tomorrow time stamp is <span class="number">1586665932</span></span><br><span class="line">tomorrow time is Sun Apr <span class="number">12</span> <span class="number">12</span>:<span class="number">32</span>:<span class="number">12</span> <span class="number">2020</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="time-point"><a href="#time-point" class="headerlink" title="time_point"></a>time_point</h3><p>time_point是具体的时间，比如某年某月某日几点几分几秒，time_point依赖于clock的计时，可以用clock内部定义的time_point，也可以用自己定义的time_point。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//一个模板是时钟类型clock，一个是计时间隔duration</span></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">Clock</span>, <span class="keyword">class</span> <span class="title class_">Duration</span> = <span class="keyword">typename</span> Clock::duration&gt;  <span class="keyword">class</span> time_point;</span><br></pre></td></tr></table></figure>
+
+<p>time_point有一个函数time_from_epoch()用来获得1970年1月1日到time_point时间经过的duration。举个例子，如果timepoint以天为单位，函数返回的duration就以天为单位。</p>
+<p>由于各种time_point表示方式不同，chrono也提供了相应的转换函数 time_point_cast。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">class</span> <span class="title class_">ToDuration</span>, <span class="keyword">class</span> <span class="title class_">Clock</span>, <span class="keyword">class</span> <span class="title class_">Duration</span>&gt;</span><br><span class="line"><span class="function">time_point&lt;Clock,ToDuration&gt; <span class="title">time_point_cast</span> <span class="params">(<span class="type">const</span> time_point&lt;Clock,Duration&gt;&amp; tp)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//计算当前时间距离1970年1月一日有多少天:</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;ratio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;chrono&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span> <span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">using</span> <span class="keyword">namespace</span> std::chrono;</span><br><span class="line">  <span class="keyword">typedef</span> duration&lt;<span class="type">int</span>,std::ratio&lt;<span class="number">60</span>*<span class="number">60</span>*<span class="number">24</span>&gt;&gt; days_type;</span><br><span class="line">  <span class="comment">//now获取后返回的是system_clock类的timepoint类型，转型为天，给用户定义的timepoint</span></span><br><span class="line">  time_point&lt;system_clock,days_type&gt; today = <span class="built_in">time_point_cast</span>&lt;days_type&gt;(system_clock::<span class="built_in">now</span>());</span><br><span class="line">  <span class="comment">//调用epoch获得duration，调用count()计数</span></span><br><span class="line">  std::cout &lt;&lt; today.<span class="built_in">time_since_epoch</span>().<span class="built_in">count</span>() &lt;&lt; <span class="string">&quot; days since epoch&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>这部分主要是三种类型穿插，让人比较迷糊。一般的用法就是：</p>
+<ul>
+<li>使用一个时钟的time_point，通过now()方法获取</li>
+<li>要想直接输出就把获取的time_point通过to_time_t()转换后输出，这里还可以进一步用ctime函数格式化（返回char*）。注意time_point不能直接输出。</li>
+<li>如果要继续处理，有两种运算方式<ul>
+<li>定义duration，与time_point进行运算（一般是求和），运算后又是一个time_point，time_point之间本身可以大小比较</li>
+<li>time_point之间作差，返回一个duration，可以用duration_cast转换类型，调用count()计算有多少tick。如果不转类型，system_clock的time_point一般是纳秒，用count的话很大。</li>
+</ul>
+</li>
+</ul>
+<h3 id="test-1"><a href="#test-1" class="headerlink" title="test"></a>test</h3><p>主要实现几个实例吧：</p>
+<ul>
+<li>实现时间格式化输出：<ul>
+<li>当前时间</li>
+<li>两小时后</li>
+<li>两天后</li>
+</ul>
+</li>
+<li>实现时间点大小比较</li>
+<li>实现时间点运算count。</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//时间类demo</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;chrono&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">printft</span><span class="params">(chrono::system_clock::time_point time)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">time_t</span> tt = chrono::system_clock::<span class="built_in">to_time_t</span>(time);</span><br><span class="line">    <span class="comment">//timepoint不能直接输出</span></span><br><span class="line">    <span class="comment">//cout &lt;&lt; &quot;timepoint&quot;&lt;&lt; time &lt;&lt;endl &lt;&lt; &quot;time:&quot; &lt;&lt; tt &lt;&lt;endl &lt;&lt; &quot;ctime:&quot;&lt;&lt;ctime(&amp;tt)&lt;&lt;endl&lt;&lt;endl;</span></span><br><span class="line">    cout &lt;&lt;<span class="string">&quot;time:&quot;</span> &lt;&lt; tt &lt;&lt;endl &lt;&lt; <span class="string">&quot;ctime:&quot;</span>&lt;&lt;<span class="built_in">ctime</span>(&amp;tt)&lt;&lt;endl&lt;&lt;endl;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//now</span></span><br><span class="line">    chrono::system_clock::time_point nowtime = chrono::system_clock::<span class="built_in">now</span>();</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;--------------now time----------------------&quot;</span>&lt;&lt;endl;</span><br><span class="line">    <span class="built_in">printft</span>(nowtime);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//定义duration</span></span><br><span class="line">    <span class="function">chrono::hours <span class="title">twoh</span><span class="params">(<span class="number">2</span>)</span></span>;</span><br><span class="line">    chrono::time_point&lt;chrono::system_clock&gt; twohtime = nowtime+twoh;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;--------------two hours after----------------------&quot;</span>&lt;&lt;endl;</span><br><span class="line">    <span class="built_in">printft</span>(twohtime);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//自定义一天的间隔，一天的秒数是60*60*24</span></span><br><span class="line">    <span class="keyword">typedef</span> chrono::duration&lt;<span class="type">int</span>, std::ratio&lt;<span class="number">60</span>*<span class="number">60</span>*<span class="number">24</span>&gt; &gt; day;</span><br><span class="line">    <span class="function">day <span class="title">twod</span><span class="params">(<span class="number">2</span>)</span></span>;</span><br><span class="line">    chrono::time_point&lt;chrono::system_clock&gt; twodtime = nowtime+twod;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;--------------two days after----------------------&quot;</span>&lt;&lt;endl;</span><br><span class="line">    <span class="built_in">printft</span>(twodtime);</span><br><span class="line">    </span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;--------------time_point之间比较大小----------------------&quot;</span>&lt;&lt;endl;</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *str = (twodtime&gt;nowtime)?<span class="string">&quot;大&quot;</span> : <span class="string">&quot;小&quot;</span>;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;两天后时间比两天前要&quot;</span>&lt;&lt;str&lt;&lt;endl;</span><br><span class="line">    </span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;--------------timepoint之间作差转型查看时间点间隔tick----------------------&quot;</span>&lt;&lt;endl;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;两天后和两天前间隔 &quot;</span>&lt;&lt;chrono::<span class="built_in">duration_cast</span>&lt;chrono::hours&gt;(twodtime-nowtime).<span class="built_in">count</span>()&lt;&lt;<span class="string">&quot; 小时&quot;</span>&lt;&lt;endl;</span><br><span class="line">    cout&lt;&lt;<span class="string">&quot;system_clock time_point不转换类型tick：&quot;</span>&lt;&lt;(twodtime-nowtime).<span class="built_in">count</span>()&lt;&lt;endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//编译命令</span></span><br><span class="line">g++ -std=c++<span class="number">14</span> -o chrono_test chrono_test.cpp</span><br><span class="line"><span class="comment">//输出</span></span><br><span class="line">sun2@ubuntu:~/Desktop/websever_test/chrono_test$ ./chrono_test</span><br><span class="line">--------------now time----------------------</span><br><span class="line">time:<span class="number">1664526100</span></span><br><span class="line">ctime:Fri Sep <span class="number">30</span> <span class="number">01</span>:<span class="number">21</span>:<span class="number">40</span> <span class="number">2022</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">--------------two hours after----------------------</span><br><span class="line">time:<span class="number">1664533300</span></span><br><span class="line">ctime:Fri Sep <span class="number">30</span> <span class="number">03</span>:<span class="number">21</span>:<span class="number">40</span> <span class="number">2022</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">--------------two days after----------------------</span><br><span class="line">time:<span class="number">1664698900</span></span><br><span class="line">ctime:Sun Oct  <span class="number">2</span> <span class="number">01</span>:<span class="number">21</span>:<span class="number">40</span> <span class="number">2022</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">--------------time_point之间比较大小----------------------</span><br><span class="line">两天后时间比两天前要大</span><br><span class="line">--------------timepoint之间作差转型查看时间点间隔tick----------------------</span><br><span class="line">两天后和两天前间隔 <span class="number">48</span> 小时</span><br><span class="line">system_clock time_point不转换类型tick：<span class="number">172800000000000</span><span class="comment">//这里可以看出是纳秒</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="可变参宏va-list"><a href="#可变参宏va-list" class="headerlink" title="可变参宏va_list"></a>可变参宏va_list</h2><h3 id="变长参数"><a href="#变长参数" class="headerlink" title="变长参数"></a>变长参数</h3><p>在无法给出所有传递给函数的参数的类型和数目时，可以使用省略号（…）指定函数参数表。有如下几种形式：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">fun1</span><span class="params">(<span class="type">int</span> a, <span class="type">double</span> b, ...)</span></span>; <span class="comment">//给出确定的几个参数，其他用省略号</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">fun2</span><span class="params">(<span class="type">int</span> a ...)</span></span>;            <span class="comment">//省略号前有或者没有逗号都是可以的</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">fun3</span><span class="params">(...)</span></span>;                  <span class="comment">//也可以不确定任何参数，但和没有参数是不一样的</span></span><br></pre></td></tr></table></figure>
+
+<p>最典型的应用就是printf函数，printf的声明和调用方法如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">printf</span><span class="params">( <span class="type">const</span> <span class="type">char</span> *format [,argument]... )</span></span>;    <span class="comment">//官方声明</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;My name is %s, age %d.&quot;</span>, <span class="string">&quot;AnnieKim&quot;</span>, <span class="number">24</span>);   <span class="comment">//调用</span></span><br></pre></td></tr></table></figure>
+
+<p>通常情况下，第一个参数是必不可少的，因为它可以得到函数参数的地址入口，这样就可以取之后的参数。</p>
+<h3 id="宏"><a href="#宏" class="headerlink" title="宏"></a>宏</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">可变参数是由宏实现的，但是由于硬件平台的不同，编译器的不同，宏的定义也不相同</span><br><span class="line">头文件&lt;stdarg.h&gt;</span><br><span class="line"><span class="keyword">typedef</span> <span class="type">char</span> * va_list;     <span class="comment">// TC中定义为void*</span></span><br><span class="line"><span class="comment">//为了满足需要内存对齐的系统</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _INTSIZEOF(n)    ((sizeof(n)+sizeof(int)-1)&amp;~(sizeof(int) - 1) ) </span></span><br><span class="line"></span><br><span class="line"><span class="comment">//ap指向第一个变参的位置，即将第一个变参的地址赋予ap</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> va_start(ap,v)    ( ap = (va_list)&amp;v + _INTSIZEOF(v) )</span></span><br><span class="line"><span class="comment">/*获取变参的具体内容，t为变参的类型，如有多个参数，则通过移动ap的指针来获得变参的地址，从而获得内容*/</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> va_arg(ap,t)       ( *(t *)((ap += _INTSIZEOF(t)) - _INTSIZEOF(t)) )   </span></span><br><span class="line"><span class="comment">//清空va_list，即结束变参的获取</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> va_end(ap) ( ap = (va_list)0 )   </span></span><br></pre></td></tr></table></figure>
+
+<p>基本使用步骤：</p>
+<ul>
+<li>定义一个va_list类型的变量，变量是指向参数的指针。</li>
+<li>va_start初始化刚定义的变量，第二个参数是<strong>最后一个</strong>显式声明的参数。</li>
+<li>va_arg返回变长参数的值，第二个参数是该变长参数的<strong>类型</strong>。</li>
+<li>va_end将第一步定义的va_list变量重置为NULL。</li>
+</ul>
+<p>注意问题：</p>
+<p>（1）可变参数的类型和个数完全由程序代码控制,它并不能智能地识别不同参数的个数和类型；</p>
+<p>（2）如果我们不需要一一详解每个参数，只需要将可变列表拷贝至某个缓冲，可用vsprintf函数；</p>
+<p>（3）因为编译器对可变参数的函数的原型检查不够严格,对编程查错不利.不利于我们写出高质量的代码；</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//C 库函数 int vsprintf(char *str, const char *format, va_list arg) 使用参数列表发送格式化输出到字符串。</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">vsprintf</span><span class="params">(<span class="type">char</span> *str, <span class="type">const</span> <span class="type">char</span> *format, va_list arg)</span></span></span><br><span class="line"><span class="function"><span class="comment">//即把参数列表中遍历到的一个一个参数，根据format格式写到str里。</span></span></span><br><span class="line"><span class="function"> </span></span><br><span class="line"><span class="function"><span class="comment">//例子</span></span></span><br><span class="line"><span class="function"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span></span><br><span class="line"><span class="function"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdarg.h&gt;</span></span></span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="type">char</span> buffer[80]</span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">vspfunc</span><span class="params">(<span class="type">char</span> *format, ...)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   va_list aptr;</span><br><span class="line">   <span class="type">int</span> ret;</span><br><span class="line"></span><br><span class="line">   <span class="built_in">va_start</span>(aptr, format);</span><br><span class="line">   ret = <span class="built_in">vsprintf</span>(buffer, format, aptr);</span><br><span class="line">   <span class="built_in">va_end</span>(aptr);</span><br><span class="line"></span><br><span class="line">   <span class="keyword">return</span>(ret);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">   <span class="type">int</span> i = <span class="number">5</span>;</span><br><span class="line">   <span class="type">float</span> f = <span class="number">27.0</span>;</span><br><span class="line">   <span class="type">char</span> str[<span class="number">50</span>] = <span class="string">&quot;runoob.com&quot;</span>;</span><br><span class="line"></span><br><span class="line">   <span class="built_in">vspfunc</span>(<span class="string">&quot;%d %f %s&quot;</span>, i, f, str);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;%s\n&quot;</span>, buffer);</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">return</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//结果</span></span><br><span class="line"><span class="number">5</span> <span class="number">27.000000</span> runoob.com</span><br></pre></td></tr></table></figure>
+
+<p>还有vsnprintf，多了个size，size说明了str最多可写的字节，防止越界</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">vsnprintf</span><span class="params">(<span class="type">char</span> *str, <span class="type">size_t</span> size, <span class="type">const</span> <span class="type">char</span> *format, va_list ap)</span></span>;</span><br></pre></td></tr></table></figure>
+
+<h3 id="test-2"><a href="#test-2" class="headerlink" title="test"></a>test</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdarg.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">//测试va_arg，va_arg不会自动结束，不会有=&quot;&quot;返回</span></span><br><span class="line"><span class="comment">/*错误代码，va_arg读完还读下去会内存错误</span></span><br><span class="line"><span class="comment">void valist(const char* str1,...)</span></span><br><span class="line"><span class="comment">&#123;</span></span><br><span class="line"><span class="comment">    va_list vaList;</span></span><br><span class="line"><span class="comment">    va_start(vaList,str1);</span></span><br><span class="line"><span class="comment">    std::string str;</span></span><br><span class="line"><span class="comment">    while((str = va_arg(vaList,const char*))!=&quot;&quot;)</span></span><br><span class="line"><span class="comment">        std::cout&lt;&lt;str&lt;&lt;std::endl;</span></span><br><span class="line"><span class="comment">    va_end(vaList);</span></span><br><span class="line"><span class="comment">&#125;</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//遵循古老的传统，要么加个结束元判断结束，要么让第一个参数指明参数个数手动结束</span></span><br><span class="line"><span class="comment">//加结束元</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">valist1</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* str1,...)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    va_list vaList;</span><br><span class="line">    <span class="built_in">va_start</span>(vaList,str1);</span><br><span class="line">    std::string str = str1;<span class="comment">//va_arg从str1的下一个参数开始，str1这个参数自己获取</span></span><br><span class="line">    <span class="keyword">while</span>(str!=<span class="string">&quot;break&quot;</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        std::cout&lt;&lt;str&lt;&lt;std::endl;</span><br><span class="line">        str = <span class="built_in">va_arg</span>(vaList, <span class="type">const</span> <span class="type">char</span>*);<span class="comment">//获取下一个参数</span></span><br><span class="line">    &#125;</span><br><span class="line">   <span class="comment">//结束     </span></span><br><span class="line">   <span class="built_in">va_end</span>(vaList);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">valist2</span><span class="params">(<span class="type">int</span> arglen ,<span class="type">const</span> <span class="type">char</span>* str1,...)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    va_list vaList;</span><br><span class="line">    <span class="built_in">va_start</span>(vaList,str1);</span><br><span class="line">    std::string str = str1;<span class="comment">//va_arg从str1的下一个参数开始，str1这个参数自己获取</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=<span class="number">1</span>;i&lt;arglen;i++)<span class="comment">//i=1开始是因为第一个已经获取</span></span><br><span class="line">    &#123;</span><br><span class="line">        std::cout&lt;&lt;str&lt;&lt;std::endl;</span><br><span class="line">        str = <span class="built_in">va_arg</span>(vaList, <span class="type">const</span> <span class="type">char</span>*);<span class="comment">//获取下一个参数</span></span><br><span class="line">    &#125;</span><br><span class="line">    std::cout&lt;&lt;str&lt;&lt;std::endl;<span class="comment">//这里要多打印一次，因为最后一次取到参数没打印就退出了</span></span><br><span class="line">   <span class="comment">//结束     </span></span><br><span class="line">   <span class="built_in">va_end</span>(vaList);</span><br><span class="line">&#125;</span><br><span class="line">          </span><br><span class="line">          </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::cout&lt;&lt;std::endl;</span><br><span class="line">    <span class="built_in">valist1</span>(<span class="string">&quot;hello&quot;</span>,<span class="string">&quot;myfriend&quot;</span>,<span class="string">&quot;nihaoya&quot;</span>,<span class="string">&quot;break&quot;</span>);</span><br><span class="line">    </span><br><span class="line">    std::cout&lt;&lt;std::endl;</span><br><span class="line">    <span class="built_in">valist2</span>(<span class="number">5</span>,<span class="string">&quot;hi&quot;</span>,<span class="string">&quot;wish you&quot;</span>,<span class="string">&quot;happy&quot;</span>,<span class="string">&quot;health&quot;</span>,<span class="string">&quot;every day&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//运行情况</span></span><br><span class="line">sun2@ubuntu:~/Desktop/websever_test/valist$ g++ -std=c++<span class="number">14</span> -o valist_test valist_test.cpp</span><br><span class="line">sun2@ubuntu:~/Desktop/websever_test/valist$ ./valist_test</span><br><span class="line"></span><br><span class="line">hello</span><br><span class="line">myfriend</span><br><span class="line">nihaoya</span><br><span class="line"></span><br><span class="line">hi</span><br><span class="line">wish you</span><br><span class="line">happy</span><br><span class="line">health</span><br><span class="line">every day</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//vsprintf使用</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdarg.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">vsptest</span><span class="params">(<span class="type">char</span>* buffer,<span class="type">const</span> <span class="type">char</span>* format,...)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    va_list vaList;</span><br><span class="line">    <span class="built_in">va_start</span>(vaList,format);</span><br><span class="line">    <span class="comment">//解析format这个格式，把后面的参数按照格式填入，格式中暗示了参数的类型</span></span><br><span class="line">    <span class="built_in">vsprintf</span>(buffer,format,vaList);</span><br><span class="line">    <span class="built_in">va_end</span>(vaList);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">vsnptest</span><span class="params">(<span class="type">char</span>* buffer,<span class="type">size_t</span> size,<span class="type">const</span> <span class="type">char</span>* format,...)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    va_list vaList;</span><br><span class="line">    <span class="built_in">va_start</span>(vaList,format);</span><br><span class="line">    <span class="comment">//解析format这个格式，把后面的参数按照格式填入，格式中暗示了参数的类型</span></span><br><span class="line">    <span class="built_in">vsnprintf</span>(buffer,size,format,vaList);<span class="comment">//测试一下这个size，看看会怎么样</span></span><br><span class="line">    <span class="built_in">va_end</span>(vaList);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;----------测试vsprintf-------------&quot;</span>&lt;&lt;std::endl;</span><br><span class="line">    <span class="type">char</span> buffer1[<span class="number">50</span>];</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *format1 = <span class="string">&quot;%s is %d years old, %s&quot;</span>;</span><br><span class="line">    <span class="built_in">vsptest</span>(buffer1,format1,<span class="string">&quot;jy&quot;</span>,<span class="number">20</span>,<span class="string">&quot;good!&quot;</span>);</span><br><span class="line">    std::cout&lt;&lt;buffer1&lt;&lt;std::endl&lt;&lt;std::endl;</span><br><span class="line">    </span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;----------测试vsnprintf-------------&quot;</span>&lt;&lt;std::endl;</span><br><span class="line">    <span class="type">char</span> buffer2[<span class="number">50</span>];</span><br><span class="line">    <span class="type">const</span> <span class="type">char</span> *format2 = <span class="string">&quot;%s is %d years old, %s&quot;</span>;</span><br><span class="line">    <span class="built_in">vsnptest</span>(buffer2,<span class="number">10</span>,format2,<span class="string">&quot;xuepi&quot;</span>,<span class="number">20</span>,<span class="string">&quot;nice!&quot;</span>);<span class="comment">//只有10的size</span></span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;只有10的buffer size： &quot;</span>&lt;&lt;buffer2&lt;&lt;std::endl;</span><br><span class="line">    <span class="built_in">vsnptest</span>(buffer2,<span class="number">50</span>,format2,<span class="string">&quot;xuepi&quot;</span>,<span class="number">20</span>,<span class="string">&quot;nice!&quot;</span>);<span class="comment">//50</span></span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;拥有50的buffer size： &quot;</span>&lt;&lt;buffer2&lt;&lt;std::endl&lt;&lt;std::endl;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//如果size超出了buffer的大小会怎么样呢</span></span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;----------测试vsnprintf，并且size超出了buffer的大小-------------&quot;</span>&lt;&lt;std::endl;</span><br><span class="line">    <span class="type">char</span> buffer3[<span class="number">10</span>];</span><br><span class="line">    <span class="built_in">vsnptest</span>(buffer3,<span class="number">50</span>,format2,<span class="string">&quot;xuepi&quot;</span>,<span class="number">20</span>,<span class="string">&quot;nice!&quot;</span>);<span class="comment">//有50的size</span></span><br><span class="line">    std::cout&lt;&lt;buffer3&lt;&lt;std::endl;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//测试结果</span></span><br><span class="line">sun2@ubuntu:~/Desktop/websever_test/valist$ g++ -std=c++<span class="number">14</span> -o vstest  vstest.cpp</span><br><span class="line">sun2@ubuntu:~/Desktop/websever_test/valist$ ./vstest</span><br><span class="line">----------测试vsprintf-------------</span><br><span class="line">jy is <span class="number">20</span> years old, good!</span><br><span class="line"></span><br><span class="line">----------测试vsnprintf-------------</span><br><span class="line">只有<span class="number">10</span>的buffer size： xuepi is </span><br><span class="line">拥有<span class="number">50</span>的buffer size： xuepi is <span class="number">20</span> years old, nice!</span><br><span class="line"></span><br><span class="line">----------测试vsnprintf，并且size超出了buffer的大小-------------</span><br><span class="line">xuepi is <span class="number">20</span> years old, nice!</span><br><span class="line"><span class="comment">//可以看出即使超出了buffer的size也不会报错，而是继续向buffer拷贝，打印时因为首地址的关系会全打印出来</span></span><br><span class="line"><span class="comment">//这个size参数是给vsnprintf的，告诉它最多写多少进buffer，可以与buffer本身的大小无关，但一般会关联到buffer的大小</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="小结-1"><a href="#小结-1" class="headerlink" title="小结"></a>小结</h3><p>四部曲，其中va_arg和vsprintf互相替换，看要哪个。va_arg就只能传一样的参数类型，可以做运算，vsprintf可以传不同的类型但是最后要写入一个char*的buffer。</p>
+<p>也可以两个同时用，取完va_arg的参数，剩下的给vsprintf。</p>
+<p>vsprintf和vsnprintf返回写入的字节数。</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Jy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jysama.cn/2022/09/28/websever%E6%A8%A1%E5%9D%97%E5%8C%96%E6%90%AD%E5%BB%BA/" title="WebServer模块单元测试">https://jysama.cn/2022/09/28/websever模块化搭建/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/09/21/websever-c++11/" rel="prev" title="TinyWebServer-C++11">
+      <i class="fa fa-chevron-left"></i> TinyWebServer-C++11
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81NjM2Ny8zMjgzMA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E6%B1%A0"><span class="nav-number">2.</span> <span class="nav-text">线程池</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#test"><span class="nav-number">2.1.</span> <span class="nav-text">test</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%97%A5%E5%BF%97%E7%B3%BB%E7%BB%9F"><span class="nav-number">3.</span> <span class="nav-text">日志系统</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E7%B1%BBchrono"><span class="nav-number">3.1.</span> <span class="nav-text">时间类chrono</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Duration"><span class="nav-number">3.1.1.</span> <span class="nav-text">Duration</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#clock"><span class="nav-number">3.1.2.</span> <span class="nav-text">clock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#time-point"><span class="nav-number">3.1.3.</span> <span class="nav-text">time_point</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93"><span class="nav-number">3.1.4.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#test-1"><span class="nav-number">3.1.5.</span> <span class="nav-text">test</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%AF%E5%8F%98%E5%8F%82%E5%AE%8Fva-list"><span class="nav-number">3.2.</span> <span class="nav-text">可变参宏va_list</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E9%95%BF%E5%8F%82%E6%95%B0"><span class="nav-number">3.2.1.</span> <span class="nav-text">变长参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%8F"><span class="nav-number">3.2.2.</span> <span class="nav-text">宏</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#test-2"><span class="nav-number">3.2.3.</span> <span class="nav-text">test</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B0%8F%E7%BB%93-1"><span class="nav-number">3.2.4.</span> <span class="nav-text">小结</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jy"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Jy</p>
+  <div class="site-description" itemprop="description">Re：从零开始的写博客生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">17</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jy</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">290k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">4:23</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
