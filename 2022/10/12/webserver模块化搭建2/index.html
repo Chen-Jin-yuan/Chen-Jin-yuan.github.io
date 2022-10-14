@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jysama.cn","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前言接着上一篇博客WebServer模块单元测试，写得太多了代码解析就很慢了，重新开一篇。 epoll封装上一篇末尾给出了epoll的实例，每次添加事件、修改事件、删除事件都是差不多的流程，可以封装一下，并且epollfd的create和close可以变成RAII的管理模式。 因为上层调用时，事件的类型是不一样的（读转读、读转写、写转写等），为了接口易用与通用，让上层传入events描述事件类型。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="WebServer模块单元测试2">
+<meta property="og:url" content="https://jysama.cn/2022/10/12/webserver%E6%A8%A1%E5%9D%97%E5%8C%96%E6%90%AD%E5%BB%BA2/index.html">
+<meta property="og:site_name" content="JySama">
+<meta property="og:description" content="前言接着上一篇博客WebServer模块单元测试，写得太多了代码解析就很慢了，重新开一篇。 epoll封装上一篇末尾给出了epoll的实例，每次添加事件、修改事件、删除事件都是差不多的流程，可以封装一下，并且epollfd的create和close可以变成RAII的管理模式。 因为上层调用时，事件的类型是不一样的（读转读、读转写、写转写等），为了接口易用与通用，让上层传入events描述事件类型。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-10-12T06:02:16.527Z">
+<meta property="article:modified_time" content="2022-10-12T07:38:20.082Z">
+<meta property="article:author" content="Jy">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://jysama.cn/2022/10/12/webserver%E6%A8%A1%E5%9D%97%E5%8C%96%E6%90%AD%E5%BB%BA2/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>WebServer模块单元测试2 | JySama</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JySama</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/10/12/webserver%E6%A8%A1%E5%9D%97%E5%8C%96%E6%90%AD%E5%BB%BA2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          WebServer模块单元测试2
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-10-12 14:02:16 / 修改时间：15:38:20" itemprop="dateCreated datePublished" datetime="2022-10-12T14:02:16+08:00">2022-10-12</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>441</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>接着上一篇博客<code>WebServer模块单元测试</code>，写得太多了代码解析就很慢了，重新开一篇。</p>
+<h1 id="epoll封装"><a href="#epoll封装" class="headerlink" title="epoll封装"></a>epoll封装</h1><p>上一篇末尾给出了epoll的实例，每次添加事件、修改事件、删除事件都是差不多的流程，可以封装一下，并且epollfd的create和close可以变成RAII的管理模式。</p>
+<p>因为上层调用时，事件的类型是不一样的（读转读、读转写、写转写等），为了接口易用与通用，让上层传入events描述事件类型。events是一个uinit32_t，也即32位无符号整数类型。</p>
+<p>封装很简单，只需要支持添加、修改、删除、调用epoll_wait、设置非阻塞（这个也让上层决定，默认非阻塞）即可。</p>
+<h2 id="设置非阻塞"><a href="#设置非阻塞" class="headerlink" title="设置非阻塞"></a>设置非阻塞</h2><p>这个功能设置在这里是因为每个要添加进来的事件都可以顺便进行阻塞与非阻塞的设置（而且一般来说事件的模式都是一致的）</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">阻塞方式是文件读写操作的默认方式，但是应用程序员可通过使用O_NONBLOCK 标志来人为</span></span><br><span class="line"><span class="comment">的设置读写操作为非阻塞方式 .( 该标志定义在 &lt; linux/fcntl.h &gt; 中，在打开文件时指定 ) .</span></span><br><span class="line"><span class="comment"> </span></span><br><span class="line"><span class="comment">如果设置了 O_NONBLOCK 标志，read 和 write 的行为是不同的 ，如果进程没有数据就绪时调用了 read ，</span></span><br><span class="line"><span class="comment">或者在缓冲区没有空间时调用了 write ，系统只是简单的返回 EAGAIN，而不会阻塞进程.</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//fcntl系统调用可以用来对已打开的文件描述符进行各种控制操作以改变已打开文件的的各种属性</span></span><br><span class="line"><span class="comment">//F_GETFL：获取文件打开方式的标志，标志值含义与open调用一致，然后或上非阻塞标志</span></span><br><span class="line"><span class="comment">//F_SETFL：设置文件打开方式标志为arg指定方式</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">setFdNonblock</span><span class="params">(<span class="type">int</span> fd)</span> </span>&#123;<span class="comment">//不判断fd是否小于0，让上层判断</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">fcntl</span>(fd, F_SETFL, <span class="built_in">fcntl</span>(fd, F_GETFL, <span class="number">0</span>) | O_NONBLOCK);<span class="comment">//出错返回-1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="事件处理"><a href="#事件处理" class="headerlink" title="事件处理"></a>事件处理</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">addFd</span><span class="params">(<span class="type">int</span> fd, <span class="type">uint32_t</span> events)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(fd &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="comment">//如果需要设置非阻塞，根据布尔运算就会调用SetFdNonblock函数，如果返回不是-1就成功，是-1就返回false</span></span><br><span class="line">    <span class="keyword">if</span>(nonBlock &amp;&amp; (<span class="built_in">setFdNonblock</span>(fd)==<span class="number">-1</span>))</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">    epoll_event ev = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    ev.data.fd = fd;<span class="comment">//关联fd</span></span><br><span class="line">    ev.events = events;<span class="comment">//上层设置好类型</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span> == <span class="built_in">epoll_ctl</span>(epollFd, EPOLL_CTL_ADD, fd, &amp;ev);<span class="comment">//add，成功返回0</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">modFd</span><span class="params">(<span class="type">int</span> fd, <span class="type">uint32_t</span> events)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(fd &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    epoll_event ev = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    ev.data.fd = fd;</span><br><span class="line">    ev.events = events;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span> == <span class="built_in">epoll_ctl</span>(epollFd, EPOLL_CTL_MOD, fd, &amp;ev);<span class="comment">//mod</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">bool</span> <span class="title">delFd</span><span class="params">(<span class="type">int</span> fd)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(fd &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span> == <span class="built_in">epoll_ctl</span>(epollFd, EPOLL_CTL_DEL, fd, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="返回就绪事件"><a href="#返回就绪事件" class="headerlink" title="返回就绪事件"></a>返回就绪事件</h2><p>这里上层创建一个events数组把地址传进来接收就绪事件，函数返回值是就绪事件个数。虽然c++定义一个结构体类型可以不写struct（c要），但还是写出来好些</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//对于timeout：-1：永远等待；0：不等待直接返回，执行下面的代码；其他：在超时时间内没有事件发生，返回0，如果有事件发生立即返回</span></span><br><span class="line"><span class="comment">//默认不等待</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">wait</span><span class="params">(<span class="keyword">struct</span> epoll_event* events, <span class="type">int</span> eventSize, <span class="type">int</span> timeoutMs = <span class="number">0</span>)</span> </span>&#123;<span class="comment">//成功返回多少事件就绪，超时返回0，出错返回-1</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">epoll_wait</span>(epollFd, events, eventSize, timeoutMs);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="完整代码"><a href="#完整代码" class="headerlink" title="完整代码"></a>完整代码</h2><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//Epoller.h</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifndef</span> EPOLLER_H</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> EPOLLER_H</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/epoll.h&gt;</span> <span class="comment">//epoll操作</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span>  <span class="comment">// fcntl()</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span> <span class="comment">// close()</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cassert&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Epoller</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> epollFd;</span><br><span class="line">    <span class="type">const</span> <span class="type">bool</span> nonBlock;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Epoller</span>(<span class="type">const</span> <span class="type">bool</span> ifNonBlock = <span class="literal">true</span>):<span class="built_in">nonBlock</span>(ifNonBlock),<span class="built_in">epollFd</span>(<span class="built_in">epoll_create</span>(<span class="number">5</span>))</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">assert</span>(epollFd&gt;=<span class="number">0</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    ~<span class="built_in">Epoller</span>()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">close</span>(epollFd);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">setFdNonblock</span><span class="params">(<span class="type">int</span> fd)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">    	<span class="keyword">return</span> <span class="built_in">fcntl</span>(fd, F_SETFL, <span class="built_in">fcntl</span>(fd, F_GETFL, <span class="number">0</span>) | O_NONBLOCK);<span class="comment">//出错返回-1</span></span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">addFd</span><span class="params">(<span class="type">int</span> fd, <span class="type">uint32_t</span> events)</span> </span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(fd &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="comment">//如果需要设置非阻塞，根据布尔运算就会调用SetFdNonblock函数，如果返回不是-1就成功，是-1就返回false</span></span><br><span class="line">        <span class="keyword">if</span>(nonBlock &amp;&amp; (<span class="built_in">setFdNonblock</span>(fd)==<span class="number">-1</span>))</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line"></span><br><span class="line">        epoll_event ev = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">        ev.data.fd = fd;<span class="comment">//关联fd</span></span><br><span class="line">        ev.events = events;<span class="comment">//上层设置好类型</span></span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span> == <span class="built_in">epoll_ctl</span>(epollFd, EPOLL_CTL_ADD, fd, &amp;ev);<span class="comment">//add，成功返回0</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="type">bool</span> <span class="title">modFd</span><span class="params">(<span class="type">int</span> fd, <span class="type">uint32_t</span> events)</span> </span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(fd &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        epoll_event ev = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">        ev.data.fd = fd;</span><br><span class="line">        ev.events = events;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span> == <span class="built_in">epoll_ctl</span>(epollFd, EPOLL_CTL_MOD, fd, &amp;ev);<span class="comment">//mod</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="function"><span class="type">bool</span> <span class="title">delFd</span><span class="params">(<span class="type">int</span> fd)</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(fd &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span> == <span class="built_in">epoll_ctl</span>(epollFd, EPOLL_CTL_DEL, fd, <span class="number">0</span>);</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//对于timeout：-1：永远等待；0：不等待直接返回，执行下面的代码；其他：在超时时间内没有事件发生，返回0，如果有事件发生立即返回</span></span><br><span class="line">    <span class="comment">//默认不等待</span></span><br><span class="line">    <span class="function"><span class="type">int</span> <span class="title">wait</span><span class="params">(<span class="keyword">struct</span> epoll_event* events, <span class="type">int</span> eventSize, <span class="type">int</span> timeoutMs = <span class="number">0</span>)</span> <span class="comment">//成功返回多少事件就绪，超时返回0，出错返回-1</span></span></span><br><span class="line"><span class="function">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">epoll_wait</span>(epollFd, events, eventSize, timeoutMs);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Jy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jysama.cn/2022/10/12/webserver%E6%A8%A1%E5%9D%97%E5%8C%96%E6%90%AD%E5%BB%BA2/" title="WebServer模块单元测试2">https://jysama.cn/2022/10/12/webserver模块化搭建2/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/09/28/websever%E6%A8%A1%E5%9D%97%E5%8C%96%E6%90%AD%E5%BB%BA/" rel="prev" title="WebServer模块单元测试">
+      <i class="fa fa-chevron-left"></i> WebServer模块单元测试
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2022/10/14/%E5%8F%8C%E7%B3%BB%E7%BB%9F%E5%AE%89%E8%A3%85/" rel="next" title="windows10+ubuntu20.04LTS双系统安装">
+      windows10+ubuntu20.04LTS双系统安装 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81NjM2Ny8zMjgzMA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#epoll%E5%B0%81%E8%A3%85"><span class="nav-number">2.</span> <span class="nav-text">epoll封装</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E9%9D%9E%E9%98%BB%E5%A1%9E"><span class="nav-number">2.1.</span> <span class="nav-text">设置非阻塞</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8B%E4%BB%B6%E5%A4%84%E7%90%86"><span class="nav-number">2.2.</span> <span class="nav-text">事件处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%94%E5%9B%9E%E5%B0%B1%E7%BB%AA%E4%BA%8B%E4%BB%B6"><span class="nav-number">2.3.</span> <span class="nav-text">返回就绪事件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8C%E6%95%B4%E4%BB%A3%E7%A0%81"><span class="nav-number">2.4.</span> <span class="nav-text">完整代码</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jy"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Jy</p>
+  <div class="site-description" itemprop="description">Re：从零开始的写博客生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">19</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jy</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">307k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">4:39</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
