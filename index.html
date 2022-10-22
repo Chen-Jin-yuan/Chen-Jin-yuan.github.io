@@ -167,6 +167,92 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/10/22/%E5%87%BD%E6%95%B0%E6%A8%A1%E6%9D%BF%E9%97%AE%E9%A2%98/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/10/22/%E5%87%BD%E6%95%B0%E6%A8%A1%E6%9D%BF%E9%97%AE%E9%A2%98/" class="post-title-link" itemprop="url">函数模板问题</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-10-22 19:46:32 / 修改时间：20:00:50" itemprop="dateCreated datePublished" datetime="2022-10-22T19:46:32+08:00">2022-10-22</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>757</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>函数模板的声明和定义写在一个头文件里，因为这样在别的cpp（假设是main）里调用（相当于这个cpp就有定义）才能实例化。</p>
+<p>否则main-cpp（只有声明没有定义）调用生成的obj文件会去这个头文件（函数模板的声明）对应的obj文件找相应的实例化的函数的二进制代码，但是那个obj文件对应的cpp只有定义而没有调用！而没有调用就没有实例化，所以对应的obj文件也没有实例化函数的二进制代码，这样链接就出事了。</p>
+<hr>
+<p>不能在函数模板中打算使用不同的case针对不同的类型进行操作（比如0对int，1对string），因为对于一个类型的函数模板调用就实例化了整个函数，这些case也会被实例在这个类型上，就会出现类型不匹配的错误（错误可不管你case几，因为调用首先要实例化，实例化就发现出错了，没有管参数是多少）。</p>
+<p>比如用case0，并且实例化一个int，但是case1中也要根据int生成二进制代码，但人家是string类型，就出错了</p>
+<p>这对if也是一样的。</p>
+<p>比如这样，这些map对应不同的类型，就会出错。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%87%BD%E6%95%B0%E6%A8%A1%E6%9D%BF%E9%97%AE%E9%A2%981.png" alt="image-20221022195741403"></p>
+<hr>
+<p>上面说了case中采用不同的类型，实际上也不能在case中调用不同类型的模板函数。不要用函数模板（假设是1）调用多个函数模板（假设是2）。</p>
+<p>比如一个函数模板1里switch调用不同的模板2，你只希望根据case和相应的参数来调用某个模板2，但是由于其他函数模板2也会根据这些参数的类型实例化，然而实例化很可能出错，因为你可能只考虑了某个case，而这些模板2是不同的实现。</p>
+<p>比如这样，函数模板2根据map的参数和key的参数推导，但模板1只考虑了某个case和对应的key的类型，这会导致后面的case中出现map和key类型不匹配（因为map的类型1是和key类型共用的）</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%87%BD%E6%95%B0%E6%A8%A1%E6%9D%BF%E9%97%AE%E9%A2%982.png" alt="image-20221022195831467"></p>
+<p>还是那个问题，实例化考虑参数的类型，执行才考虑参数的值。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/10/18/extern%E9%97%AE%E9%A2%98/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -6108,148 +6194,10 @@ unsigned int alarm（unsigned int seconds);
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/08/08/c++stringTOint/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Jy">
-      <meta itemprop="description" content="Re：从零开始的写博客生活">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="JySama">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/08/08/c++stringTOint/" class="post-title-link" itemprop="url">将string类型转换为int类型</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-08-08 19:36:18 / 修改时间：20:04:43" itemprop="dateCreated datePublished" datetime="2022-08-08T19:36:18+08:00">2022-08-08</time>
-            </span>
-
-          <br>
-            <span class="post-meta-item" title="本文字数">
-              <span class="post-meta-item-icon">
-                <i class="far fa-file-word"></i>
-              </span>
-                <span class="post-meta-item-text">本文字数：</span>
-              <span>1.2k</span>
-            </span>
-            <span class="post-meta-item" title="阅读时长">
-              <span class="post-meta-item-icon">
-                <i class="far fa-clock"></i>
-              </span>
-                <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
-            </span>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>首先提出解决方案：</p>
-<ul>
-<li>atoi（头文件<code>&lt;stdlib.h&gt;</code>）：<ul>
-<li><code>int atoi(const char *str)</code>该函数返回转换后的长整数，如果没有执行有效的转换，则返回零。</li>
-</ul>
-</li>
-<li>strtol（头文件<code>&lt;stdlib.h&gt;</code>）：<ul>
-<li><code>long int strtol(const char *str, char **endptr, int base)</code>该函数返回转换后的长整数，如果没有执行有效的转换，则返回一个零值。</li>
-<li><strong>str</strong> – 要转换为长整数的字符串。</li>
-<li><strong>endptr</strong> – 对类型为 char* 的对象的引用，其值由函数设置为 <strong>str</strong> 中数值后的下一个字符。（即把整数部分后面的字符串返回）</li>
-<li><strong>base</strong> – 基数，必须介于 2 和 36（包含）之间，或者是特殊值 0。</li>
-</ul>
-</li>
-<li>stoi（头文件<code>&lt;string&gt;</code>）：<ul>
-<li><code>int stoi (const string&amp; str, size_t* idx = 0, int base = 10);</code></li>
-</ul>
-</li>
-</ul>
-<p>这几个有什么不同呢？下面测试对比。</p>
-<blockquote>
-<p>C语言风格函数</p>
-</blockquote>
-<p>atoi与strtol对比：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">string str = <span class="string">&quot;16s&quot;</span>;</span><br><span class="line"><span class="type">int</span> a = <span class="built_in">atoi</span>(str.<span class="built_in">c_str</span>());</span><br><span class="line"><span class="type">int</span> b = <span class="built_in">strtol</span>(str.<span class="built_in">c_str</span>(), <span class="literal">nullptr</span>, <span class="number">10</span>);</span><br></pre></td></tr></table></figure>
-
-<p>输出：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">atoi的结果为:<span class="number">16</span></span><br><span class="line">strtol的结果为:<span class="number">16</span></span><br></pre></td></tr></table></figure>
-
-<p>这两个函数都是从字符串开始寻找数字或者正负号或者小数点，遇到非法字符终止（<strong>即匹配第一个出现的连续的数字</strong>）。</p>
-<p>所以到上述s字符就不输出了，提前结束，也就是说<strong>当你的字符串不是数字的时候，或者小数点等非数字，不会报异常！直接输出0</strong>。</p>
-<p>例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">string str = <span class="string">&quot;asdsa&quot;</span>;</span><br><span class="line"><span class="type">int</span> a = <span class="built_in">atoi</span>(str.<span class="built_in">c_str</span>());</span><br><span class="line"><span class="type">int</span> b = <span class="built_in">strtol</span>(str.<span class="built_in">c_str</span>(), <span class="literal">nullptr</span>, <span class="number">10</span>);</span><br></pre></td></tr></table></figure>
-
-<p>输出：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0</span></span><br><span class="line"><span class="number">0</span></span><br></pre></td></tr></table></figure>
-
-<p>strtol相比与atoi来说，支持多种进制转换,例如8进制等</p>
-<p>例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> b = <span class="built_in">strtol</span>(str.<span class="built_in">c_str</span>(), <span class="literal">nullptr</span>, <span class="number">8</span>);</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>C++风格</p>
-</blockquote>
-<p>在C++中可以使用stoi来转int，这个函数相比于前两个一个最大特点是：<strong>异常</strong>！</p>
-<p>我们知道C++相比于C语言多了异常，这也是这个函数在C++中具有的最显著功能。</p>
-<p>例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">string str1 = <span class="string">&quot;asq,&quot;</span>;</span><br><span class="line"><span class="comment">//    int c = stoi(str1);    // 报异常</span></span><br><span class="line">string str2 = <span class="string">&quot;12312&quot;</span>;</span><br><span class="line"><span class="type">int</span> c = <span class="built_in">stoi</span>(str2);     <span class="comment">// ok</span></span><br><span class="line">cout &lt;&lt; c &lt;&lt; endl;</span><br></pre></td></tr></table></figure>
-
-<p>异常如下：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">terminate called after throwing an instance of <span class="string">&#x27;std::invalid_argument&#x27;</span></span><br><span class="line"><span class="built_in">what</span>():  stoi</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>stoi()会检查输入是否越界，默认范围也是在int的范围内，越界后则会报错runtime error！</li>
-<li>atoi()没有安全性检查<br>如果我们输入的这个字符串转换成int超出了int范围[-2147483648, 2147483647],则会输出错误<br>如果结果超出了int的上界，则输出为上界的值2147483647<br>如果结果超出了下界，则输出为下界的值-2147483647<br>如果字符串无法转换为一个int或这个字符串为空，则会返回0。</li>
-</ul>
-<blockquote>
-<p>自定义，更推荐这种方法</p>
-</blockquote>
-<p>也就是自己写，如下：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">stringToInt</span><span class="params">(<span class="type">const</span> string &amp;s)</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> v;</span><br><span class="line">    stringstream ss;</span><br><span class="line">    ss &lt;&lt; s;</span><br><span class="line">    ss &gt;&gt; v;</span><br><span class="line">    <span class="keyword">return</span> v;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">int</span> i = <span class="built_in">stringToInt</span>(<span class="string">&quot;2.3&quot;</span>);</span><br><span class="line">    cout&lt;&lt;i&lt;&lt;endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这里介绍一下stringstream</p>
-<p><code>&lt;sstream&gt; </code>定义了三个<strong>类</strong>：<strong>istringstream</strong>、<strong>ostringstream</strong> 和 <strong>stringstream</strong>，分别用来进行流的输入、输出和输入输出操作。</p>
-<p><code>&lt;sstream&gt;</code> 主要用来进行数据类型转换，由于 <code>&lt;sstream&gt; </code>使用 string 对象来代替字符数组（snprintf 方式），避免了缓冲区溢出的危险；而且，因为传入参数和目标对象的类型会被自动推导出来，所以不存在错误的格式化符号的问题。简单说，相比 C 编程语言库的数据类型转换，<code>&lt;sstream&gt;</code> 更加安全、自动和直接。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// int 转 string</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    stringstream sstream;</span><br><span class="line">    string strResult;</span><br><span class="line">    <span class="type">int</span> nValue = <span class="number">1000</span>;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">// 将int类型的值放入输入流中</span></span><br><span class="line">    sstream &lt;&lt; nValue;</span><br><span class="line">    <span class="comment">// 从sstream中抽取前面插入的int类型的值，赋给string类型</span></span><br><span class="line">    sstream &gt;&gt; strResult;</span><br><span class="line"> </span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;[cout]strResult is: &quot;</span> &lt;&lt; strResult &lt;&lt; endl;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;[printf]strResult is: %s\n&quot;</span>, strResult.<span class="built_in">c_str</span>());</span><br><span class="line"> </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//转任意类型</span></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> out_type, <span class="keyword">typename</span> in_value&gt;</span></span><br><span class="line"><span class="function">out_type <span class="title">convert</span><span class="params">(<span class="type">const</span> in_value &amp; t)</span></span>&#123;</span><br><span class="line">	stringstream stream;</span><br><span class="line">　　 stream&lt;&lt;t;<span class="comment">//向流中传值</span></span><br><span class="line">　　 out_type result;<span class="comment">//这里存储转换结果</span></span><br><span class="line">　　 stream&gt;&gt;result;<span class="comment">//向result中写入值</span></span><br><span class="line">　　 <span class="keyword">return</span> result;</span><br><span class="line">　　　　&#125;</span><br></pre></td></tr></table></figure>
-
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -6317,7 +6265,7 @@ unsigned int alarm（unsigned int seconds);
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-count">21</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -6354,12 +6302,12 @@ unsigned int alarm（unsigned int seconds);
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">307k</span>
+    <span title="站点总字数">308k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:39</span>
+    <span title="站点阅读时长">4:40</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
   </div>
