@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jysama.cn","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前言在socket的编程中偶然发现了两端同时connect可以不经过listen-accept而建立tcp连接，然后去找了许多资料，发现这个现象叫同时打开，下面就来具体研究这个连接的建立情况。 同时打开需要去连接对方的端口，因此客户在connect之前需要bind一个端口。 参考资料：  1）(33条消息) 关于TCP同时打开-无需Listener的TCP连接建立过程_dog250的博客-CSDN">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TCP同时打开-深度剖析">
+<meta property="og:url" content="https://jysama.cn/2022/11/01/TCP%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%80/index.html">
+<meta property="og:site_name" content="JySama">
+<meta property="og:description" content="前言在socket的编程中偶然发现了两端同时connect可以不经过listen-accept而建立tcp连接，然后去找了许多资料，发现这个现象叫同时打开，下面就来具体研究这个连接的建立情况。 同时打开需要去连接对方的端口，因此客户在connect之前需要bind一个端口。 参考资料：  1）(33条消息) 关于TCP同时打开-无需Listener的TCP连接建立过程_dog250的博客-CSDN">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%801.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%85%A8%E8%BF%9E%E6%8E%A5%E9%98%9F%E5%88%97%E5%8D%8A%E8%BF%9E%E6%8E%A5%E9%98%9F%E5%88%97.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%80%E6%B5%81%E7%A8%8B%E5%9B%BE.jpg">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%90%8C%E6%97%B6%E5%85%B3%E9%97%AD2.jpg">
+<meta property="article:published_time" content="2022-11-01T13:14:05.440Z">
+<meta property="article:modified_time" content="2022-11-01T14:58:58.947Z">
+<meta property="article:author" content="Jy">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%801.jpg">
+
+<link rel="canonical" href="https://jysama.cn/2022/11/01/TCP%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%80/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>TCP同时打开-深度剖析 | JySama</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JySama</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/11/01/TCP%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%80/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          TCP同时打开-深度剖析
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-11-01 21:14:05 / 修改时间：22:58:58" itemprop="dateCreated datePublished" datetime="2022-11-01T21:14:05+08:00">2022-11-01</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.4k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>在socket的编程中偶然发现了两端同时connect可以不经过listen-accept而建立tcp连接，然后去找了许多资料，发现这个现象叫<code>同时打开</code>，下面就来具体研究这个连接的建立情况。</p>
+<p><strong>同时打开需要去连接对方的端口，因此客户在connect之前需要bind一个端口。</strong></p>
+<p>参考资料：</p>
+<ul>
+<li>1）<a target="_blank" rel="noopener" href="https://blog.csdn.net/dog250/article/details/80518481">(33条消息) 关于TCP同时打开-无需Listener的TCP连接建立过程_dog250的博客-CSDN博客</a></li>
+<li>2）<a target="_blank" rel="noopener" href="http://t.zoukankan.com/wanpengcoder-p-11751246.html">TCP连接建立 之 同时打开 - 走看看 (zoukankan.com)</a></li>
+<li>3）<a target="_blank" rel="noopener" href="https://blog.csdn.net/u011130578/article/details/44408713">(33条消息) 3.4 同时打开_Remy1119的博客-CSDN博客</a></li>
+<li>4）<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/422385138">动图图解！没有accept，能建立TCP连接吗？ - 知乎 (zhihu.com)</a></li>
+<li>5）<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/506042622">一道腾讯面试题目：没有listen，能否建立TCP连接 - 知乎 (zhihu.com)</a></li>
+<li>6）<a target="_blank" rel="noopener" href="https://juejin.cn/post/6977340098287239198">TCP的握手（三次、同时）与挥手（四次、同时）理解 - 掘金 (juejin.cn)</a></li>
+</ul>
+<p>在参考资料的基础上，整理了整个逻辑，并补充了序列号确认的流程和能同步的原因，以及syn丢包时能成功建立的原因。</p>
+<h1 id="connect与accept"><a href="#connect与accept" class="headerlink" title="connect与accept"></a>connect与accept</h1><p>我从tcp正常的建立说起。</p>
+<p>在简单的服务器-客户端模型中，服务器在执行<code>listen()</code>方法之后还会执行一个<code>accept()</code>方法，并阻塞等待客户端连接。客户端在创建socket后可以调用<code>connect()</code>方法来连接服务器。这个过程中，TCP的三次握手究竟什么时候完成呢?</p>
+<p>在<strong>参考资料4</strong>中，作者在执行accept前进行sleep等待，让客户端直接去connect并抓包。作者的抓包结果如下：</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%801.jpg" alt="img"></p>
+<p>从抓包结果看来，就算不执行accept()方法，三次握手照常进行，并顺利建立连接。</p>
+<hr>
+<p>从listen开始说起，在服务器执行listen方法后，就会进入监听（LISTEN)状态，内核会为每个处于监听状态的socket分配两个队列：半连接队列和全连接队列。相信这两个队列大家也不陌生了。</p>
+<ul>
+<li><strong>半连接队列（SYN队列）</strong>，服务端收到<strong>第一次握手</strong>后，会将<code>socket</code>加入到这个队列中，队列内的<code>socket</code>都处于<code>SYN_RECV</code> 状态。然后发回syn+ack执行第二次握手。</li>
+<li><strong>全连接队列（ACCEPT队列）</strong>，在服务端收到<strong>第三次握手</strong>后，会将半连接队列的<code>socket</code>取出，放到全连接队列中。队列里的<code>socket</code>都处于 <code>ESTABLISHED</code>状态。这里面的连接，就<strong>等着服务端执行accept()后被取出了。</strong></li>
+</ul>
+<p>这就是说，<strong>accept实际上只是从全连接队列取出一条连接</strong>，不参与TCP三次握手的过程。</p>
+<p>这两个队列将详细点，<strong>全连接队列（icsk_accept_queue）是个链表</strong>，而<strong>半连接队列（syn_table）是个哈希表</strong>。</p>
+<img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%85%A8%E8%BF%9E%E6%8E%A5%E9%98%9F%E5%88%97%E5%8D%8A%E8%BF%9E%E6%8E%A5%E9%98%9F%E5%88%97.jpg" alt="img" style="zoom: 50%;" />
+
+<p>这是因为全连接队列只需要把头部的连接给accept即可，维护一个线性结构就可以了。</p>
+<p>而半连接队列中的连接都不是完整的连接，在等待第三次握手的到来。当第三次握手到来时，要根据IP端口来看是哪个socket，这就需要哈希表查找。这样，两个队列是时间复杂度都是O(1)。</p>
+<p><strong>参考资料4</strong>还谈到了这两个队列满了会怎么样，不是本文重点，有兴趣的朋友可以去看看。</p>
+<ul>
+<li>全连接队列满了，再来第三次握手也会丢弃，此时如果<code>tcp_abort_on_overflow=1</code>，还会直接发<code>RST</code>给客户端。</li>
+<li>半连接队列满了，可能是因为受到了<code>SYN Flood</code>攻击，可以设置<code>tcp_syncookies</code>，绕开半连接队列。</li>
+</ul>
+<h1 id="connect是如何保存socket信息的"><a href="#connect是如何保存socket信息的" class="headerlink" title="connect是如何保存socket信息的"></a>connect是如何保存socket信息的</h1><p>当服务端回复syn+ack时，客户端实际上也没有处于listen状态的套接字，<strong>没有半连接队列和全连接队列</strong>，但却可以完成三次握手。这意味着，客户端进行connect调用后，该<strong>套接字一定被加入到某个表</strong>中，并可以被匹配到。</p>
+<p>跟踪内核源码可以看到当调用connect时，对应的套接字就被加入了全局的tcp已连接（established）的表中：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">tcp_v4_connect</span><span class="params">(<span class="keyword">struct</span> sock *sk, <span class="keyword">struct</span> sockaddr *uaddr, <span class="type">int</span> addr_len)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">/* Socket identity is still unknown (sport may be zero).</span></span><br><span class="line"><span class="comment">     * However we set state to SYN-SENT and not releasing socket</span></span><br><span class="line"><span class="comment">     * lock select source port, enter ourselves into the hash tables and</span></span><br><span class="line"><span class="comment">     * complete initialization after this.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="built_in">tcp_set_state</span>(sk, TCP_SYN_SENT);</span><br><span class="line">    err = <span class="built_in">inet_hash_connect</span>(&amp;tcp_death_row, sk);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意这句注释 <em>enter ourselves into the hash tables</em>，在<code>inet_hash_connect</code>函数中，<strong>socket在调用connect的时候就会把自己加入到establish hash表，虽然它此时连syn都还没有发送</strong>。确切的讲，应该是在它调用的**__inet_check_established**函数中。</p>
+<p>当内核收到syn+ack报文时，内核是<strong>先在established表中查找，再进行listen表的查找</strong>。对于客户端来说，syn+ack报文必然可以在已连接表中匹配上对应的套接字。</p>
+<h1 id="同时打开"><a href="#同时打开" class="headerlink" title="同时打开"></a>同时打开</h1><p>现在进入本文的重点</p>
+<p>同时打开连接是指通信的双方在接收到对方的SYN包之前，都进行了主动打开的操作并发出了自己的SYN包。如之前所说一个四元组标识一个TCP连接，因此如果一个TCP连接要同时打开需要通信的双方知晓对方的IP和端口信息才行，这种场景在实际情况中很少发生(NAT穿透中可能会多一些)。同时打开的流程如下图</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%80%E6%B5%81%E7%A8%8B%E5%9B%BE.jpg" alt="image.png"></p>
+<h2 id="状态转移"><a href="#状态转移" class="headerlink" title="状态转移"></a>状态转移</h2><ul>
+<li>在发送syn之后状态处于SYN_SENT状态；</li>
+<li>SYN_RECV状态；</li>
+<li>ESTABLISHED状态。</li>
+</ul>
+<p>在正常的连接过程中，客户端向服务器在监听的端口发起connect，第一次握手发送syn后进入SYN_SENT状态，服务器发回syn+ack之后进入ESTABLISHED状态，服务器处的端口处于SYN_RECV状态，并在第三次握手中发回ack后进入ESTABLISHED状态。</p>
+<p>SYN_RECV状态是什么呢，是处于SYN_SENT状态的套接字接收到syn后会进入的状态。这个过程中，客户发送syn并收到syn，就是一个同时打开的过程（双方同时connect）。</p>
+<p>假设两台设备双方均发送syn给对端，理想情况下，<strong>在发送syn之后状态处于SYN_SENT状态，此时双方均收到对端的发来的syn，则立即进入SYN_RECV状态，并且都向对端回复syn+ack，在收到syn+ack之后，连接从SYN_RECV状态切换到ESTABLISHED状态。</strong></p>
+<p>在发送syn进入SYN_SENT状态之后，收到对端发来的syn包处理流程如下。如果收到syn，进入SYN_RECV状态。如果收到的是ack（syn+ack和ack两种），会进入另外的处理流程，稍后再说。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">static</span> <span class="type">int</span> <span class="title">tcp_rcv_synsent_state_process</span><span class="params">(<span class="keyword">struct</span> sock *sk, <span class="keyword">struct</span> sk_buff *skb,</span></span></span><br><span class="line"><span class="params"><span class="function">                     <span class="type">const</span> <span class="keyword">struct</span> tcphdr *th)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    </span><br><span class="line">    	<span class="keyword">struct</span> <span class="title class_">inet_connection_sock</span> *icsk = <span class="built_in">inet_csk</span>(sk);</span><br><span class="line">    	<span class="keyword">struct</span> <span class="title class_">tcp_sock</span> *tp = <span class="built_in">tcp_sk</span>(sk);</span><br><span class="line">    	<span class="keyword">struct</span> <span class="title class_">tcp_fastopen_cookie</span> foc = &#123; .len = <span class="number">-1</span> &#125;;</span><br><span class="line">    	<span class="type">int</span> saved_clamp = tp-&gt;rx_opt.mss_clamp;</span><br><span class="line">	...</span><br><span class="line">   	<span class="keyword">if</span> (th-&gt;ack) &#123;  <span class="comment">//包中带ACK标记，走此路径</span></span><br><span class="line">   	...<span class="comment">//另外的处理流程</span></span><br><span class="line">       <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">    	&#125;</span><br><span class="line">        <span class="keyword">if</span> (th-&gt;syn) &#123;</span><br><span class="line">        <span class="comment">/* We see SYN without ACK. It is attempt of</span></span><br><span class="line"><span class="comment">         * simultaneous connect with crossed SYNs.</span></span><br><span class="line"><span class="comment">         * Particularly, it can be connect to self.</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="built_in">tcp_set_state</span>(sk, TCP_SYN_RECV);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (tp-&gt;rx_opt.saw_tstamp) &#123;</span><br><span class="line">            tp-&gt;rx_opt.tstamp_ok = <span class="number">1</span>;</span><br><span class="line">            <span class="built_in">tcp_store_ts_recent</span>(tp);</span><br><span class="line">            tp-&gt;tcp_header_len =</span><br><span class="line">                <span class="built_in">sizeof</span>(<span class="keyword">struct</span> tcphdr) + TCPOLEN_TSTAMP_ALIGNED;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            tp-&gt;tcp_header_len = <span class="built_in">sizeof</span>(<span class="keyword">struct</span> tcphdr);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        tp-&gt;rcv_nxt = <span class="built_in">TCP_SKB_CB</span>(skb)-&gt;seq + <span class="number">1</span>;</span><br><span class="line">        tp-&gt;copied_seq = tp-&gt;rcv_nxt;</span><br><span class="line">        tp-&gt;rcv_wup = <span class="built_in">TCP_SKB_CB</span>(skb)-&gt;seq + <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/* RFC1323: The window in SYN &amp; SYN/ACK segments is</span></span><br><span class="line"><span class="comment">         * never scaled.</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        tp-&gt;snd_wnd    = <span class="built_in">ntohs</span>(th-&gt;window);</span><br><span class="line">        tp-&gt;snd_wl1    = <span class="built_in">TCP_SKB_CB</span>(skb)-&gt;seq;</span><br><span class="line">        tp-&gt;max_window = tp-&gt;snd_wnd;</span><br><span class="line"></span><br><span class="line">        <span class="built_in">tcp_ecn_rcv_syn</span>(tp, th);</span><br><span class="line"></span><br><span class="line">        <span class="built_in">tcp_mtup_init</span>(sk);</span><br><span class="line">        <span class="built_in">tcp_sync_mss</span>(sk, icsk-&gt;icsk_pmtu_cookie);</span><br><span class="line">        <span class="built_in">tcp_initialize_rcv_mss</span>(sk);</span><br><span class="line"></span><br><span class="line">        <span class="built_in">tcp_send_synack</span>(sk);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个负责发送SYN+ACK的函数tcp_send_synack有些特殊：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">tcp_send_synack</span><span class="params">(<span class="keyword">struct</span> sock *sk)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">sk_buff</span> *skb;</span><br><span class="line"></span><br><span class="line">    skb = <span class="built_in">tcp_write_queue_head</span>(sk);</span><br><span class="line">    <span class="keyword">if</span> (skb == <span class="literal">NULL</span> || !(<span class="built_in">TCP_SKB_CB</span>(skb)-&gt;tcp_flags &amp; TCPHDR_SYN)) &#123;　<span class="comment">//包一定携带SYN标记</span></span><br><span class="line">        <span class="built_in">pr_debug</span>(<span class="string">&quot;%s: wrong queue state\n&quot;</span>, __func__);</span><br><span class="line">        <span class="keyword">return</span> -EFAULT;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (!(<span class="built_in">TCP_SKB_CB</span>(skb)-&gt;tcp_flags &amp; TCPHDR_ACK)) &#123;　<span class="comment">//未携带ACK标记</span></span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">skb_cloned</span>(skb)) &#123;</span><br><span class="line">            <span class="keyword">struct</span> <span class="title class_">sk_buff</span> *nskb = <span class="built_in">skb_copy</span>(skb, GFP_ATOMIC);</span><br><span class="line">            <span class="keyword">if</span> (nskb == <span class="literal">NULL</span>)</span><br><span class="line">                <span class="keyword">return</span> -ENOMEM;</span><br><span class="line">            <span class="built_in">tcp_unlink_write_queue</span>(skb, sk);</span><br><span class="line">            <span class="built_in">skb_header_release</span>(nskb);</span><br><span class="line">            __tcp_add_write_queue_head(sk, nskb);</span><br><span class="line">            <span class="built_in">sk_wmem_free_skb</span>(sk, skb);</span><br><span class="line">            sk-&gt;sk_wmem_queued += nskb-&gt;truesize;</span><br><span class="line">            <span class="built_in">sk_mem_charge</span>(sk, nskb-&gt;truesize);</span><br><span class="line">            skb = nskb;</span><br><span class="line">        &#125;</span><br><span class="line">    </span><br><span class="line">        <span class="built_in">TCP_SKB_CB</span>(skb)-&gt;tcp_flags |= TCPHDR_ACK;　<span class="comment">//加上ACK标记</span></span><br><span class="line">        <span class="built_in">TCP_ECN_send_synack</span>(<span class="built_in">tcp_sk</span>(sk), skb);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">TCP_SKB_CB</span>(skb)-&gt;when = tcp_time_stamp;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">tcp_transmit_skb</span>(sk, skb, <span class="number">1</span>, GFP_ATOMIC);　<span class="comment">//发送出去</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在同时打开的情况下，发送队列中已经有一个SYN包等待确认。tcp_send_synack的基本功能是：将发送队列中的SYN包加上ACK标记位再发送。这样TCP收到SYN后发送的SYN+ACK的序列号与最开始发送的SYN包一致，ack的确认号是对方syn的序列号+1，连接就可以在收到对端的SYN+ACK后得以正常建立。</p>
+<hr>
+<p>在SYN_RECV状态收到对端发来的syn+ack包，则直接进入ESTABLISHED已连接状态：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">tcp_rcv_state_process</span><span class="params">(<span class="keyword">struct</span> sock *sk, <span class="keyword">struct</span> sk_buff *skb)</span></span></span><br><span class="line"><span class="function"> </span>&#123;</span><br><span class="line">         <span class="comment">/* step 5: check the ACK field */</span></span><br><span class="line">     acceptable = <span class="built_in">tcp_ack</span>(sk, skb, FLAG_SLOWPATH |</span><br><span class="line">                       FLAG_UPDATE_TS_RECENT) &gt; <span class="number">0</span>;</span><br><span class="line"> </span><br><span class="line">     <span class="keyword">switch</span> (sk-&gt;sk_state) &#123;</span><br><span class="line">     <span class="keyword">case</span> TCP_SYN_RECV:</span><br><span class="line"> </span><br><span class="line">         <span class="comment">/* ack处理失败 */</span></span><br><span class="line">         <span class="keyword">if</span> (!acceptable)</span><br><span class="line">             <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line"> </span><br><span class="line">         <span class="comment">/* RTT */</span></span><br><span class="line">         <span class="keyword">if</span> (!tp-&gt;srtt_us)</span><br><span class="line">             <span class="built_in">tcp_synack_rtt_meas</span>(sk, req);</span><br><span class="line"> </span><br><span class="line">         <span class="comment">/* Once we leave TCP_SYN_RECV, we no longer need req</span></span><br><span class="line"><span class="comment">          * so release it.</span></span><br><span class="line"><span class="comment">          */</span></span><br><span class="line">         <span class="keyword">if</span> (req) &#123;</span><br><span class="line">             <span class="built_in">inet_csk</span>(sk)-&gt;icsk_retransmits = <span class="number">0</span>;</span><br><span class="line">             <span class="built_in">reqsk_fastopen_remove</span>(sk, req, <span class="literal">false</span>);</span><br><span class="line">         &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">             <span class="comment">/* Make sure socket is routed, for correct metrics. */</span></span><br><span class="line">             <span class="comment">/* 检查重建路由 */</span></span><br><span class="line">             icsk-&gt;icsk_af_ops-&gt;<span class="built_in">rebuild_header</span>(sk);</span><br><span class="line">             <span class="comment">/* 初始化拥塞邋控制 */</span></span><br><span class="line">             <span class="built_in">tcp_init_congestion_control</span>(sk);</span><br><span class="line">             <span class="comment">/* 路径mtu发现初始化 */</span></span><br><span class="line">             <span class="built_in">tcp_mtup_init</span>(sk);</span><br><span class="line">             <span class="comment">/* 用户待读取数据初始化 */</span></span><br><span class="line">             tp-&gt;copied_seq = tp-&gt;rcv_nxt;</span><br><span class="line">             <span class="comment">/* 调整接收发送缓存以及窗口等 */</span></span><br><span class="line">             <span class="built_in">tcp_init_buffer_space</span>(sk);</span><br><span class="line">         &#125;</span><br><span class="line">         <span class="built_in">smp_mb</span>();</span><br><span class="line"> </span><br><span class="line">         <span class="comment">/* 连接更新为已连接状态 */</span></span><br><span class="line">         <span class="built_in">tcp_set_state</span>(sk, TCP_ESTABLISHED);</span><br><span class="line">         sk-&gt;<span class="built_in">sk_state_change</span>(sk);</span><br><span class="line">                 <span class="comment">/* 省略了一些代码 */</span></span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="序列号确认"><a href="#序列号确认" class="headerlink" title="序列号确认"></a>序列号确认</h2><p>如流程图所示，假设客户端A的syn序列号为x，B的syn序列号为y。双方收到对方的syn时，发送的syn+ack序列号为，A：<code>syn-x+ack-y+1</code>；B：<code>syn-y+ack-x+1</code>。</p>
+<p>这样，A收到B的syn+ack时，A知道这个是B过来的（syn还是y）；并且知道B收到的就是自己的syn（ack确认号是x+1），至此双方序列号就完成了同步。</p>
+<p>在这个过程中，有三种情况被其他客户端干扰：</p>
+<ul>
+<li>如果客户端C<strong>只</strong>伪造syn-z发给A，A发给B的syn-ack确认号就是z+1，B就知道不对了；</li>
+<li>如果客户端C<strong>只</strong>伪造<code>syn-z+ack-n</code>发给了A，A看到syn是z而不是B的y就直接丢弃了。</li>
+<li>如果客户端C两个报文都发给A，这样A查看syn+ack时发现syn是z，还要进一步查看ack，发现ack不是自己的x+1，就知道是错误了。</li>
+</ul>
+<h2 id="syn丢包"><a href="#syn丢包" class="headerlink" title="syn丢包"></a>syn丢包</h2><p>在双方交换四个数据包的过程中，可能会发生丢包。有四种情况：</p>
+<ul>
+<li>客户AB向对方发送syn，进入SYN_SEND状态，两个包都丢了，超时重传。</li>
+</ul>
+<hr>
+<ul>
+<li>客户AB向对方发送syn，但B的syn包丢了。这时AB都在SYN_SENT状态，B收到A的syn后进入SYN_RECV状态，然后发送syn+ack。<ul>
+<li>A收到syn+ack时还在SYN_SENT状态，注意到源码中有另一条“ack”的处理路径。</li>
+<li>实际上客户A在发送syn后收到syn+ack是与listen中的服务器正常建立连接的过程（第二次握手），A并不知道对方是服务器还是客户端，B发的<code>syn-y+ack-x+1</code>中的y在A看来就是服务器的初始序列号。此时A会返回ack并进入ESTABLISHED状态。其中ack的序列号是y+1。</li>
+<li>B收到ack后发现没有syn，检查ack序列号正确，就知道是自己的syn包丢了，进入ESTABLISHED状态，连接建立完成。</li>
+</ul>
+</li>
+<li>这个过程由于B的syn包丢了，所以实际上变成了client-server模型，退化为正常的三次握手。</li>
+</ul>
+<hr>
+<ul>
+<li>客户AB向对方发送syn都收到了，AB都进入SYN_RECV状态，发送syn+ack，如果两个包都丢了，超时重传。</li>
+</ul>
+<hr>
+<ul>
+<li>客户AB向对方发送syn都收到了，AB都进入SYN_RECV状态，发送syn+ack。<ul>
+<li>假设B发送的包丢了，这时B收到syn+ack直接进入ESTABLISHED状态。</li>
+<li>A一直在等待syn+ack，当超时时，A会猜测是自己的syn丢了（且syn+ack也丢了，因为syn+ack没丢的话就是第二种情况client-server）或是对方的syn+ack丢了。</li>
+<li>此时如上所述，A在SYN_RECV状态超时会重传syn+ack，对于A来说，B没发回syn+ack可能有两种情况：<ul>
+<li>如果B在ESTABLISHED状态，知道自己syn+ack丢了，发回syn+ack让A进入ESTABLISHED状态。</li>
+<li>如果B根本就没收到syn（B知道自己发了syn），此时退化为client-server模型，发回ack。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p><strong>至此，连接建立完成。</strong></p>
+<h1 id="同时关闭"><a href="#同时关闭" class="headerlink" title="同时关闭"></a>同时关闭</h1><p>同时关闭的流程和四次挥手差不多</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%90%8C%E6%97%B6%E5%85%B3%E9%97%AD2.jpg" alt="image.png"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ul>
+<li>客户端在connect后在内核中会把套接字加入<code>已连接</code>哈希表，收到syn+ack报文先查<code>已连接哈希表</code>再查<code>listen半连接哈希表</code>。</li>
+<li>客户端同时打开时，双方会进行syn、syn+ack四种报文的发送接收，在三种状态中转移：发送syn的SYN_SENT状态、接收syn发送syn+ack的SYN_RECV状态、接收syn+ack的ESTABLISHED状态。</li>
+<li>序列号的同步中，syn发的序列号是随机初始序列号，syn+ack回复的序列号是syn的序列号（标识了该包是自己发的），确认号是对方syn序列号+1（标识了对方的包自己已经收到）。收到syn+ack后会检测序列号（该包是否是发syn的对方发来的）以及确认号（该包是否是自己想连接的发了syn过去的对方发来的）。</li>
+<li>syn丢包中，如果有一个对方丢了syn包，就退化成client-server模型；如果有一个对方丢了syn+ack包，自己会重传syn+ack，对方要么重传syn+ack（对方的syn+ack丢了），要么重传ack（自己的syn丢了，退化为client-server模型）。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Jy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jysama.cn/2022/11/01/TCP%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%80/" title="TCP同时打开-深度剖析">https://jysama.cn/2022/11/01/TCP同时打开/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/10/22/%E5%87%BD%E6%95%B0%E6%A8%A1%E6%9D%BF%E9%97%AE%E9%A2%98/" rel="prev" title="函数模板问题">
+      <i class="fa fa-chevron-left"></i> 函数模板问题
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81NjM2Ny8zMjgzMA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#connect%E4%B8%8Eaccept"><span class="nav-number">2.</span> <span class="nav-text">connect与accept</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#connect%E6%98%AF%E5%A6%82%E4%BD%95%E4%BF%9D%E5%AD%98socket%E4%BF%A1%E6%81%AF%E7%9A%84"><span class="nav-number">3.</span> <span class="nav-text">connect是如何保存socket信息的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%8C%E6%97%B6%E6%89%93%E5%BC%80"><span class="nav-number">4.</span> <span class="nav-text">同时打开</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E8%BD%AC%E7%A7%BB"><span class="nav-number">4.1.</span> <span class="nav-text">状态转移</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E5%8F%B7%E7%A1%AE%E8%AE%A4"><span class="nav-number">4.2.</span> <span class="nav-text">序列号确认</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#syn%E4%B8%A2%E5%8C%85"><span class="nav-number">4.3.</span> <span class="nav-text">syn丢包</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%8C%E6%97%B6%E5%85%B3%E9%97%AD"><span class="nav-number">5.</span> <span class="nav-text">同时关闭</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jy"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Jy</p>
+  <div class="site-description" itemprop="description">Re：从零开始的写博客生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jy</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">312k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">4:44</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
