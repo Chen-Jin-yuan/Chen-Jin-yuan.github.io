@@ -192,7 +192,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-11-01 21:14:05 / 修改时间：22:58:58" itemprop="dateCreated datePublished" datetime="2022-11-01T21:14:05+08:00">2022-11-01</time>
+              <time title="创建时间：2022-11-01 21:14:05 / 修改时间：23:07:58" itemprop="dateCreated datePublished" datetime="2022-11-01T21:14:05+08:00">2022-11-01</time>
             </span>
 
           <br>
@@ -258,7 +258,7 @@
 <p>跟踪内核源码可以看到当调用connect时，对应的套接字就被加入了全局的tcp已连接（established）的表中：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">tcp_v4_connect</span><span class="params">(<span class="keyword">struct</span> sock *sk, <span class="keyword">struct</span> sockaddr *uaddr, <span class="type">int</span> addr_len)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">/* Socket identity is still unknown (sport may be zero).</span></span><br><span class="line"><span class="comment">     * However we set state to SYN-SENT and not releasing socket</span></span><br><span class="line"><span class="comment">     * lock select source port, enter ourselves into the hash tables and</span></span><br><span class="line"><span class="comment">     * complete initialization after this.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="built_in">tcp_set_state</span>(sk, TCP_SYN_SENT);</span><br><span class="line">    err = <span class="built_in">inet_hash_connect</span>(&amp;tcp_death_row, sk);</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>注意这句注释 <em>enter ourselves into the hash tables</em>，在<code>inet_hash_connect</code>函数中，<strong>socket在调用connect的时候就会把自己加入到establish hash表，虽然它此时连syn都还没有发送</strong>。确切的讲，应该是在它调用的**__inet_check_established**函数中。</p>
+<p>注意这句注释 <em>enter ourselves into the hash tables</em>，在<code>inet_hash_connect</code>函数中，<strong>socket在调用connect的时候就会把自己加入到establish hash表，虽然它此时连syn都还没有发送</strong>。确切的讲，应该是在它调用的<code>__inet_check_established</code>函数中。</p>
 <p>当内核收到syn+ack报文时，内核是<strong>先在established表中查找，再进行listen表的查找</strong>。对于客户端来说，syn+ack报文必然可以在已连接表中匹配上对应的套接字。</p>
 <h1 id="同时打开"><a href="#同时打开" class="headerlink" title="同时打开"></a>同时打开</h1><p>现在进入本文的重点</p>
 <p>同时打开连接是指通信的双方在接收到对方的SYN包之前，都进行了主动打开的操作并发出了自己的SYN包。如之前所说一个四元组标识一个TCP连接，因此如果一个TCP连接要同时打开需要通信的双方知晓对方的IP和端口信息才行，这种场景在实际情况中很少发生(NAT穿透中可能会多一些)。同时打开的流程如下图</p>
