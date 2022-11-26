@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jysama.cn","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Note项目代码和测试代码和结果在GitHub上： 实现的功能如下：  重新设计的报文头部； 两次握手（only 1 RTT）； 基于ID标识（参考Quic）； 乱序确认，number递增（参考Quic）； 超时重传，基于number采样rtt（参考Quic）； 使用offset标识流而非number（参考Quic）； 基于maxoffset进行流量控制（参考Quic）； 基于心跳检测确认双方存活">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RDT base on UDP">
+<meta property="og:url" content="https://jysama.cn/2022/11/26/RDT_base_on_UDP/index.html">
+<meta property="og:site_name" content="JySama">
+<meta property="og:description" content="Note项目代码和测试代码和结果在GitHub上： 实现的功能如下：  重新设计的报文头部； 两次握手（only 1 RTT）； 基于ID标识（参考Quic）； 乱序确认，number递增（参考Quic）； 超时重传，基于number采样rtt（参考Quic）； 使用offset标识流而非number（参考Quic）； 基于maxoffset进行流量控制（参考Quic）； 基于心跳检测确认双方存活">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-11-26T11:45:26.145Z">
+<meta property="article:modified_time" content="2022-11-26T11:48:07.875Z">
+<meta property="article:author" content="Jy">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://jysama.cn/2022/11/26/RDT_base_on_UDP/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>RDT base on UDP | JySama</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JySama</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/11/26/RDT_base_on_UDP/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          RDT base on UDP
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-11-26 19:45:26 / 修改时间：19:48:07" itemprop="dateCreated datePublished" datetime="2022-11-26T19:45:26+08:00">2022-11-26</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Note"><a href="#Note" class="headerlink" title="Note"></a>Note</h1><p>项目代码和测试代码和结果在GitHub上：</p>
+<p>实现的功能如下：</p>
+<ul>
+<li>重新设计的报文头部；</li>
+<li>两次握手（only 1 RTT）；</li>
+<li>基于ID标识（参考Quic）；</li>
+<li>乱序确认，number递增（参考Quic）；</li>
+<li>超时重传，基于number采样rtt（参考Quic）；</li>
+<li>使用offset标识流而非number（参考Quic）；</li>
+<li>基于maxoffset进行流量控制（参考Quic）；</li>
+<li>基于心跳检测确认双方存活与退出。</li>
+</ul>
+<p>在不同内网的P2P通信可以达到2MB&#x2F;s的速度，如果<code>UDPSEGSIZE</code>设置得大即一次发送的报文很大，可以达到10MB&#x2F;s，但在高丢包率情况下会有意外情况。如果在相同内网中可以设置大一些。</p>
+<p>因为平时比较忙，项目设计时分了好几段时间来做，所以有些地方思路会断开，代码也可能有不足的地方，欢迎评论。</p>
+<h1 id="报文"><a href="#报文" class="headerlink" title="报文"></a>报文</h1><h2 id="报文生成（编辑器）"><a href="#报文生成（编辑器）" class="headerlink" title="报文生成（编辑器）"></a>报文生成（编辑器）</h2><p>读入的文件数据buffer添加头部信息，形成新的buffer。</p>
+<h3 id="报文结构"><a href="#报文结构" class="headerlink" title="报文结构"></a>报文结构</h3><p>最好32bits对齐</p>
+<ul>
+<li>编号，递增</li>
+<li>报文内容长度，字节数，一个报文大小最好不要超过MTU（1500Bytes）</li>
+<li>使用offset标识数据流<ul>
+<li>这个offset是字节尾部还是头部合适呢？这涉及到两种排序的方案<ul>
+<li>使用头部的话，因为头部+len就是偏移的尾部，也即下一个偏移的初始。这样我们在写入文件时要找连续的offset，头部+len就能得到下一个包的头部offset，这样可以用哈希表来找（哈希offest-&gt;报文结构）</li>
+<li>如果只有尾部的话实际上只能排序，然后判断下一个是不是连起来的（offset-len是否等于当前的offset），这样就用链表，每次放入（直接放入buffer）都是排序插入链表。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>ID：这个ID是目标的ID</li>
+<li>tag：包含ack、syn、fin、rst四位。bitset：<a target="_blank" rel="noopener" href="http://c.biancheng.net/view/406.html">C++ bitset类详解 (biancheng.net)</a></li>
+<li>接收方窗口大小</li>
+<li>暂存…</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">MyUdpSeg</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> num_type = <span class="type">unsigned</span> <span class="type">int</span>; <span class="comment">//32bits</span></span><br><span class="line">    <span class="keyword">using</span> off_type = <span class="type">size_t</span>; <span class="comment">//64bits or 32bits</span></span><br><span class="line">    <span class="keyword">using</span> win_type = <span class="type">size_t</span>; <span class="comment">//64bits or 32bits</span></span><br><span class="line">    <span class="keyword">using</span> len_type = <span class="type">unsigned</span> <span class="type">short</span>; <span class="comment">//16bits</span></span><br><span class="line">    <span class="keyword">using</span> id_type = <span class="type">unsigned</span> <span class="type">short</span>; <span class="comment">//16bits</span></span><br><span class="line">    <span class="keyword">using</span> tag_type = bitset&lt;<span class="number">8</span>&gt;; <span class="comment">//8bits，?|?|?|?|ack|syn|fin|rst</span></span><br><span class="line">    <span class="type">static</span> <span class="type">int</span> maxHeadSize;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">private</span>: <span class="comment">//data members</span></span><br><span class="line">    num_type number;</span><br><span class="line">    off_type offset;</span><br><span class="line">    len_type length;</span><br><span class="line">    win_type window;</span><br><span class="line">    id_type id;</span><br><span class="line">    tag_type tag;</span><br><span class="line">    <span class="comment">//save...</span></span><br><span class="line">    string data;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">//Constructor 1: Construct class objects based on data</span></span><br><span class="line">    <span class="built_in">MyUdpSeg</span>(<span class="type">const</span> <span class="type">char</span>* buf, num_type Number, off_type Offset,</span><br><span class="line">        len_type Length, tag_type Tag, win_type Window = <span class="number">0</span>, id_type Id = <span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Constructor 2: Construct class objects based on the complete UDP packet segment(string)</span></span><br><span class="line">    <span class="built_in">MyUdpSeg</span>(string&amp; udpSeg);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Constructor 3: Retransmit, adjust the number</span></span><br><span class="line">    <span class="built_in">MyUdpSeg</span>(MyUdpSeg&amp; udpSeg, num_type Number);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Copy constructor </span></span><br><span class="line">    <span class="built_in">MyUdpSeg</span>(<span class="type">const</span> MyUdpSeg&amp; udpSeg);</span><br><span class="line">    <span class="comment">//Move constructor </span></span><br><span class="line">    <span class="built_in">MyUdpSeg</span>(MyUdpSeg&amp;&amp; udpSeg) <span class="keyword">noexcept</span>;</span><br><span class="line">    <span class="comment">//operator=, copy-swap</span></span><br><span class="line">    MyUdpSeg&amp; <span class="keyword">operator</span>=(MyUdpSeg udpSeg);</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">//parse the string</span></span><br><span class="line">    <span class="function">vector&lt;string&gt; <span class="title">parse</span><span class="params">(string&amp; str)</span></span>;</span><br><span class="line">    <span class="comment">//swap for copy-swap</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">swap</span><span class="params">(MyUdpSeg&amp; udpSeg)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="comment">//convert to string to send data</span></span><br><span class="line">    <span class="function">string <span class="title">seg_to_string</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//return a default obj</span></span><br><span class="line">    <span class="function"><span class="type">static</span> MyUdpSeg <span class="title">initSeg</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//read members only</span></span><br><span class="line">    <span class="function">num_type <span class="title">getNumber</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> number; &#125;</span><br><span class="line">    <span class="function">off_type <span class="title">getOffset</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> offset; &#125;</span><br><span class="line">    <span class="function">len_type <span class="title">getLength</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> length; &#125;</span><br><span class="line">    <span class="function">win_type <span class="title">getWindow</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> window; &#125;</span><br><span class="line">    <span class="function">id_type <span class="title">getId</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> id; &#125;</span><br><span class="line">    <span class="function"><span class="type">bool</span> <span class="title">getTag</span><span class="params">(<span class="type">size_t</span> i)</span> </span>&#123; <span class="keyword">return</span> tag[i]; &#125;</span><br><span class="line">    <span class="function">string&amp; <span class="title">getData</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> data; &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">* The headers are converted to a string to send</span></span><br><span class="line"><span class="comment">* The maximum number of digits in 32-bit decimal is 10 digits: 4,294,967,296</span></span><br><span class="line"><span class="comment">* The maximum number of digits in 64-bit decimal is 20 digits: 18,446,744,073,709,551,616</span></span><br><span class="line"><span class="comment">* The maximum number of digits in 16-bit decimal is 5  digits: 65,536</span></span><br><span class="line"><span class="comment">* There are 8 bits of identification</span></span><br><span class="line"><span class="comment">* There are also 6 spaces</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="type">int</span> MyUdpSeg::maxHeadSize = <span class="number">10</span> + <span class="number">20</span> + <span class="number">20</span> + <span class="number">5</span> + <span class="number">5</span> + <span class="number">8</span> + <span class="number">6</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Constructor 1: Construct class objects based on data</span></span><br><span class="line">MyUdpSeg::<span class="built_in">MyUdpSeg</span>(<span class="type">const</span> <span class="type">char</span>* buf, num_type Number, off_type Offset,</span><br><span class="line">    len_type Length, tag_type Tag, win_type Window, id_type Id) :</span><br><span class="line">    <span class="built_in">data</span>(buf), <span class="built_in">number</span>(Number), <span class="built_in">offset</span>(Offset), <span class="built_in">window</span>(Window),</span><br><span class="line">    <span class="built_in">length</span>(Length), <span class="built_in">id</span>(Id), <span class="built_in">tag</span>(Tag)</span><br><span class="line">&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Constructor 2: Construct class objects based on the complete UDP packet segment(string)</span></span><br><span class="line">MyUdpSeg::<span class="built_in">MyUdpSeg</span>(string&amp; udpSeg)</span><br><span class="line">&#123;</span><br><span class="line">    vector&lt;string&gt; vec = <span class="built_in">parse</span>(udpSeg);</span><br><span class="line">    <span class="comment">// error packet segment</span></span><br><span class="line">    <span class="keyword">if</span> (vec.<span class="built_in">size</span>() &lt; <span class="number">6</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        length = <span class="number">0</span>; <span class="comment">//Indicates that this is a useless package</span></span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    * have not string to unsigned int or size_t function</span></span><br><span class="line"><span class="comment">    * but string to unsigned long is satisfiable</span></span><br><span class="line"><span class="comment">    * just make sure it doesn&#x27;t overflow</span></span><br><span class="line"><span class="comment">    * use forced transformation to ignore warnings</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    number = <span class="built_in">num_type</span>(<span class="built_in">stoul</span>(vec[<span class="number">0</span>]));</span><br><span class="line">    offset = <span class="built_in">off_type</span>(<span class="built_in">stoul</span>(vec[<span class="number">1</span>]));</span><br><span class="line">    window = <span class="built_in">win_type</span>(<span class="built_in">stoul</span>(vec[<span class="number">2</span>]));</span><br><span class="line">    length = <span class="built_in">len_type</span>(<span class="built_in">stoul</span>(vec[<span class="number">3</span>]));</span><br><span class="line">    id = <span class="built_in">id_type</span>(<span class="built_in">stoul</span>(vec[<span class="number">4</span>]));</span><br><span class="line">    tag = <span class="built_in">tag_type</span>(vec[<span class="number">5</span>]);</span><br><span class="line">    <span class="keyword">if</span> (vec.<span class="built_in">size</span>() &gt; <span class="number">6</span>) <span class="comment">//if arry data. ACK may not carry data</span></span><br><span class="line">        data = vec[<span class="number">6</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Constructor 3: Retransmit, adjust the number</span></span><br><span class="line">MyUdpSeg::<span class="built_in">MyUdpSeg</span>(MyUdpSeg&amp; udpSeg, num_type Number) :</span><br><span class="line">    <span class="built_in">data</span>(udpSeg.data), <span class="built_in">number</span>(Number), <span class="built_in">offset</span>(udpSeg.offset), <span class="built_in">window</span>(udpSeg.window),</span><br><span class="line">    <span class="built_in">length</span>(udpSeg.length), <span class="built_in">id</span>(udpSeg.id), <span class="built_in">tag</span>(udpSeg.tag)</span><br><span class="line">&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Copy constructor </span></span><br><span class="line">MyUdpSeg::<span class="built_in">MyUdpSeg</span>(<span class="type">const</span> MyUdpSeg&amp; udpSeg) :</span><br><span class="line">    <span class="built_in">data</span>(udpSeg.data), <span class="built_in">number</span>(udpSeg.number), <span class="built_in">offset</span>(udpSeg.offset), <span class="built_in">window</span>(udpSeg.window),</span><br><span class="line">    <span class="built_in">length</span>(udpSeg.length), <span class="built_in">id</span>(udpSeg.id), <span class="built_in">tag</span>(udpSeg.tag)</span><br><span class="line">&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//Move constructor </span></span><br><span class="line">MyUdpSeg::<span class="built_in">MyUdpSeg</span>(MyUdpSeg&amp;&amp; udpSeg) <span class="keyword">noexcept</span> :</span><br><span class="line">    <span class="built_in">data</span>(udpSeg.data), <span class="built_in">number</span>(udpSeg.number), <span class="built_in">offset</span>(udpSeg.offset), <span class="built_in">window</span>(udpSeg.window),</span><br><span class="line">    <span class="built_in">length</span>(udpSeg.length), <span class="built_in">id</span>(udpSeg.id), <span class="built_in">tag</span>(udpSeg.tag)</span><br><span class="line">&#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//operator=, copy-swap</span></span><br><span class="line">MyUdpSeg&amp; MyUdpSeg::<span class="keyword">operator</span>=(MyUdpSeg udpSeg)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">swap</span>(udpSeg);</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//swap for copy-swap</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">MyUdpSeg::swap</span><span class="params">(MyUdpSeg&amp; udpSeg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">using</span> std::swap;</span><br><span class="line">    <span class="built_in">swap</span>(<span class="keyword">this</span>-&gt;number, udpSeg.number);</span><br><span class="line">    <span class="built_in">swap</span>(<span class="keyword">this</span>-&gt;offset, udpSeg.offset);</span><br><span class="line">    <span class="built_in">swap</span>(<span class="keyword">this</span>-&gt;length, udpSeg.length);</span><br><span class="line">    <span class="built_in">swap</span>(<span class="keyword">this</span>-&gt;window, udpSeg.window);</span><br><span class="line">    <span class="built_in">swap</span>(<span class="keyword">this</span>-&gt;id, udpSeg.id);</span><br><span class="line">    <span class="built_in">swap</span>(<span class="keyword">this</span>-&gt;tag, udpSeg.tag);</span><br><span class="line">    <span class="built_in">swap</span>(<span class="keyword">this</span>-&gt;data, udpSeg.data);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//parse the string</span></span><br><span class="line"><span class="function">vector&lt;string&gt; <span class="title">MyUdpSeg::parse</span><span class="params">(string&amp; str)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//Note that there are also spaces in the data, so parse up to six times</span></span><br><span class="line">    <span class="comment">//Data should not be sliced</span></span><br><span class="line">    </span><br><span class="line">    <span class="type">int</span> spaceNum = <span class="number">6</span>;</span><br><span class="line"></span><br><span class="line">    str = str + <span class="string">&quot; &quot;</span>; <span class="comment">//add an space</span></span><br><span class="line">    vector&lt;string&gt; res;</span><br><span class="line">    <span class="type">size_t</span> pos = <span class="number">0</span>;</span><br><span class="line">    <span class="type">size_t</span> pos1;</span><br><span class="line">    <span class="keyword">while</span> ((pos1 = str.<span class="built_in">find</span>(<span class="string">&#x27; &#x27;</span>, pos)) != string::npos)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> (spaceNum-- == <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        res.<span class="built_in">push_back</span>(str.<span class="built_in">substr</span>(pos, pos1 - pos));</span><br><span class="line">        <span class="keyword">while</span> (str[pos1] == <span class="string">&#x27; &#x27;</span>)</span><br><span class="line">            pos1++;</span><br><span class="line">        pos = pos1;        </span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//Get complete data</span></span><br><span class="line">    string data = str.<span class="built_in">substr</span>(pos);</span><br><span class="line">    <span class="keyword">if</span> (data != <span class="string">&quot;&quot;</span>)</span><br><span class="line">        res.<span class="built_in">push_back</span>(data);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> res; <span class="comment">//move construction</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//convert to string to send data</span></span><br><span class="line"><span class="function">string <span class="title">MyUdpSeg::seg_to_string</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    string res;</span><br><span class="line">    res += <span class="built_in">to_string</span>(number) + <span class="string">&quot; &quot;</span>;</span><br><span class="line">    res += <span class="built_in">to_string</span>(offset) + <span class="string">&quot; &quot;</span>;</span><br><span class="line">    res += <span class="built_in">to_string</span>(window) + <span class="string">&quot; &quot;</span>;</span><br><span class="line">    res += <span class="built_in">to_string</span>(length) + <span class="string">&quot; &quot;</span>;</span><br><span class="line">    res += <span class="built_in">to_string</span>(id) + <span class="string">&quot; &quot;</span>;</span><br><span class="line">    res += tag.<span class="built_in">to_string</span>() + <span class="string">&quot; &quot;</span>; <span class="comment">//std::bitset::to_string()</span></span><br><span class="line">    res += data;</span><br><span class="line">    <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">MyUdpSeg <span class="title">MyUdpSeg::initSeg</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">MyUdpSeg</span>(<span class="string">&quot;&quot;</span>, <span class="number">0</span>, <span class="number">0</span>, <span class="number">0</span>, MyUdpSeg::<span class="built_in">tag_type</span>(), <span class="number">0</span>, <span class="number">0</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="ACK"><a href="#ACK" class="headerlink" title="ACK"></a>ACK</h3><p>返回ACK报文，并通告可用窗口边界</p>
+<ul>
+<li>ACK会告知接收方的可用窗口边界，如果有ACK通告更小的边界，发送方忽略它们</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">MyUdpSeg <span class="title">sendAck</span><span class="params">(MyUdpSeg::num_type number, MyUdpSeg::off_type offset, MyUdpSeg::win_type window,</span></span></span><br><span class="line"><span class="params"><span class="function">    MyUdpSeg::id_type id)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    MyUdpSeg::tag_type tag;</span><br><span class="line">    tag.<span class="built_in">set</span>(<span class="number">3</span>, <span class="number">1</span>); <span class="comment">//set ack from 0 to 1</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">MyUdpSeg</span>(<span class="string">&quot;&quot;</span>, number, offset, <span class="number">0</span>, tag, window, id);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="定时器"><a href="#定时器" class="headerlink" title="定时器"></a>定时器</h1><p>这部分主要考虑定时怎么设计，即如何得知超时。</p>
+<p>简单的想法是，用链表维护定时器。对于超时的定时器，我们在定时器维护一个编号，告知发送窗口设置重发即可。</p>
+<p>对于排序，有两种手段，一种是在插入节点时候按时间从小到大排序，这样检测就能从头检测知道第一个没超时就停下；一种是直接插入，检测超时是遍历所有节点。</p>
+<p>显然在这个场景下，插入是频繁的，可能插入很多个节点才检测一次超时，因此使用直接插入要好得多。</p>
+<hr>
+<p>定时器节点内容是：</p>
+<ul>
+<li>包的编号</li>
+<li>记录的时间信息</li>
+<li>offset（补充）</li>
+<li>是否重传过（补充）</li>
+</ul>
+<p>整体用一个STL list，可以用find函数（注意list本身没有find函数），list的remove必须是节点相等，则可以用remove_if；这时可以用algorithm头文件的remove函数，使用重载&#x3D;&#x3D;，但是时间是O(n)。对于timer来说，编号不可能重复，因此用find()+list.erase()即可。</p>
+<p>收到ACK时要删除定时器中的对应的包的节点，采样RTT就在此时。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//timer node</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">timerNode</span></span><br><span class="line">&#123;</span><br><span class="line">    MyUdpSeg::num_type number; <span class="comment">//segment number</span></span><br><span class="line">    chrono::system_clock::time_point time; <span class="comment">//start time</span></span><br><span class="line">    <span class="built_in">timerNode</span>(MyUdpSeg::num_type Number):<span class="built_in">number</span>(Number),<span class="built_in">time</span>(chrono::system_clock::<span class="built_in">now</span>())&#123;&#125;</span><br><span class="line">    <span class="type">bool</span> <span class="keyword">operator</span>==(MyUdpSeg::num_type Number) &#123; <span class="keyword">return</span> number == Number; &#125; <span class="comment">//for find() function or remove()</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">//use example</span></span><br><span class="line"><span class="keyword">using</span> timerIter = list&lt;timerNode&gt;::iterator;</span><br><span class="line">list&lt;timerNode&gt; timerList;</span><br><span class="line"><span class="keyword">for</span> (MyUdpSeg::num_type i = <span class="number">0</span>; i &lt; <span class="number">20</span>; i++)</span><br><span class="line">    timerList.<span class="built_in">push_back</span>(<span class="built_in">timerNode</span>(i));</span><br><span class="line">timerIter iter = <span class="built_in">find</span>(timerList.<span class="built_in">begin</span>(),timerList.<span class="built_in">end</span>(),<span class="number">19</span>); <span class="comment">//O(n)</span></span><br><span class="line">chrono::system_clock::time_point nowtime = chrono::system_clock::<span class="built_in">now</span>();</span><br><span class="line">cout &lt;&lt; (*iter).number &lt;&lt; endl;</span><br><span class="line">cout &lt;&lt; chrono::<span class="built_in">duration_cast</span>&lt;chrono::milliseconds&gt;(nowtime - (*iter).time).<span class="built_in">count</span>() &lt;&lt; endl;</span><br><span class="line">timerList.<span class="built_in">erase</span>(iter); <span class="comment">//O(1)</span></span><br><span class="line">iter = <span class="built_in">find</span>(timerList.<span class="built_in">begin</span>(), timerList.<span class="built_in">end</span>(), <span class="number">19</span>);</span><br><span class="line"><span class="keyword">if</span> (iter == timerList.<span class="built_in">end</span>())</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;remove 19&quot;</span> &lt;&lt; endl;</span><br><span class="line"><span class="built_in">remove</span>(timerList.<span class="built_in">begin</span>(), timerList.<span class="built_in">end</span>(), <span class="number">1</span>);</span><br><span class="line">iter = <span class="built_in">find</span>(timerList.<span class="built_in">begin</span>(), timerList.<span class="built_in">end</span>(), <span class="number">1</span>);</span><br><span class="line"><span class="keyword">if</span> (iter == timerList.<span class="built_in">end</span>())</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;remove 1&quot;</span> &lt;&lt; endl;</span><br></pre></td></tr></table></figure>
+
+<p>为了支持插入的时候排序以及其他功能，设计一个类封装。（发现using node_type &#x3D; struct timerNode有问题，要去掉struct）</p>
+<ul>
+<li>允许插入节点</li>
+<li>处理超时事件，遍历链表，找出每个超时的节点<ul>
+<li>对于这些节点，需要重传，因此要返回所有结点的包的编号；重传的包的节点插入交给上层</li>
+<li>尽管这些节点需要重传，但是还是需要保留的，因为原始包超时后重传了，但可能原始包的ack随后就到了，这时要用原始包来采样RTT。而对于重传的包的定时器就可以根据offset删除了，因为不需要再处理超时任务了，同时也不采样这些RTT。</li>
+<li>所以还要根据offset删除所有节点，这就要<strong>加一个offset</strong>。</li>
+</ul>
+</li>
+<li>当收到一个ack时，根据number删除节点，并返回计算的RTT；然后这个number可能有重传的包的定时器，根据offset一并删了，因为这个数据流offset已经不被需要了。</li>
+<li>还要注意，如果一个包重传了而不更改记录的时间（为了计算RTT）的话，那么下次检测这个节点肯定会再被重传，因为包的编号不一样的，可能会重传两个甚至更多相同的数据包；因此要<strong>加一个flag</strong>，一旦检测出一次超时了，下次就不会再报超时事件了，留下的作用是采样RTT。</li>
+</ul>
+<p>重新设计和封装如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">timerNode</span></span><br><span class="line">&#123;</span><br><span class="line">    MyUdpSeg::num_type number; <span class="comment">//segment number</span></span><br><span class="line">    MyUdpSeg::off_type offset; <span class="comment">//data offset</span></span><br><span class="line">    chrono::system_clock::time_point time; <span class="comment">//start time</span></span><br><span class="line">    <span class="type">bool</span> timeout; <span class="comment">//timeout flag</span></span><br><span class="line">    <span class="built_in">timerNode</span>(MyUdpSeg::num_type Number, MyUdpSeg::off_type Offset) :</span><br><span class="line">        <span class="built_in">number</span>(Number), <span class="built_in">offset</span>(Offset),<span class="built_in">time</span>(chrono::system_clock::<span class="built_in">now</span>()), <span class="built_in">timeout</span>(<span class="literal">false</span>) &#123;&#125;</span><br><span class="line">    <span class="built_in">timerNode</span>(<span class="type">const</span> timerNode&amp; node) :</span><br><span class="line">        <span class="built_in">number</span>(node.number), <span class="built_in">offset</span>(node.offset),<span class="built_in">time</span>(node.time), <span class="built_in">timeout</span>(<span class="literal">false</span>) &#123;&#125;</span><br><span class="line">    <span class="type">bool</span> <span class="keyword">operator</span>==(MyUdpSeg::num_type Number) &#123; <span class="keyword">return</span> number == Number; &#125; <span class="comment">//for find() function or remove()</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TimerList</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> node_type = timerNode;</span><br><span class="line">    <span class="keyword">using</span> rtt_type = <span class="type">unsigned</span> <span class="type">int</span>;</span><br><span class="line">    <span class="keyword">using</span> rto_type = <span class="type">double</span>;</span><br><span class="line">    <span class="keyword">using</span> timerIter = list&lt;node_type&gt;::iterator;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    list&lt;node_type&gt; timerList;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">TimerList</span>()&#123;&#125;</span><br><span class="line">    ~<span class="built_in">TimerList</span>()&#123;&#125;</span><br><span class="line">    <span class="comment">//insert by node</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">insertTimer</span><span class="params">(<span class="type">const</span> node_type&amp; node)</span></span>;</span><br><span class="line">    <span class="comment">//insert by number</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">insertTimer</span><span class="params">(MyUdpSeg::num_type Number, MyUdpSeg::off_type Offset)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//delete by number, return RTT/ms</span></span><br><span class="line">    <span class="function">rtt_type <span class="title">deleteTimer</span><span class="params">(MyUdpSeg::num_type Number)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//deal with timeout packets, return numbers</span></span><br><span class="line">    <span class="function">vector&lt;MyUdpSeg::num_type&gt; <span class="title">tick</span><span class="params">(rto_type RTO)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//return size</span></span><br><span class="line">    <span class="function"><span class="type">size_t</span> <span class="title">size</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> timerList.<span class="built_in">size</span>(); &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">//delete all by offset, call by &quot;rtt_type deleteTimer(MyUdpSeg::num_type Number);&quot;</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">deleteTimer_</span><span class="params">(MyUdpSeg::off_type Offset)</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">TimerList::insertTimer</span><span class="params">(<span class="type">const</span> node_type&amp; node)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    timerList.<span class="built_in">push_back</span>(node); <span class="comment">// call move or copy constructor function, not need to construct</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">TimerList::insertTimer</span><span class="params">(MyUdpSeg::num_type Number, MyUdpSeg::off_type Offset)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    timerList.<span class="built_in">emplace_back</span>(Number, Offset); <span class="comment">//call constructor function</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">TimerList::rtt_type <span class="title">TimerList::deleteTimer</span><span class="params">(MyUdpSeg::num_type Number)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//find the node</span></span><br><span class="line">    timerIter iter = <span class="built_in">find</span>(timerList.<span class="built_in">begin</span>(), timerList.<span class="built_in">end</span>(), Number); <span class="comment">//O(n)</span></span><br><span class="line">    <span class="keyword">if</span> (iter == timerList.<span class="built_in">end</span>()) <span class="comment">//not found</span></span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>; <span class="comment">//zero used to error detect</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//sample RTT</span></span><br><span class="line">    chrono::system_clock::time_point nowtime = chrono::system_clock::<span class="built_in">now</span>();</span><br><span class="line">    rtt_type RTT = <span class="built_in">rtt_type</span>(chrono::<span class="built_in">duration_cast</span>&lt;chrono::milliseconds&gt;(nowtime - (*iter).time).<span class="built_in">count</span>());</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//get offset</span></span><br><span class="line">    MyUdpSeg::off_type offset = (*iter).offset;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//delete</span></span><br><span class="line">    timerList.<span class="built_in">erase</span>(iter); <span class="comment">//O(1)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//delete node with the same offset</span></span><br><span class="line">    <span class="built_in">deleteTimer_</span>(offset);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> RTT;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">TimerList::deleteTimer_</span><span class="params">(MyUdpSeg::off_type Offset)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (timerIter iter = timerList.<span class="built_in">begin</span>(); iter != timerList.<span class="built_in">end</span>();)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> ((*iter).offset == Offset)</span><br><span class="line">            iter = timerList.<span class="built_in">erase</span>(iter); <span class="comment">//erase return next iterator</span></span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            iter++;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">vector&lt;MyUdpSeg::num_type&gt; <span class="title">TimerList::tick</span><span class="params">(rto_type RTO)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (RTO &lt;= <span class="number">0</span>) <span class="keyword">return</span>&#123;&#125;;</span><br><span class="line"></span><br><span class="line">    vector&lt;MyUdpSeg::num_type&gt; number_retrans;</span><br><span class="line">    <span class="keyword">for</span> (timerIter iter = timerList.<span class="built_in">begin</span>(); iter != timerList.<span class="built_in">end</span>(); iter++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> ((*iter).timeout == <span class="literal">true</span>) </span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">        &#123;</span><br><span class="line">            chrono::system_clock::time_point nowtime = chrono::system_clock::<span class="built_in">now</span>();</span><br><span class="line">            rtt_type interval = <span class="built_in">rtt_type</span>(chrono::<span class="built_in">duration_cast</span>&lt;chrono::milliseconds&gt;(nowtime - (*iter).time).<span class="built_in">count</span>());</span><br><span class="line">            <span class="keyword">if</span> (interval &gt; RTO) <span class="comment">//need to retransmit</span></span><br><span class="line">            &#123;</span><br><span class="line">                number_retrans.<span class="built_in">push_back</span>((*iter).number);</span><br><span class="line">                (*iter).timeout = <span class="literal">true</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> number_retrans;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="缓冲（窗口）"><a href="#缓冲（窗口）" class="headerlink" title="缓冲（窗口）"></a>缓冲（窗口）</h1><p>用于建立接收窗口和发送窗口，并维护它们的发送与接收</p>
+<p>TCP的缓冲区是一个双向链表，所以这里也使用双向链表，这插入和删除上还是很方便的。</p>
+<p>对于缓冲区节点，收到一个ack时，可以知道编号，删除该节点和定时器并计算RTT；问题是可能有重传的包，编号是不一样的，此时用offset找所有重传的包，找到就删了，因为这个包是否收到已经不重要了（RTT也不采样这个）。</p>
+<p>而节点只能重载一个operator&#x3D;&#x3D;（因为offset和number参数类型可能是一样的，重载失败），前面要find编号，可以重载编号。然后因为要根据offset删所有重传的包，这时就要多实现一个函数，然后用remove_if了。这个函数在remove_if内传参是传入节点，我们还要一个参数offset，所以要用函数对象bind。（当然也可以遍历链表自己删，定时器用的是自己遍历的）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">auto bindFunc1 = bind(lambda,std::placeholders::_1,std::placeholders::_2);</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>对于发送和接收窗口来说，通用的设计如下：</p>
+<p>链表的设计是：STL list。</p>
+<p>节点的设计是：</p>
+<ul>
+<li>有一个报文对象<code>MyUdpSeg</code></li>
+<li>flag标识这个节点发过了没</li>
+</ul>
+<p>类的设计是：</p>
+<ul>
+<li>有添加和删除节点的功能</li>
+<li>有查找节点并返回其引用的功能</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//buffer node</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">bufferNode</span></span><br><span class="line">&#123;</span><br><span class="line">    MyUdpSeg udpSeg; <span class="comment">//segment object</span></span><br><span class="line">    <span class="type">bool</span> isSent;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Constructor 1: construct by lvalue</span></span><br><span class="line">    <span class="built_in">bufferNode</span>(MyUdpSeg&amp; UdpSeg) :<span class="built_in">udpSeg</span>(UdpSeg), <span class="built_in">isSent</span>(<span class="literal">false</span>) &#123;&#125;</span><br><span class="line">    <span class="comment">//Constructor 2: construct by rvalue </span></span><br><span class="line">    <span class="built_in">bufferNode</span>(MyUdpSeg&amp;&amp; UdpSeg) <span class="keyword">noexcept</span> :<span class="built_in">udpSeg</span>(UdpSeg), <span class="built_in">isSent</span>(<span class="literal">false</span>) &#123;&#125;</span><br><span class="line">    <span class="comment">//Constructor 3: Retransmit, adjust the number</span></span><br><span class="line">    <span class="built_in">bufferNode</span>(MyUdpSeg&amp; UdpSeg, MyUdpSeg::num_type Number) :<span class="built_in">udpSeg</span>(UdpSeg, Number), <span class="built_in">isSent</span>(<span class="literal">false</span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//copy constructor</span></span><br><span class="line">    <span class="built_in">bufferNode</span>(<span class="type">const</span> bufferNode&amp; node):<span class="built_in">udpSeg</span>(node.udpSeg),<span class="built_in">isSent</span>(node.isSent)&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">bool</span> <span class="keyword">operator</span>==(MyUdpSeg::num_type Number) &#123; <span class="keyword">return</span> udpSeg.<span class="built_in">getNumber</span>() == Number; &#125; <span class="comment">//for find() function</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//lambda for remove_if</span></span><br><span class="line"><span class="keyword">auto</span> pred_lambda = [](bufferNode&amp; bufNode, MyUdpSeg::off_type offset) -&gt; <span class="type">bool</span> <span class="comment">// &quot;-&gt; bool&quot; is omittable</span></span><br><span class="line">&#123; </span><br><span class="line">    <span class="keyword">return</span> bufNode.udpSeg.<span class="built_in">getOffset</span>() == offset; </span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">auto</span> pred = <span class="built_in">bind</span>(pred_lambda,std::placeholders::_1, myOffset);</span><br><span class="line"></span><br><span class="line"><span class="comment">//the simplified form is as follows</span></span><br><span class="line"><span class="keyword">auto</span> pred = <span class="built_in">bind</span>([](bufferNode&amp; bufNode, MyUdpSeg::off_type offset) &#123; <span class="comment">//lambda</span></span><br><span class="line">    <span class="keyword">return</span> bufNode.udpSeg.<span class="built_in">getOffset</span>() == offset; &#125;,</span><br><span class="line">    placeholders::_1, myOffset); <span class="comment">//parameters</span></span><br></pre></td></tr></table></figure>
+
+<p>类的设计如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//buffer node</span></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">bufferNode</span></span><br><span class="line">&#123;</span><br><span class="line">    MyUdpSeg udpSeg; <span class="comment">//segment object</span></span><br><span class="line">    <span class="type">bool</span> isSent;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//Constructor 1: construct by lvalue</span></span><br><span class="line">    <span class="built_in">bufferNode</span>(MyUdpSeg&amp; UdpSeg) :<span class="built_in">udpSeg</span>(UdpSeg), <span class="built_in">isSent</span>(<span class="literal">false</span>) &#123;&#125;</span><br><span class="line">    <span class="comment">//Constructor 2: construct by rvalue </span></span><br><span class="line">    <span class="built_in">bufferNode</span>(MyUdpSeg&amp;&amp; UdpSeg) <span class="keyword">noexcept</span> :<span class="built_in">udpSeg</span>(UdpSeg), <span class="built_in">isSent</span>(<span class="literal">false</span>) &#123;&#125;</span><br><span class="line">    <span class="comment">//Constructor 3: Retransmit, adjust the number</span></span><br><span class="line">    <span class="built_in">bufferNode</span>(MyUdpSeg&amp; UdpSeg, MyUdpSeg::num_type Number) :<span class="built_in">udpSeg</span>(UdpSeg, Number), <span class="built_in">isSent</span>(<span class="literal">false</span>) &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//copy constructor</span></span><br><span class="line">    <span class="built_in">bufferNode</span>(<span class="type">const</span> bufferNode&amp; node):<span class="built_in">udpSeg</span>(node.udpSeg),<span class="built_in">isSent</span>(node.isSent)&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="type">bool</span> <span class="keyword">operator</span>==(MyUdpSeg::num_type Number) &#123; <span class="keyword">return</span> udpSeg.<span class="built_in">getNumber</span>() == Number; &#125; <span class="comment">//for find() function</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">BufferList</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">using</span> node_type = bufferNode;</span><br><span class="line">    <span class="keyword">using</span> bufferIter = list&lt;node_type&gt;::iterator;</span><br><span class="line">    <span class="keyword">using</span> node_return_type = pair&lt;node_type&amp;, <span class="type">bool</span>&gt;;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    list&lt;node_type&gt; bufferList;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">BufferList</span>()&#123;&#125;</span><br><span class="line">    ~<span class="built_in">BufferList</span>()&#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//insert node</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">insertNode</span><span class="params">(MyUdpSeg&amp; UdpSeg)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">insertNode</span><span class="params">(MyUdpSeg&amp;&amp; UdpSeg)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">insertNode</span><span class="params">(MyUdpSeg&amp; UdpSeg, MyUdpSeg::num_type Number)</span></span>;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">sortInsertNode</span><span class="params">(MyUdpSeg&amp; UdpSeg)</span></span>; <span class="comment">//insert sorted by offset(used by recvbuf)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//delete by number</span></span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">deleteNode</span><span class="params">(MyUdpSeg::num_type Number)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//get node by number, return pair: reference、bool (to check node)</span></span><br><span class="line">    <span class="function">node_return_type <span class="title">getNode</span><span class="params">(MyUdpSeg::num_type Number)</span></span>;</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">    * Note for getNode function:</span></span><br><span class="line"><span class="comment">    * For each return value, initialize it with a new variable</span></span><br><span class="line"><span class="comment">    * Do not assign a value to pair again after initialization, it will act on the initialized node</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//return size</span></span><br><span class="line">    <span class="function"><span class="type">size_t</span> <span class="title">size</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> bufferList.<span class="built_in">size</span>(); &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function">bufferIter <span class="title">begin</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> bufferList.<span class="built_in">begin</span>(); &#125;</span><br><span class="line">    <span class="function">bufferIter <span class="title">end</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> bufferList.<span class="built_in">end</span>(); &#125;</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">deleteFront</span><span class="params">()</span> </span>&#123; bufferList.<span class="built_in">erase</span>(<span class="built_in">begin</span>()); &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//return a default node to ues getNode function</span></span><br><span class="line">    <span class="function"><span class="type">static</span> node_type <span class="title">initNode</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">deleteNode_</span><span class="params">(MyUdpSeg::off_type Offset)</span></span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">BufferList::insertNode</span><span class="params">(MyUdpSeg&amp; UdpSeg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    bufferList.<span class="built_in">emplace_back</span>(UdpSeg);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">BufferList::insertNode</span><span class="params">(MyUdpSeg&amp;&amp; UdpSeg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    bufferList.<span class="built_in">emplace_back</span>(<span class="built_in">move</span>(UdpSeg));</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">BufferList::insertNode</span><span class="params">(MyUdpSeg&amp; UdpSeg, MyUdpSeg::num_type Number)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    bufferList.<span class="built_in">emplace_back</span>(UdpSeg, Number);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">BufferList::sortInsertNode</span><span class="params">(MyUdpSeg&amp; UdpSeg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    MyUdpSeg::off_type offset = UdpSeg.<span class="built_in">getOffset</span>();</span><br><span class="line">    bufferIter iter = bufferList.<span class="built_in">begin</span>();</span><br><span class="line">    <span class="keyword">for</span> (; iter != bufferList.<span class="built_in">end</span>(); iter++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span> ((*iter).udpSeg.<span class="built_in">getOffset</span>() &lt; offset)</span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        <span class="keyword">else</span> <span class="keyword">if</span> ((*iter).udpSeg.<span class="built_in">getOffset</span>() == offset) <span class="comment">//A package with the same data</span></span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">        <span class="keyword">else</span></span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    bufferList.<span class="built_in">insert</span>(iter,UdpSeg);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">BufferList::deleteNode</span><span class="params">(MyUdpSeg::num_type Number)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//find the node</span></span><br><span class="line">    bufferIter iter = <span class="built_in">find</span>(bufferList.<span class="built_in">begin</span>(), bufferList.<span class="built_in">end</span>(), Number); <span class="comment">//O(n)</span></span><br><span class="line">    <span class="keyword">if</span> (iter == bufferList.<span class="built_in">end</span>()) <span class="comment">//not found</span></span><br><span class="line">    &#123;</span><br><span class="line">        cout &lt;&lt; <span class="string">&quot;no delete&quot;</span> &lt;&lt; endl;</span><br><span class="line">        <span class="keyword">return</span>; <span class="comment">//do nothing</span></span><br><span class="line">    &#125;</span><br><span class="line">        </span><br><span class="line"></span><br><span class="line">    <span class="comment">//get offset</span></span><br><span class="line">    MyUdpSeg::off_type offset = (*iter).udpSeg.<span class="built_in">getOffset</span>();</span><br><span class="line"></span><br><span class="line">    <span class="comment">//remove</span></span><br><span class="line">    bufferList.<span class="built_in">erase</span>(iter); <span class="comment">//O(1)</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">//remove all nodes with the same offset</span></span><br><span class="line">    <span class="built_in">deleteNode_</span>(offset);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">BufferList::deleteNode_</span><span class="params">(MyUdpSeg::off_type Offset)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    bufferList.<span class="built_in">remove_if</span>(<span class="built_in">bind</span>([](bufferNode&amp; bufNode, MyUdpSeg::off_type offset) &#123;</span><br><span class="line">        <span class="keyword">return</span> bufNode.udpSeg.<span class="built_in">getOffset</span>() == offset; &#125;,</span><br><span class="line">        placeholders::_1, Offset));</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"><span class="function">BufferList::node_return_type <span class="title">BufferList::getNode</span><span class="params">(MyUdpSeg::num_type Number)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//find the node</span></span><br><span class="line">    bufferIter iter = <span class="built_in">find</span>(bufferList.<span class="built_in">begin</span>(), bufferList.<span class="built_in">end</span>(), Number); <span class="comment">//O(n)</span></span><br><span class="line">    <span class="keyword">if</span> (iter == bufferList.<span class="built_in">end</span>()) <span class="comment">//not found</span></span><br><span class="line">    &#123;</span><br><span class="line">        node_type node = <span class="built_in">initNode</span>(); <span class="comment">//must check bool value firstly, node may be inexistent </span></span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">node_return_type</span>(node, <span class="literal">false</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">node_return_type</span>(*iter,<span class="literal">true</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">BufferList::node_type <span class="title">BufferList::initNode</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">node_type</span>(MyUdpSeg::<span class="built_in">initSeg</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="发送窗口"><a href="#发送窗口" class="headerlink" title="发送窗口"></a>发送窗口</h2><h3 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h3><ul>
+<li>发送窗口里有缓冲链表对象和定时器链表对象</li>
+<li>加载数据<ul>
+<li>将传入的数据封装成节点放到缓冲链表里（支持普通发送）</li>
+<li>读取文件流，如果直到把缓冲链表对象读满（支持文件发送）</li>
+</ul>
+</li>
+<li>发送数据，标记为已发送，并注册定时器；最后一个数据进行标记，发送结束</li>
+<li>根据定时器tick后需要重发的包编号向量，重新插入新的节点数据。</li>
+<li>收到ack，删除节点（及其重传的节点）</li>
+<li>握手，syn；发送完毕是fin</li>
+</ul>
+<p>能发一条消息也能发文件，因此要解耦。对于加载数据来说用一个goOn来指示，文件读完就goOn为false否则为true即需要继续发；对于自行调用发送信息也是如此，指示即可；默认为false。</p>
+<h3 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h3><ul>
+<li><p>递增的number序列</p>
+</li>
+<li><p>数据偏移量offset</p>
+</li>
+<li><p>window的大小，窗口能发送的字节数，窗口更新：</p>
+<ul>
+<li>因为是最多能发送的字节数，所以包括重传在内的所有包都不能太多，因此<code>bufferList.size()* SegDataSize &lt; window</code>才允许继续发；</li>
+<li>更新时最开始想使用<code>window = MyUdpSeg::win_type(offset) + Window</code>，Window是接收窗口传来的还能接收的字节数<code>recvWindow-maxOffset</code>，用这个来更新是因为当一切正常时，offset和maxOffset是相等的，这个更新符合直觉。但是这样更新的话，window只会越来越大，肯定是错误的。</li>
+<li>后来打算用<code>window = MyUdpSeg::win_type(bufferList.size() * SegDataSize) + Window</code>，因为结合前面的判断，能新发送的字节数就是Window这么多，也符合直觉。但这可能导致重传的包很多也能继续发，导致越来越堵。</li>
+<li>因此再定义一个maxWindow，这个和接收窗口的大小一样，<code>window = min(updateWindow, maxWindow)</code>，即如果已经很满了就不增大了。</li>
+</ul>
+</li>
+<li><p>动态更新的RTO</p>
+</li>
+</ul>
+<h2 id="接收窗口"><a href="#接收窗口" class="headerlink" title="接收窗口"></a>接收窗口</h2><h3 id="功能-1"><a href="#功能-1" class="headerlink" title="功能"></a>功能</h3><ul>
+<li>接收窗口有缓冲链表对象</li>
+<li>接收数据<ul>
+<li>把收到的一个数据包放入缓冲链表，注意插入链表要按offset排序插入</li>
+<li>发送ack和当前的剩余窗口</li>
+</ul>
+</li>
+<li>写入数据，检测到一连串的offset超过阈值就写入；<ul>
+<li>写入后更新窗口</li>
+<li>如果最后一个数据包里有结束标记，就通知关闭窗口，然后进行关闭挥手</li>
+</ul>
+</li>
+<li>握手，syn+ack；接收完毕是fin+ack</li>
+</ul>
+<h3 id="变量-1"><a href="#变量-1" class="headerlink" title="变量"></a>变量</h3><ul>
+<li>最大offset偏移</li>
+<li>window的大小，最大能接收的字节数</li>
+</ul>
+<h1 id="退出（基于心跳检测）"><a href="#退出（基于心跳检测）" class="headerlink" title="退出（基于心跳检测）"></a>退出（基于心跳检测）</h1><p>如何沟通退出呢，当接收会话得知自己接收完了会返回true，如果此时就退出了，那么发送会话可能因为ack丢了而无法退出也无法检测，因为udp是无连接的，对端close了也不会通知。</p>
+<p>需要一个可靠的措施，它不会像tcp一样复杂，确保接收器不需要定时器来重传某些包。</p>
+<p>这里的考量是，发送器为了确保对方存活，用一个额外的线程去进行心跳检测，下面是一般的心跳检测步骤：</p>
+<ul>
+<li>1.客户端每隔一个时间间隔发生一个探测包给服务器（秒级别的较长一段时间）</li>
+<li>2.客户端发包时启动一个超时定时器</li>
+<li>3.服务器端接收到检测包，应该回应一个包</li>
+<li>4.如果客户机收到服务器的应答包，则说明服务器正常，删除超时定时器</li>
+<li>5.如果客户端的超时定时器超时，依然没有收到应答包，则说明服务器挂了</li>
+</ul>
+<p>这里的心跳检测主要是用于<strong>保活</strong>，但我这里是为了退出，可以直接复用接收器发回的ack包，发送器也不需要再进行发送包，就检测最近一次接收ack到当前时间的间隔即可，间隔多长结束呢，这里感觉好一点是4个rto（2个rto太容易发生了）。</p>
+<p>接收器也是如此，但是接收器没有rto。所以接收器和发送器都约定好用1秒钟。<strong>发送方退出的时候就是检测到没有接收方响应的时候</strong>，此时接收方可能已经接受完文件退出、或者出错。<strong>接收方退出的时候是处理完所有数据的时候，这不需要心跳检测；也可能在心跳检测发现发送方出错时退出。</strong>因此<strong>发送方退出情况只用一种、接收方退出有两种（或的关系）</strong>。</p>
+<ul>
+<li>在开始时握手阶段，因为双方开启的时候不是同步的，所以一开始握手检测时间要长一些（10~30s），这里设置为30s。当发送方成功从握手退出时（此时收到了syn+ack），可以修改为1s的心跳；而接收方收到syn时，还不能直接修改，因为可能丢包，要等第一个不是握手包到来才修改为1s。</li>
+<li>当接收方认为对方退出时，自己还不能退出，因为可能数据接收完整但是还没写完。这里的逻辑是：写完一次后收到后面的包，然后也许等了许久（别管为什么，只是也许）导致超时才再次准备写，但这次写之前因为超时了所以没去写。这时只需要再执行一次写数据的任务即可，如果完整就可以一次写完；如果是其他情况也没什么损失。</li>
+</ul>
+<p>因为用到一些线程，要加锁。这里面发送器线程之间共享sendOver和lastAckTime，用一个互斥锁即可。</p>
+<h1 id="UDP会话"><a href="#UDP会话" class="headerlink" title="UDP会话"></a>UDP会话</h1><p>socket需要设置成非阻塞，否则<strong>recvfrom可能无法退出</strong>。<strong>sendto不管怎么样都不会阻塞</strong>，因为sendto没有缓冲区，不需要拷贝：</p>
+<p><strong>send 和 sendto 函数在 UDP 层没有概念上的输出缓冲区（总要拷贝数据，但这个缓冲区和TCP的缓冲区在概念上不同），在 TCP 层有输出缓冲区，recv 和recvfrom 无论在 UDP 层还是 TCP 层都有接收缓冲区。</strong></p>
+<p>更详细的介绍是：</p>
+<ul>
+<li>udp sendto 函数，它的作用和tcp一样，是拷贝到缓冲区，但是请注意udp栈底层实现的原理是：</li>
+<li>针对每个udp包如果目前有物理连路带宽可以发送，那么立即发送；如果没有，那么直接丢弃该udp包 </li>
+<li>这个过程是非常非常快的，而且因为是在内核态执行，因此优先级高于普通操作</li>
+<li>从这个意义上来说，sendto函数根本不会阻塞，事实上也不会阻塞，因为只有2个结果：立即发送出去，或者直接丢包</li>
+</ul>
+<p>总结一下就是：UDP不可靠，它不必保存应用程序的数据拷贝，因此<strong>无需真正的发送缓冲区</strong>（应用进程的数据在沿协议栈往下传递，以某种形式拷贝到内核缓冲区，然而数据链路层在送出数据之后将丢弃该拷贝）。</p>
+<h2 id="发送器"><a href="#发送器" class="headerlink" title="发送器"></a>发送器</h2><p>发送文件：</p>
+<ul>
+<li>首先建立一个发送窗口，窗口中有多个buffer；并且打开文件（fp）；</li>
+<li>每个buffer依次读取文件，然后编辑成报文后发送；</li>
+<li>等待ACK，更新发送窗口；</li>
+<li>如果发送窗口可用，继续读取文件、发送</li>
+</ul>
+<p>这里的问题是，整个流程是串行的吗？需要思考的是发送文件和接收ACK是怎么个交流法。</p>
+<ul>
+<li>如果是串行的，那么每次把发送窗口发完，然后等待ACK；这里的问题是一旦有一个ACK来了，是不继续等直接更新窗口（这样更新太频繁了）还是继续等（要等多少个呢？）没更新发送窗口时，假设数据不会发送，那么等ACK就可以一直等待直到发送窗口能增大一个阈值为止。这里的问题是实际上有数据需要重传，如果窗口一直没更新就会导致数据重传不了，这是致命的问题。</li>
+<li>因此需要两个线程，一个维护发送一个维护接收，它们动态更新发送窗口</li>
+</ul>
+<h2 id="接收器"><a href="#接收器" class="headerlink" title="接收器"></a>接收器</h2><p>接收文件：</p>
+<ul>
+<li>首先建立一个接收窗口，这里文件名由于在主项目里能根据服务器得到，所以这里不设置udp交流得到文件名，然后打开文件</li>
+<li>对于收到的每个包，返回一个ack确认，这样可以乱序确认，可以做到tcp中sack的优化（TCP乱序确认就不能快速重传）。接收的是一个char的buffer，要进行解析恢复成报文的数据结构。</li>
+<li>写入文件，要按序写，所以从接收窗口左边界对连续的包进行检测，找到连续的段就写入（基于quic的话是1&#x2F;2的最大窗口再写入），然后更新窗口。</li>
+</ul>
+<p>还是那个问题，流程是否是串行的？</p>
+<ul>
+<li>首先要一直接收，接收到就发一个ack这个没问题。但是如果接收到一个包就检测能不能写入文件就太慢了，会导致ack延迟太多。</li>
+<li>所以另开一个线程不断检测能否写入文件和更新窗口。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Jy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jysama.cn/2022/11/26/RDT_base_on_UDP/" title="RDT base on UDP">https://jysama.cn/2022/11/26/RDT_base_on_UDP/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/11/26/udp_hole_punching/" rel="prev" title="UDP hole punching">
+      <i class="fa fa-chevron-left"></i> UDP hole punching
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81NjM2Ny8zMjgzMA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Note"><span class="nav-number">1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8A%A5%E6%96%87"><span class="nav-number">2.</span> <span class="nav-text">报文</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%A5%E6%96%87%E7%94%9F%E6%88%90%EF%BC%88%E7%BC%96%E8%BE%91%E5%99%A8%EF%BC%89"><span class="nav-number">2.1.</span> <span class="nav-text">报文生成（编辑器）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%A5%E6%96%87%E7%BB%93%E6%9E%84"><span class="nav-number">2.1.1.</span> <span class="nav-text">报文结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ACK"><span class="nav-number">2.1.2.</span> <span class="nav-text">ACK</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9A%E6%97%B6%E5%99%A8"><span class="nav-number">3.</span> <span class="nav-text">定时器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BC%93%E5%86%B2%EF%BC%88%E7%AA%97%E5%8F%A3%EF%BC%89"><span class="nav-number">4.</span> <span class="nav-text">缓冲（窗口）</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%91%E9%80%81%E7%AA%97%E5%8F%A3"><span class="nav-number">4.1.</span> <span class="nav-text">发送窗口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD"><span class="nav-number">4.1.1.</span> <span class="nav-text">功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E9%87%8F"><span class="nav-number">4.1.2.</span> <span class="nav-text">变量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A5%E6%94%B6%E7%AA%97%E5%8F%A3"><span class="nav-number">4.2.</span> <span class="nav-text">接收窗口</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">功能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E9%87%8F-1"><span class="nav-number">4.2.2.</span> <span class="nav-text">变量</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%80%80%E5%87%BA%EF%BC%88%E5%9F%BA%E4%BA%8E%E5%BF%83%E8%B7%B3%E6%A3%80%E6%B5%8B%EF%BC%89"><span class="nav-number">5.</span> <span class="nav-text">退出（基于心跳检测）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#UDP%E4%BC%9A%E8%AF%9D"><span class="nav-number">6.</span> <span class="nav-text">UDP会话</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%91%E9%80%81%E5%99%A8"><span class="nav-number">6.1.</span> <span class="nav-text">发送器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8E%A5%E6%94%B6%E5%99%A8"><span class="nav-number">6.2.</span> <span class="nav-text">接收器</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jy"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Jy</p>
+  <div class="site-description" itemprop="description">Re：从零开始的写博客生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jy</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">322k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">4:53</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
