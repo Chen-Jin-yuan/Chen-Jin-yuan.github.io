@@ -192,7 +192,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2022-11-26 19:45:26 / 修改时间：19:48:07" itemprop="dateCreated datePublished" datetime="2022-11-26T19:45:26+08:00">2022-11-26</time>
+              <time title="创建时间：2022-11-26 19:45:26 / 修改时间：19:57:41" itemprop="dateCreated datePublished" datetime="2022-11-26T19:45:26+08:00">2022-11-26</time>
             </span>
 
           <br>
@@ -201,7 +201,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>5.3k</span>
+              <span>5.5k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -220,20 +220,21 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="Note"><a href="#Note" class="headerlink" title="Note"></a>Note</h1><p>项目代码和测试代码和结果在GitHub上：</p>
+          <h1 id="Note"><a href="#Note" class="headerlink" title="Note"></a>Note</h1><p>项目代码和测试代码和结果在GitHub上：<a target="_blank" rel="noopener" href="https://github.com/Chen-Jin-yuan/RDT-base-on-UDP">Chen-Jin-yuan&#x2F;RDT-base-on-UDP (github.com)</a></p>
 <p>实现的功能如下：</p>
 <ul>
 <li>重新设计的报文头部；</li>
 <li>两次握手（only 1 RTT）；</li>
-<li>基于ID标识（参考Quic）；</li>
-<li>乱序确认，number递增（参考Quic）；</li>
-<li>超时重传，基于number采样rtt（参考Quic）；</li>
-<li>使用offset标识流而非number（参考Quic）；</li>
-<li>基于maxoffset进行流量控制（参考Quic）；</li>
+<li>基于ID标识（参考Quic协议）；</li>
+<li>乱序确认，number递增（参考Quic协议）；</li>
+<li>超时重传，基于number采样rtt（参考Quic协议）；</li>
+<li>使用offset标识流而非number（参考Quic协议）；</li>
+<li>基于maxoffset进行流量控制（参考Quic协议）；</li>
 <li>基于心跳检测确认双方存活与退出。</li>
 </ul>
+<p>Quic：<a target="_blank" rel="noopener" href="https://datatracker.ietf.org/doc/html/rfc9000">RFC 9000 - QUIC: A UDP-Based Multiplexed and Secure Transport (ietf.org)</a></p>
 <p>在不同内网的P2P通信可以达到2MB&#x2F;s的速度，如果<code>UDPSEGSIZE</code>设置得大即一次发送的报文很大，可以达到10MB&#x2F;s，但在高丢包率情况下会有意外情况。如果在相同内网中可以设置大一些。</p>
-<p>因为平时比较忙，项目设计时分了好几段时间来做，所以有些地方思路会断开，代码也可能有不足的地方，欢迎评论。</p>
+<p>因为平时比较忙，项目设计时分了好几段时间来做，所以有些地方思路会断开，代码也会有不足的地方，欢迎评论。</p>
 <h1 id="报文"><a href="#报文" class="headerlink" title="报文"></a>报文</h1><h2 id="报文生成（编辑器）"><a href="#报文生成（编辑器）" class="headerlink" title="报文生成（编辑器）"></a>报文生成（编辑器）</h2><p>读入的文件数据buffer添加头部信息，形成新的buffer。</p>
 <h3 id="报文结构"><a href="#报文结构" class="headerlink" title="报文结构"></a>报文结构</h3><p>最好32bits对齐</p>
 <ul>
@@ -3242,7 +3243,7 @@ unsigned int alarm（unsigned int seconds);
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">322k</span>
+    <span title="站点总字数">323k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
