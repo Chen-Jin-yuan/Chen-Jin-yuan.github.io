@@ -167,6 +167,115 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/05/12/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%992/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/05/12/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%992/" class="post-title-link" itemprop="url">自动登录学校网站（续）</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-05-12 09:36:43" itemprop="dateCreated datePublished" datetime="2022-05-12T09:36:43+08:00">2022-05-12</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-05-26 08:27:07" itemprop="dateModified" datetime="2022-05-26T08:27:07+08:00">2022-05-26</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>1.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>1 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="解析登录网址"><a href="#解析登录网址" class="headerlink" title="解析登录网址"></a>解析登录网址</h1><p>首先我们要定位到登录的网址以便driver访问。</p>
+<p>将浏览器打开到登录页面，可以看到对应的网址为</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://jaccount.sjtu.edu.cn/jaccount/jalogin?sid=jaoauth220160718&amp;client=CAzoSoajfvlBJKYW7q11rIlS5ucaE%2FIWcLi2eNuNEJDa&amp;returl=CPDcg4bZMUVfWbZWFi2BIAB%2BzZprZ2JnKxq%2Bd6MsjeS0nMw73qkvsCxG47FeRZmpnkzSb7Gf%2FCPIbwa%2BNH267zBN%2BexUD2RL%2BhgfQzpYNJ96UJUYoajLq%2Fqgx6g%2BL2Ol6i3p5RWYYIcKoV28CmbnNbPia3K1RfdgUgktPh4yNrgYsIciWlBvtMDF%2FLrJfK4rGV9Z%2BbdiXK6EFaQJId4mZXj45XlS2pmQtR5P6qOeSj3nvLDaxZ6bablX7cNO5IhPAmaj%2BMOH%2Fx5F7YpIbYoZg3R01iV6Rd7oO8pSmHFTFkvhJFWPTWI1C01nBDaKato1IDv%2BP0%2FF8C6e%2BTDf6MOGmge0SAXgweU0o4I2v06Xb5nDWAGGTAtyB2Vm0qxD7RB6C74n77jiGIGju4y13a%2Fi10RO4pmfPcik9st2unhTWfVMqDtYd%2BJ9jCjl8UOoel8G99qS7ET%2FVN%2FbP%2BfUkBJb7I8%3D&amp;se=CBZz3nk3K70uQiJvss5rVxhD4A5GYffm65sDqZ6Zh2PbEFVqISnzjU2JVjCO1VYIYuNZMv%2F8W6s3</span><br></pre></td></tr></table></figure>
+
+<p>很明显这是拼接了随机数的网址而不是真正应该访问的，为了得到真正的登录页面的网址，需要动态解析。</p>
+<p>打开一开始的登录选项，要点击校内用户登录才会加载出真正的登录页面，因此可以猜测这是一个动态加载的页面。所以我们打开页面控制台，点击<strong>Network</strong>选项，一开始是空白的，等待新加载的信息。</p>
+<p><img src="https://cdn.staticaly.com/gh/Chen-Jin-yuan/blogSources@master/%E7%99%BB%E5%BD%95%E7%BD%91%E5%9D%80%E8%A7%A3%E6%9E%901.png" alt="image-20220512114437557"></p>
+<p>然后点击登录按钮，会跳转到登录页面。左边的控制台已经加载了许多信息，要在这些信息中找到加载网址的信息，一般来说我们查看第一条条目即可。</p>
+<p><img src="https://cdn.staticaly.com/gh/Chen-Jin-yuan/blogSources@master/%E7%99%BB%E5%BD%95%E7%BD%91%E5%9D%80%E8%A7%A3%E6%9E%902.png" alt="image-20220512114740458"></p>
+<p>选中第一条，可以看到请求的url，这就是真正的登录页面的网址，这里可以复制这个地址打开看看是不是正确的，如果不是就继续找。</p>
+<p><img src="https://cdn.staticaly.com/gh/Chen-Jin-yuan/blogSources@master/%E7%99%BB%E5%BD%95%E7%BD%91%E5%9D%80%E8%A7%A3%E6%9E%903.png" alt="image-20220512114923472"></p>
+<h1 id="模拟登录"><a href="#模拟登录" class="headerlink" title="模拟登录"></a>模拟登录</h1><p>得到网址后，可以进行登录。登录一般来说有两种方式，一种是用requests库的post请求，一种是用selenium的driver直接进行网页模拟登录。这里选择用driver的方式主要基于以下两个方面：</p>
+<ul>
+<li>目的上看，我们想要自动登录后还能够操纵我们的网页干其他事情，用driver的话刚刚好</li>
+<li>从可行性的角度上看，登录过程我们需要验证码识别，如果用requests库抓取，前面提到抓取下来的验证码是不一样的，每次抓取都会改变内容。因此我能想到的解决方法就是用driver的页面进行静态的截图，实际上这符合我们人眼识别的过程。</li>
+</ul>
+<p>因此，我们对于验证码的识别就是根据截图来进行的。同样，这里使用我们之前训练的模型，因此要把模型先放到model.py里面。下面给出处理验证码的代码文件。首先定义验证码信息参数，如长度、大小等。然后我们要把模型初始化，加载参数的过程会比较慢（推理很快），我们不想浪费这段时间，由于用driver打开网页也需要一段时间，因此就可以开一个线程来加载参数，与此同时打开网页，可以节省一些时间。</p>
+<p>然后定义了截图操作，先截全屏再截下验证码。这里验证码的位置信息通过网页源代码（html）的信息获取，用xpath、class、id定位都行，在webdriver都定义了相关的操作。需要注意的是<strong>scaling_ratio</strong>这一变量，要截下正确的验证码位置与我们屏幕的缩放比例有关。可以在桌面上右键点击显示设置，然后查看屏幕的缩放与布局，根据缩放的比例设置变量。</p>
+<img src="https://cdn.staticaly.com/gh/Chen-Jin-yuan/blogSources@master/%E5%B1%8F%E5%B9%95%E7%BC%A9%E6%94%BE%E6%AF%94%E4%BE%8B.png" alt="image-20220512121304774" style="zoom:80%;" />
+
+<p>最后还有一个验证码解码的方法，实际上这跟前面predict.py的操作类似。所有代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># captcha.py</span></span><br><span class="line"><span class="keyword">from</span> model <span class="keyword">import</span> CNN_sjtu</span><br><span class="line"><span class="keyword">import</span> torch.nn</span><br><span class="line"><span class="keyword">import</span> torch</span><br><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"><span class="keyword">from</span> torchvision.transforms <span class="keyword">import</span> Compose, ToTensor, Resize,Normalize</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">from</span> selenium.webdriver.common.by <span class="keyword">import</span> By</span><br><span class="line"><span class="keyword">from</span> threading <span class="keyword">import</span> Thread</span><br><span class="line"><span class="keyword">import</span> warnings</span><br><span class="line"></span><br><span class="line"><span class="comment">#pytorch版本关系，会有warning，实际上可以忽略</span></span><br><span class="line">warnings.filterwarnings(<span class="string">&quot;ignore&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#定义验证码信息参数</span></span><br><span class="line">numchar = <span class="number">4</span></span><br><span class="line">alphabet = <span class="string">&#x27;abcdefghijklmnopqrstuvwxyz&#x27;</span></span><br><span class="line">width = <span class="number">100</span></span><br><span class="line">height = <span class="number">40</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#模型初始化</span></span><br><span class="line">model_net = CNN_sjtu(num_class=<span class="built_in">len</span>(alphabet), num_char=<span class="built_in">int</span>(numchar), width=width, height=height)</span><br><span class="line">model_net = model_net.cuda()</span><br><span class="line">model_net.<span class="built_in">eval</span>()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">load_net</span>():<span class="comment">#load参数 比较慢，用一个额外的线程先load</span></span><br><span class="line">    <span class="keyword">global</span> model_net</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;load net......&quot;</span>)</span><br><span class="line">    model_net.load_state_dict(torch.load(<span class="string">r&#x27;C:\Users\14242\PycharmProjects&#x27;</span></span><br><span class="line">                                         <span class="string">r&#x27;\DL\Pytorch_project\captcha-CNN-验证码识别\weights/model_sjtu_4.path&#x27;</span>))<span class="comment">#参数位置</span></span><br><span class="line"></span><br><span class="line">thread_load= Thread(target=load_net)</span><br><span class="line">thread_load.start()</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">decode_captcha</span>(<span class="params">img_path</span>):</span><br><span class="line">    <span class="keyword">global</span> model_net</span><br><span class="line">    <span class="keyword">with</span> torch.no_grad():</span><br><span class="line">        img=Image.<span class="built_in">open</span>(img_path)</span><br><span class="line">        img = img.convert(<span class="string">&#x27;RGB&#x27;</span>)</span><br><span class="line">        transforms = Compose([Resize((height, width)), ToTensor(), Normalize(<span class="number">0</span>, <span class="number">1</span>)])</span><br><span class="line">        img = transforms(img)</span><br><span class="line">        img = img.view(<span class="number">1</span>, <span class="number">3</span>, height, width).cuda()</span><br><span class="line">        output = model_net(img)</span><br><span class="line">        output = output.view(-<span class="number">1</span>, <span class="built_in">len</span>(alphabet))</span><br><span class="line">        output = torch.nn.functional.softmax(output, dim=<span class="number">1</span>)</span><br><span class="line">        output = torch.argmax(output, dim=<span class="number">1</span>)</span><br><span class="line">        output = output.view(-<span class="number">1</span>, numchar)[<span class="number">0</span>]</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&#x27;&#x27;</span>.join([alphabet[i] <span class="keyword">for</span> i <span class="keyword">in</span> output.cpu().detach().numpy()])</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_snap</span>(<span class="params">driver</span>):  <span class="comment"># 对目标网页进行截屏。这里截的是全屏</span></span><br><span class="line">    driver.save_screenshot(<span class="string">&#x27;full_snap.png&#x27;</span>)</span><br><span class="line">    page_snap_obj=Image.<span class="built_in">open</span>(<span class="string">&#x27;full_snap.png&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> page_snap_obj</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_image</span>(<span class="params">driver</span>): <span class="comment"># 对验证码所在位置进行定位，然后截取验证码图片</span></span><br><span class="line">    scaling_ratio=<span class="number">1</span><span class="comment">#系统显示的缩放比例</span></span><br><span class="line">    img = driver.find_element(By.XPATH, <span class="string">&#x27;//*[@id=&quot;captcha-img&quot;]&#x27;</span>)<span class="comment">#获取验证码在网页中的位置信息</span></span><br><span class="line">    time.sleep(<span class="number">0.10</span>)<span class="comment">#等待一会</span></span><br><span class="line">    location = img.location<span class="comment">#位置</span></span><br><span class="line">    size = img.size<span class="comment">#大小</span></span><br><span class="line">    left = location[<span class="string">&#x27;x&#x27;</span>]*scaling_ratio</span><br><span class="line">    top = location[<span class="string">&#x27;y&#x27;</span>]*scaling_ratio</span><br><span class="line">    right = left + size[<span class="string">&#x27;width&#x27;</span>]*scaling_ratio</span><br><span class="line">    bottom = top + size[<span class="string">&#x27;height&#x27;</span>]*scaling_ratio</span><br><span class="line">    page_snap_obj = get_snap(driver)<span class="comment">#获取整个页面截图</span></span><br><span class="line">    image_obj = page_snap_obj.crop((left, top, right, bottom))<span class="comment">#截下验证码</span></span><br><span class="line">    image_obj.save(<span class="string">&#x27;captcha.png&#x27;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>下面是我们登录的主程序，注意这种方式要先下载对应于谷歌浏览器版本号的chromedriver.exe放到当前的目录下。</p>
+<p>通过<code>send_keys()</code>方法填入用户名、密码、验证码；接着通过<code>click()</code>方法自动点击登录按钮即可，注意操作网页的过程一定要适当地等待加载（sleep）。</p>
+<p>由于验证码可能识别错误，因此要循环判断是否成功登录，直到成功再停止。我的方法是判断当前页面的<strong>title</strong>是否发生了改变，这是一个比较简单方便的方式。</p>
+<p>最后，由于一开始我们生成了两个截图，可以用<code>os.remove()</code>将其删除。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># login.py</span></span><br><span class="line"><span class="keyword">from</span> captcha <span class="keyword">import</span> decode_captcha <span class="keyword">as</span> decode_c</span><br><span class="line"><span class="keyword">from</span> captcha <span class="keyword">import</span> get_image</span><br><span class="line"><span class="keyword">from</span> selenium <span class="keyword">import</span> webdriver</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> selenium.webdriver.chrome.options <span class="keyword">import</span> Options</span><br><span class="line"><span class="keyword">from</span> selenium.webdriver.common.by <span class="keyword">import</span> By</span><br><span class="line"></span><br><span class="line"><span class="comment">#调用谷歌driver的基本操作</span></span><br><span class="line">options = Options()</span><br><span class="line">driver = webdriver.Chrome(options=options)<span class="comment">#调用当前路径下的chromedriver.exe</span></span><br><span class="line">driver.maximize_window()<span class="comment">#最大化</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#截图的保存地址</span></span><br><span class="line">captcha_path=<span class="string">&#x27;./captcha.png&#x27;</span></span><br><span class="line">snap_path=<span class="string">&#x27;./full_snap.png&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#两个地址链接</span></span><br><span class="line">url = <span class="string">&#x27;https://i.sjtu.edu.cn/jaccountlogin&#x27;</span></span><br><span class="line">url =<span class="string">&#x27;https://oc.sjtu.edu.cn/login/openid_connect&#x27;</span></span><br><span class="line"></span><br><span class="line">driver.get(url) <span class="comment">#打开网页</span></span><br><span class="line"></span><br><span class="line">cur_title=driver.title</span><br><span class="line"><span class="keyword">while</span>(driver.title==cur_title):<span class="comment">#失败则一直试，因为验证码可能错误，两次应该就能成功</span></span><br><span class="line">    time.sleep(<span class="number">0.10</span>)  <span class="comment"># 加载等待</span></span><br><span class="line">    get_image(driver)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&quot;推理验证码......&quot;</span>)</span><br><span class="line">    captcha_res=decode_c(captcha_path)</span><br><span class="line">    driver.find_element(By.NAME, <span class="string">&#x27;user&#x27;</span>).send_keys(<span class="string">&#x27;username&#x27;</span>)  <span class="comment"># 填入用户名</span></span><br><span class="line">    driver.find_element(By.NAME, <span class="string">&#x27;pass&#x27;</span>).send_keys(<span class="string">&#x27;password&#x27;</span>)  <span class="comment"># 填入密码</span></span><br><span class="line">    driver.find_element(By.NAME,<span class="string">&#x27;captcha&#x27;</span>).send_keys(captcha_res)  <span class="comment"># 填入验证码</span></span><br><span class="line">    driver.find_element(By.ID,<span class="string">&quot;submit-button&quot;</span>).click()</span><br><span class="line"></span><br><span class="line">os.remove(captcha_path)</span><br><span class="line">os.remove(snap_path)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;ending......&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/05/10/%E8%87%AA%E5%8A%A8%E7%99%BB%E5%BD%95%E5%AD%A6%E6%A0%A1%E7%BD%91%E7%AB%991/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -442,7 +551,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-count">23</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -479,12 +588,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">312k</span>
+    <span title="站点总字数">317k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">4:44</span>
+    <span title="站点阅读时长">4:48</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
   </div>
