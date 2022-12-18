@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jysama.cn","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="记录一些bug和修改   部署问题云服务器应用防火墙设置在服务器上部署需要先设置端口才能连接   客户端发布 图标 资源文件那添加资源，选icon，然后导入一个ico的文件即可   vs选择release x64，然后生成即可。   内网穿透-p2p文件发送发文件时，客户端互相connect不上，listen端无所谓，发起connect的那方马上就发现无法连接就返回了。这是因为主机在内网的缘故。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="orange-bug测试及修改">
+<meta property="og:url" content="https://jysama.cn/2022/12/18/orange%E9%A1%B9%E7%9B%AE%E6%B5%8B%E8%AF%95%E4%B8%8E%E6%97%A5%E5%BF%97/index.html">
+<meta property="og:site_name" content="JySama">
+<meta property="og:description" content="记录一些bug和修改   部署问题云服务器应用防火墙设置在服务器上部署需要先设置端口才能连接   客户端发布 图标 资源文件那添加资源，选icon，然后导入一个ico的文件即可   vs选择release x64，然后生成即可。   内网穿透-p2p文件发送发文件时，客户端互相connect不上，listen端无所谓，发起connect的那方马上就发现无法连接就返回了。这是因为主机在内网的缘故。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E8%AE%BE%E7%BD%AE%E7%AB%AF%E5%8F%A3.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/NAT%E6%98%A0%E5%B0%84%E8%A1%A8.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/nattype2.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/nattype.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/UDP.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/bug1.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/bug2.png">
+<meta property="article:published_time" content="2022-12-18T13:02:38.032Z">
+<meta property="article:modified_time" content="2022-12-18T10:00:52.189Z">
+<meta property="article:author" content="Jy">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E8%AE%BE%E7%BD%AE%E7%AB%AF%E5%8F%A3.png">
+
+<link rel="canonical" href="https://jysama.cn/2022/12/18/orange%E9%A1%B9%E7%9B%AE%E6%B5%8B%E8%AF%95%E4%B8%8E%E6%97%A5%E5%BF%97/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>orange-bug测试及修改 | JySama</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JySama</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/12/18/orange%E9%A1%B9%E7%9B%AE%E6%B5%8B%E8%AF%95%E4%B8%8E%E6%97%A5%E5%BF%97/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          orange-bug测试及修改
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2022-12-18 21:02:38 / 修改时间：18:00:52" itemprop="dateCreated datePublished" datetime="2022-12-18T21:02:38+08:00">2022-12-18</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>5.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>5 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <blockquote>
+<p>记录一些bug和修改</p>
+</blockquote>
+<hr>
+<h1 id="部署问题"><a href="#部署问题" class="headerlink" title="部署问题"></a>部署问题</h1><h2 id="云服务器应用防火墙设置"><a href="#云服务器应用防火墙设置" class="headerlink" title="云服务器应用防火墙设置"></a>云服务器应用防火墙设置</h2><p>在服务器上部署需要先设置端口才能连接</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E8%AE%BE%E7%BD%AE%E7%AB%AF%E5%8F%A3.png" alt="image-20221028144759472"></p>
+<hr>
+<h2 id="客户端发布"><a href="#客户端发布" class="headerlink" title="客户端发布"></a>客户端发布</h2><ul>
+<li>图标<ul>
+<li>资源文件那添加资源，选icon，然后导入一个ico的文件即可</li>
+</ul>
+</li>
+<li>vs选择release x64，然后生成即可。</li>
+</ul>
+<hr>
+<h1 id="内网穿透-p2p文件发送"><a href="#内网穿透-p2p文件发送" class="headerlink" title="内网穿透-p2p文件发送"></a>内网穿透-p2p文件发送</h1><p>发文件时，客户端互相connect不上，listen端无所谓，发起connect的那方马上就发现无法连接就返回了。这是因为主机在内网的缘故。</p>
+<h2 id="NAT与内网穿透"><a href="#NAT与内网穿透" class="headerlink" title="NAT与内网穿透"></a>NAT与内网穿透</h2><p>假设A打算发文件给B，那么服务器只将客户端B连接服务器使用的ip发给了A，对于内网用户来说，B的这个ip是<strong>路由器网关</strong>的ip，要进行NAT转换才能到内网主机，NAT就是网络地址转换的意思，因此需要进行内网穿透。</p>
+<p>对于内网用户来说，服务器接收到一个ip和一个端口，如果是公网用户，则这个ip是主机ip，端口是主机进程使用的端口；如果是内网用户，则这个ip是网关的ip，端口是映射表中的端口，根据这个端口，网关能知道要发送给哪个主机中的哪个进程。NAT转换表的映射如下：</p>
+<img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/NAT%E6%98%A0%E5%B0%84%E8%A1%A8.png" alt="img" style="zoom:67%;" />
+
+<p>内网穿透（<code>Intranet penetration</code>）就是通过一个公网服务器，让内网主机去连接服务器，服务器就能获取两个内网主机的ip和端口（实际上是各自的网关的ip和映射表中的端口），然后两个内网主机就可以通信了。</p>
+<h2 id="UDP打洞"><a href="#UDP打洞" class="headerlink" title="UDP打洞"></a>UDP打洞</h2><p>这实际上就是内网穿透最通常的实现方式，服务器如何获取内网主机网关的ip和端口呢，总是要通过连接或者发送信息。因为TCP开销比UDP大得多，所以一般来讲都是使用UDP来实现内网穿透，所以也叫UDP打洞（<code>UDP hole punching</code>）。</p>
+<p>当然使用TCP也是可以的。</p>
+<hr>
+<p>测NAT类型，用miwifi.com测试，每次打开第一次都是端口限制圆锥形，然后之后都是完全圆锥形。这是软件的问题，不管怎么样，是cone类型即可。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/nattype2.png" alt="image-20221031110618667"></p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/nattype.png" alt="image-20221030210807715"></p>
+<h2 id="客户端中的问题"><a href="#客户端中的问题" class="headerlink" title="客户端中的问题"></a>客户端中的问题</h2><p>原来我以为已经实现了内网穿透了…但刚开始没去细想，理解还是片面了，其实并没有实现。</p>
+<p>注意这里的<strong>端口映射是映射到一个进程</strong>的，也就是说内网穿透实际上是<strong>进程（线程）与进程（线程）</strong>之间的互相穿透。</p>
+<p>然而客户端只有主线程和接收线程连上了服务器，发送文件和接收文件的线程并没有！这两个线程才是真正需要p2p对端发送文件的，但<strong>由于接收文件线程是临时创建的，所以需要再内网穿透</strong>，因此要让接收文件线程也去连接服务器，让发送线程获取ip端口信息才行。回顾一下先前的设计：</p>
+<ul>
+<li>1）用户A发送sendfile请求，服务器发sendfilefrom给B</li>
+<li>2）用户B发送acceptfile给服务器，并开始listen等待连接</li>
+<li>3）服务器给A发一个sendfile accept + ip信息，A准备根据这个 ip 和sendfile port连接B（实际上该ip是B的网关ip，但是并没有端口映射到接收文件线程）<ul>
+<li>A首先根据ip连接到网关</li>
+<li>然后网关根据port查映射表</li>
+<li>但由于B接收文件线程没有在网关中添加映射，首先网关肯定不能映射到该线程；并且网关需要查询的port也不一定就是sendfile port（因为网关添加映射是它自己添加的，port怎么样在添加前并不清楚）</li>
+</ul>
+</li>
+</ul>
+<p>因此需要B去连接服务器，一方面让网关添加映射，一方面让服务器获取网关自己添加的映射表中的端口。</p>
+<p>简单的想法是直接让接收文件线程去TCP连接服务器，然后让其发送acceptfile命令，这里实现UDP打洞。</p>
+<p>当用户B发送acceptfile的命令时，还是让命令主线程直接发送，接着让接收线程创建socket后直接向服务器的端口发一个信息。服务器在获取这个信息时，知道这个命令就是接收文件线程发过来的，就直接把ip和port发给发送文件线程。</p>
+<p>更具体的实现是：</p>
+<ul>
+<li>首先服务器新建一个listen套接字(和服务器一起初始化)，这是因为另外两个套接字在连接时都会做一些后续动作（添加映射表和向epoll注册事件），这里并不需要，因为连接是一次性的。</li>
+<li>然后当服务器收到acceptfile请求后，不像之前一下拼接ip就发回去了，而是调用recvfrom阻塞（如果客户端发的比较慢）等待或直接获取（如果客户端发得快）客户端sendto发送的信息（因为udp不确保正确，所以随便发就可以了），然后把ip和port拼接发给目标就可以了。</li>
+<li>客户端直接创建完socket就sendto，不管服务器有没有收到，然后进行listen等待对端传输文件。</li>
+</ul>
+<p>注意这里的问题不能在用户较多并且同时使用acceptfile时区分是哪个用户，这也是UDP打洞的问题所在，除非再添加其他实现。这里不搞那么复杂。</p>
+<hr>
+<h2 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h2><p>定义端口号为10000，在云服务器防火墙添加UDP规则。</p>
+<p>UDP流程如下：</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/UDP.png" alt="image-20221030200457821"></p>
+<p>主要介绍两个函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">recvfrom</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">void</span> * buf, <span class="type">size_t</span> len, <span class="type">int</span> flags, <span class="keyword">struct</span> sockaddr * src_addr, <span class="type">socklen_t</span> * addrlen)</span></span>;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">recvfrom: 用于接收数据</span></span><br><span class="line"><span class="comment">- sockfd：用于接收UDP数据的套接字；</span></span><br><span class="line"><span class="comment">- buf：保存接收数据的缓冲区地址；</span></span><br><span class="line"><span class="comment">- len：可接收的最大字节数（不能超过buf缓冲区的大小）；</span></span><br><span class="line"><span class="comment">- flags：可选项参数，若没有可传递0；</span></span><br><span class="line"><span class="comment">- src_addr：存有发送端地址信息的sockaddr结构体变量的地址；</span></span><br><span class="line"><span class="comment">- addrlen：保存参数 src_addr的结构体变量长度的变量地址值。</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">返回值：成功为发送的字节数，失败为<span class="number">-1</span>，失败原因存于errno</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">sendto</span><span class="params">(<span class="type">int</span> sockfd, <span class="type">const</span> <span class="type">void</span> * buf, <span class="type">size_t</span> len, <span class="type">int</span> flags, <span class="type">const</span> <span class="keyword">struct</span> sockaddr * dest_addr, <span class="type">socklen_t</span> addrlen)</span></span>;</span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">sendto:用于发送数据</span></span><br><span class="line"><span class="comment">- sockfd：用于传输UDP数据的套接字；</span></span><br><span class="line"><span class="comment">- buf：保存待传输数据的缓冲区地址；</span></span><br><span class="line"><span class="comment">- len：带传输数据的长度（以字节计）；</span></span><br><span class="line"><span class="comment">- flags：可选项参数，若没有可传递0；</span></span><br><span class="line"><span class="comment">- dest_addr：存有目标地址信息的 sockaddr 结构体变量的地址；</span></span><br><span class="line"><span class="comment">- addrlen：传递给参数 dest_addr的地址值结构体变量的长度。</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line">返回值：成功为发送的字节数，失败为<span class="number">-1</span>，失败原因存于errno</span><br></pre></td></tr></table></figure>
+
+<p>recvfrom相当于把accept的事情做了（保存了客户端地址端口），sendto相当于把connect的事情做了（用到了服务器的ip和port）</p>
+<p>对于listen来说，该bind还是要bind，才能启动监听，但不用调用listen()函数。后面可以看到，创建socket的方式基本都是相同的，当创建一个套接字时，它被假设为一个主动套接字，也就是说，它是一个将调用connect连接的客户套接字。listen函数把一个未连接的套接字转换成一个被动套接字，指示内核应该接受指向该套接字的连接请求。</p>
+<p>而UDP不是面向连接的，当然不用listen()了，创建出来的端口发送可接收。<strong>接收的话就要bind，仅发送就不用bind</strong>。bind的作用是，使得这个套接字的<strong>接收是从该端口接收的，发送是从该端口发送</strong>的（使得报文中的源端口是该端口）。所以一般客户端不用bind某个端口，交给系统从connect后选择，这样同样的代码可以避免bind同一个端口，否则每次都要改端口。而当需要<strong>收发端口统一</strong>时，请使用bind。</p>
+<p>服务器端实现，初始化UDP监听端口：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">init_udp_Socket</span><span class="params">(<span class="type">int</span>&amp; listenfd, <span class="type">const</span> <span class="type">int</span> port)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//定义socketfd，它要绑定监听的网卡地址和端口</span></span><br><span class="line">    listenfd = <span class="built_in">socket</span>(AF_INET,SOCK_DGRAM,IPPROTO_UDP);<span class="comment">//UDP</span></span><br><span class="line">    <span class="keyword">if</span>(listenfd &lt; <span class="number">0</span>) </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">LOG_ERROR</span>(<span class="string">&quot;create listen socket error, port-%d&quot;</span>,port);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//定义sockaddr_in</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">sockaddr_in</span> socketaddr;</span><br><span class="line">    socketaddr.sin_family = AF_INET;<span class="comment">//ipv4</span></span><br><span class="line">    socketaddr.sin_port = <span class="built_in">htons</span>(port);<span class="comment">//字节序转换</span></span><br><span class="line">    socketaddr.sin_addr.s_addr = <span class="built_in">htonl</span>(INADDR_ANY);<span class="comment">//INADDR_ANY表示监听所有网卡地址，0.0.0.0；</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//端口复用，在bind前设置，否则bind时出错就晚了</span></span><br><span class="line">    <span class="type">int</span> optval = <span class="number">1</span>;</span><br><span class="line">    <span class="type">int</span> ret = <span class="built_in">setsockopt</span>(listenfd, SOL_SOCKET, SO_REUSEADDR, (<span class="type">const</span> <span class="type">void</span>*)&amp;optval, <span class="built_in">sizeof</span>(<span class="type">int</span>));</span><br><span class="line">    <span class="keyword">if</span>(ret == <span class="number">-1</span>) </span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">LOG_ERROR</span>(<span class="string">&quot;set socket setsockopt error !&quot;</span>);</span><br><span class="line">        <span class="built_in">close</span>(listenfd);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//绑定套接字和地址端口信息，sockaddr_in转成sockaddr</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="built_in">bind</span>(listenfd,(<span class="keyword">struct</span> sockaddr *)&amp;socketaddr,<span class="built_in">sizeof</span>(socketaddr))==<span class="number">-1</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">LOG_ERROR</span>(<span class="string">&quot;bind port-%d error !&quot;</span>,port);</span><br><span class="line">        <span class="built_in">close</span>(listenfd);</span><br><span class="line">        <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">	<span class="comment">//完事了</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>原来的acceptfile命令的处理基本长这样，需要在sendstr前把ip和端口拿到。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">acceptfile</span><span class="params">(<span class="type">int</span> conn1, string sid)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">if</span>(state == clientState::isWaiting)</span><br><span class="line">    &#123;</span><br><span class="line">        string myip = usermap.<span class="built_in">fvalue_conn1_ip</span>(conn1);</span><br><span class="line">        sendstr = <span class="string">&quot;@#sendfile accept &quot;</span>+myip;</span><br><span class="line">        <span class="built_in">send</span>(conn2,sendstr.<span class="built_in">c_str</span>(),sendstr.<span class="built_in">size</span>(),<span class="number">0</span>);<span class="comment">//发给对方</span></span><br><span class="line">        </span><br><span class="line">		...</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>添加一个函数，放回ip和port的string。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">string <span class="title">udp_hole_punching</span><span class="params">(<span class="type">int</span> listenfd)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//定义sockaddr_in</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">sockaddr_in</span> gateway;<span class="comment">//表示网关</span></span><br><span class="line">    <span class="type">socklen_t</span> addr_len = <span class="built_in">sizeof</span>(gateway);</span><br><span class="line">    <span class="built_in">memset</span>(&amp;gateway, <span class="number">0</span>, <span class="built_in">sizeof</span>(gateway));</span><br><span class="line">    <span class="type">char</span> recvbuf[<span class="number">128</span>];<span class="comment">//对数据不感兴趣</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//len要传地址，因为要保存写入结构体的长度</span></span><br><span class="line">    <span class="type">int</span> res = <span class="built_in">recvfrom</span>(listenfd, recvbuf, <span class="number">128</span>, <span class="number">0</span>, (<span class="keyword">struct</span> sockaddr *)&amp;gateway, &amp;addr_len);</span><br><span class="line">    <span class="keyword">if</span>(res &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">LOG_ERROR</span>(<span class="string">&quot;udp hole punching receive error!&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">    &#123;</span><br><span class="line">        string ip = <span class="built_in">string</span>(<span class="built_in">inet_ntoa</span>(gateway.sin_addr));</span><br><span class="line">        string port = <span class="built_in">to_string</span>(<span class="built_in">ntohs</span>(gateway.sin_port));</span><br><span class="line">        <span class="built_in">LOG_DEBUG</span>(<span class="string">&quot;udp hole punching ip: %s, port: %s&quot;</span>,ip.<span class="built_in">c_str</span>(),port.<span class="built_in">c_str</span>());</span><br><span class="line">        <span class="keyword">return</span> ip+<span class="string">&quot; &quot;</span>+port;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>服务器差不多就完成了，下面是客户端的修改。客户端主要是在recvfile这个函数做修改，在函数开始前发送udp打洞信息即可，实现一个函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">bool</span> <span class="title">udp_hole_punching</span><span class="params">(<span class="type">const</span> <span class="type">char</span>* server_ip, <span class="type">const</span> <span class="type">int</span> port)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//定义socketfd，它要绑定监听的网卡地址和端口</span></span><br><span class="line">    sockfd = <span class="built_in">socket</span>(AF_INET,SOCK_DGRAM,IPPROTO_UDP);<span class="comment">//UDP</span></span><br><span class="line">    <span class="keyword">if</span> (sockfd == INVALID_SOCKET)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;udp socket error!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//定义sockaddr_in</span></span><br><span class="line">    <span class="keyword">struct</span> <span class="title class_">sockaddr_in</span> socketaddr;<span class="comment">//告知要发送的目标ip及端口</span></span><br><span class="line">    socketaddr.sin_family = AF_INET;<span class="comment">//ipv4</span></span><br><span class="line">    socketaddr.sin_port = <span class="built_in">htons</span>(port);<span class="comment">//字节序转换</span></span><br><span class="line">    <span class="built_in">inet_pton</span>(AF_INET, server_ip, &amp;socketaddr.sin_addr);</span><br><span class="line">    </span><br><span class="line">    <span class="comment">//发送数据，最后的len不用传地址，因为是告知，不用修改</span></span><br><span class="line">    <span class="type">char</span> sendbuf[<span class="number">10</span>] = <span class="string">&quot;udp&quot;</span>;</span><br><span class="line">    <span class="type">int</span> res = <span class="built_in">sendto</span>(sockfd, sendbuf, <span class="built_in">strlen</span>(sendbuf), <span class="number">0</span>, (<span class="keyword">struct</span> sockaddr*)&amp;socketaddr, <span class="built_in">sizeof</span>(socketaddr));</span><br><span class="line">    <span class="keyword">if</span>(res &lt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;udp sendto error!\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">     </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h1 id="linux-windows字符集问题"><a href="#linux-windows字符集问题" class="headerlink" title="linux-windows字符集问题"></a>linux-windows字符集问题</h1><p>linux和windows编码不一样，中文乱码</p>
+<h1 id="一些奇妙的bug"><a href="#一些奇妙的bug" class="headerlink" title="一些奇妙的bug"></a>一些奇妙的bug</h1><h2 id="客户端退出问题"><a href="#客户端退出问题" class="headerlink" title="客户端退出问题"></a>客户端退出问题</h2><ul>
+<li><p>客户端接收线程recv阻塞退出问题</p>
+<ul>
+<li><p>一开始很奇怪，exit后服务器关闭套接字，然后接收线程就出问题了，recv是-1然后退出一直循环。</p>
+</li>
+<li><p>这个问题是因为使用了<code>size_t recvbytes = recv(connfd, recvbuf, sizeof(recvbuf), 0);</code>其中size_t无法让返回值变成负数，因此判断-1失效，无法获取服务器已关闭的消息。</p>
+</li>
+<li><p>然后发现了更怪的问题，就是服务器只close主线程的套接字，接收线程的并没有管，为什么接收线程会退出呢？</p>
+</li>
+<li><p>查看socket的error字段，发现是10053，即主机主动关闭了连接。思考可能是主线程退出后关了些东西使得接收线程也失败了。检查发现主线程只关了自己的套接字，（一开始没有发现）再仔细看发现执行了<code>WSACleanup();</code>使得socket都退出了，这也难怪接收线程会直接退出。</p>
+</li>
+<li><p>然而这并不是什么不好的事情，因为本来接收线程recv阻塞也不好退出，现在刚好根据主线程退出，二者同时close掉套接字，然后服务器分别响应并close。分别响应的原因是，当客户端自己崩了的话也是二者同时close掉套接字，此时服务器也应该是分别响应的。</p>
+</li>
+</ul>
+</li>
+<li><p>注意客户端调用exit后会close自己的套接字，所以服务器可以直接根据close这个信息来exit_，不需要根据exit命令来操作；这样可以把客户端正常退出和异常退出的情况合起来。</p>
+</li>
+</ul>
+<hr>
+<h2 id="cout多线程安全问题"><a href="#cout多线程安全问题" class="headerlink" title="cout多线程安全问题"></a>cout多线程安全问题</h2><ul>
+<li>cout多线程安全问题，这个在客户端里涉及。因为cout本身是流对象重载了&lt;&lt;函数，所以&lt;&lt;endl和前面的不是同个函数调用（flush同理），因此会被其他线程的cout挤掉，就导致输出混乱（主要是换行endl被挤掉了不好看）。解决方法是：<ul>
+<li>换行符直接写到字符串里，但cout刷新缓冲不支持，可能不能及时输出，因为\n在cout中不会刷新，刷新时机：<ul>
+<li>程序正常退出会刷新cout的缓冲区</li>
+<li>一些输出操纵符可以帮助我们刷新，比如endl,flush,ends  代码实例： cout&lt;&lt;”hello”&lt;&lt;flush；由于重载函数，每个&lt;&lt;都可以被其他线程挤掉</li>
+<li>将输入于输出绑定在一起，则输入会导致刷新输出的缓冲区 代码：cin.tie(&amp;cout)</li>
+<li>也可以通过unitbuf操纵符设置流的内部状态，从而清空缓冲区</li>
+</ul>
+</li>
+<li>使用<strong>printf</strong>，在printf中<strong>\n会刷新缓冲区</strong>，刷新时机<code>程序正常退出，输出字符带有‘/n’,调用函数fflush(stdout),发生标准输入</code>，但注意printf能打印的格式是有限制的，cout可以打印重载了&lt;&lt;运算符的对象。</li>
+<li>c++20中出现了std::format，太新了先不用</li>
+<li>也可以cout时加个互斥锁。。。</li>
+</ul>
+</li>
+<li>解决方法就是在接收线程那cout尽量改为printf，主线程使用cout就不用改了（也比较多）。为什么说尽量，因为有的cout不用换行。</li>
+</ul>
+<hr>
+<h2 id="服务器命令解析问题-gdb调试"><a href="#服务器命令解析问题-gdb调试" class="headerlink" title="服务器命令解析问题-gdb调试"></a>服务器命令解析问题-gdb调试</h2><p>在chatting的一方exit后服务器崩溃，出现<code>Segmentation fault (core dumped)</code>。需要用gdb查看core文件，首先<code>ulimit -c unlimited</code>，然后在Makefile编译选项加个<code>-g</code>（就是-o2那里）。</p>
+<p><strong>不过我还是没产生core文件</strong>，直接<code>gdb server</code>，在gdb内运行程序（<code>start</code>），一直<code>n</code>或<code>next</code>跳转到start那行代码，然后复现bug，最终发现是命令解析出了问题：</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/bug1.png" alt="image-20221028172207557"></p>
+<p>唯一的可能是：因为chatting中要退出，所以要使用@，这说明要进一步检查@这一部分。</p>
+<p>跟踪客户端的代码，对于@命令的解析是这样的：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">vector&lt;string&gt; <span class="title">parse</span><span class="params">(string cmdstr)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">//首先看第一个字符是不是@，是的话去掉就好了</span></span><br><span class="line">    <span class="keyword">if</span> (cmdstr[<span class="number">0</span>] == <span class="string">&#x27;@&#x27;</span>)</span><br><span class="line">        cmdstr = cmdstr.<span class="built_in">substr</span>(<span class="number">1</span>, cmdstr.<span class="built_in">size</span>() - <span class="number">1</span>);</span><br><span class="line">    <span class="comment">//对于一个关键字的命令，无法用空格分割，考虑到最后一定有个\n是没用的，因此把\n改为空格，一举两得</span></span><br><span class="line">    cmdstr[cmdstr.<span class="built_in">size</span>() - <span class="number">1</span>] = <span class="string">&#x27; &#x27;</span>;</span><br><span class="line">    vector&lt;string&gt; res;</span><br><span class="line">    <span class="type">size_t</span> pos = <span class="number">0</span>;</span><br><span class="line">    <span class="type">size_t</span> pos1;</span><br><span class="line">    <span class="keyword">while</span> ((pos1 = cmdstr.<span class="built_in">find</span>(<span class="string">&#x27; &#x27;</span>, pos)) != string::npos)</span><br><span class="line">    &#123;</span><br><span class="line">        res.<span class="built_in">push_back</span>(cmdstr.<span class="built_in">substr</span>(pos, pos1 - pos));</span><br><span class="line">        <span class="keyword">while</span> (cmdstr[pos1] == <span class="string">&#x27; &#x27;</span>)<span class="comment">//过滤空格</span></span><br><span class="line">            pos1++;</span><br><span class="line">        pos = pos1;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> res;<span class="comment">//返回值是右值，外部vector会接收右值，调用移动构造</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到为了复用没有@的解析，把传进来的cmdstr的@去掉了，但是上层并没有去掉，直接发给服务器了，就出问题了。所以要么把发的去掉，要么收的时候去掉。这里使用引用的话会把换行也消了，所以打算修改服务器端的代码。</p>
+<p>改完之后这个bug就解决了。</p>
+<hr>
+<h2 id="很小的失误都会导致崩溃"><a href="#很小的失误都会导致崩溃" class="headerlink" title="很小的失误都会导致崩溃"></a>很小的失误都会导致崩溃</h2><ul>
+<li>用户1accept后服务器没有把用户1的名字发给用户2，只发了<code>@#chat accept</code>，导致用户2访vector越界。</li>
+<li>用户1accept后忘记切换状态了。</li>
+</ul>
+<hr>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/bug2.png" alt="image-20221028232057720"></p>
+<p>这个bug是客户端sendfile后，对端因为服务器发过来的filename是空导致取filename时vec越界崩溃。</p>
+<p>检查发现是服务器在处理sendfile命令时获取文件名使用的：<code>find_last_of</code>，打成了<code>find_last_not_of</code>，这样总是找到最后一个位置，然后把filename变成空。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">size_t</span> pos = filename.<span class="built_in">find_last_of</span>(<span class="string">&quot;/\\&quot;</span>);<span class="comment">//把not去掉</span></span><br><span class="line"><span class="keyword">if</span> (pos != string::npos)</span><br><span class="line">    filename = filename.<span class="built_in">substr</span>(pos + <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//并且加一个保护，以防发了个文件夹过来，比如a/</span></span><br><span class="line"><span class="keyword">if</span>(filename == <span class="string">&quot;&quot;</span>)</span><br><span class="line">&#123;</span><br><span class="line">    sendstr = <span class="string">&quot;filename error, please break and check!&quot;</span>;</span><br><span class="line">    <span class="built_in">send</span>(myconn2, sendstr.<span class="built_in">c_str</span>(), sendstr.<span class="built_in">size</span>(), <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p>相同ip会导致映射表冲刷。这是因为使用了交换机，发给服务器的ip是交换机的ip。</p>
+<h1 id="日志"><a href="#日志" class="headerlink" title="日志"></a>日志</h1><ul>
+<li>2022-10-12：有个idea，开始设计</li>
+<li>接下来两天：设计客户端状态机和初步完成代码，还有一堆烦人的课程作业</li>
+<li>接下来五天：根据状态机边设计边实现若干业务处理函数，还有一堆烦人的课程作业</li>
+<li>接下来大概三天：完善最后的逻辑补充，如一些特殊情况的思考，以及补充一些边写边想起来的命令（config那些），还有一堆烦人的课程作业</li>
+<li>接下来四天：实现服务端的设计，复杂度主要在用户映射和逻辑处理的那块，还有一堆烦人的课程作业</li>
+<li>2022-10-26：客户端和服务端都完成，由于代码在markdown中手写，有少量warning和error，迅速改完后已经能成功跑起来了<br>接下来两三天：测bug，还是有一些问题，内存越界啊cout多线程安全，都是小事（一查查半天hh），调试后能正确运行，还有一堆烦人的课程作业</li>
+<li>2022-10-30：基于tcp的p2p文件传输无响应，猜测是内网无法连接，准备进行内网穿透的实现，从NAT的类型开始了解，进行了简单的udp打洞测试（基于c++）</li>
+<li>2022-10-31：udp打洞逐渐深入，实现了逆向连接（NAT和公网客户端），由于网络资源不允许（大多数人使用校园网是对称型，这种无法穿透），还无法进行双NAT下的udp打洞内网穿透；测试了tcp逆向连接的完成（基于conntrack连接跟踪原理，穿透了防火墙），这个过程中发现了TCP同时打开的现象（双主动connect实现tcp连接建立）</li>
+<li>2022-11-1：周二课多，没写代码。系统了解了TCP同时打开的原理，整理了一篇博客（技术讲解博客确实写得少）</li>
+<li>接下来三天：这几天没怎么干，有一堆烦人的课程作业，然后周五考试，考完下午散了下心</li>
+<li>2022-11-5：借助小薛的路由器（NAT是圆锥型，可以穿透）验证了udp打洞的内网穿透；但基于tcp的内网穿透一直无法实现。</li>
+<li>接下来两天：打算用quic实现udp可靠文件传输。试着配msquic环境，然而微软这个文档写的真逆天，作者测试也不完全，网上也没有相关的配置博客，折磨了两天放弃了（win10的TLS1.3打开了也test失败）</li>
+<li>接下来两天：事情多，课多以及写课程大作业…</li>
+<li>2022-11-9：不打算用quic了，看了其他RDT的UDP，有UDT和RUDP，GitHub上看开源项目看了好久，不太热门的东西文档太烂了，而且接口也不写明白；还看了下别人实现的简单的RDT的UDP，写的太烂了。浪费一中午和一下午时间和一个傍晚的时间，急，项目被卡着快两周了。还是要整理下心情</li>
+<li>2022-11-10：打算自己写一个RDT的UDP，并且不参考tcp而参考quic，当然只是简单实现。估计要写很久了，接下来事情好多。</li>
+<li>2022-11-20：十天过去了，下半学期开始后好忙…</li>
+<li>2022-11-27：终于完成了RDT的UDP实现，但还没融入到项目里，之后还要肝大作业，需要等寒假再完成了。</li>
+<li>2022-12-18：大作业队友迟迟不干活，把项目整理完，项目开发到此为止。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Jy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jysama.cn/2022/12/18/orange%E9%A1%B9%E7%9B%AE%E6%B5%8B%E8%AF%95%E4%B8%8E%E6%97%A5%E5%BF%97/" title="orange-bug测试及修改">https://jysama.cn/2022/12/18/orange项目测试与日志/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/12/18/%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%BC%80%E5%8F%912/" rel="prev" title="「orange」-server2">
+      <i class="fa fa-chevron-left"></i> 「orange」-server2
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81NjM2Ny8zMjgzMA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2%E9%97%AE%E9%A2%98"><span class="nav-number">1.</span> <span class="nav-text">部署问题</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%91%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%BA%94%E7%94%A8%E9%98%B2%E7%81%AB%E5%A2%99%E8%AE%BE%E7%BD%AE"><span class="nav-number">1.1.</span> <span class="nav-text">云服务器应用防火墙设置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%8F%91%E5%B8%83"><span class="nav-number">1.2.</span> <span class="nav-text">客户端发布</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F-p2p%E6%96%87%E4%BB%B6%E5%8F%91%E9%80%81"><span class="nav-number">2.</span> <span class="nav-text">内网穿透-p2p文件发送</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#NAT%E4%B8%8E%E5%86%85%E7%BD%91%E7%A9%BF%E9%80%8F"><span class="nav-number">2.1.</span> <span class="nav-text">NAT与内网穿透</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#UDP%E6%89%93%E6%B4%9E"><span class="nav-number">2.2.</span> <span class="nav-text">UDP打洞</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E4%B8%AD%E7%9A%84%E9%97%AE%E9%A2%98"><span class="nav-number">2.3.</span> <span class="nav-text">客户端中的问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.4.</span> <span class="nav-text">实现</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#linux-windows%E5%AD%97%E7%AC%A6%E9%9B%86%E9%97%AE%E9%A2%98"><span class="nav-number">3.</span> <span class="nav-text">linux-windows字符集问题</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E4%BA%9B%E5%A5%87%E5%A6%99%E7%9A%84bug"><span class="nav-number">4.</span> <span class="nav-text">一些奇妙的bug</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E9%80%80%E5%87%BA%E9%97%AE%E9%A2%98"><span class="nav-number">4.1.</span> <span class="nav-text">客户端退出问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#cout%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E9%97%AE%E9%A2%98"><span class="nav-number">4.2.</span> <span class="nav-text">cout多线程安全问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%91%BD%E4%BB%A4%E8%A7%A3%E6%9E%90%E9%97%AE%E9%A2%98-gdb%E8%B0%83%E8%AF%95"><span class="nav-number">4.3.</span> <span class="nav-text">服务器命令解析问题-gdb调试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BE%88%E5%B0%8F%E7%9A%84%E5%A4%B1%E8%AF%AF%E9%83%BD%E4%BC%9A%E5%AF%BC%E8%87%B4%E5%B4%A9%E6%BA%83"><span class="nav-number">4.4.</span> <span class="nav-text">很小的失误都会导致崩溃</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%97%A5%E5%BF%97"><span class="nav-number">5.</span> <span class="nav-text">日志</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jy"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Jy</p>
+  <div class="site-description" itemprop="description">Re：从零开始的写博客生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">28</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jy</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">347k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:15</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
