@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jysama.cn","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Note这部分简单学习一些目前比较新的计网相关的技术，不作特别深入，但尽可能保证介绍明白。 kubernetes简介kubernetes 简称 k8s，是一个容器自动化运维平台，可以高效管理容器集群。k8s 位于容器编排层，只管理容器，而不提供容器引擎来负责容器生命周期的管理，因此 k8s 需要借助docker 这类容器引擎才能工作。简单来说，容器提供应用级别的一个抽像去管理应用，而k8s 是提供">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计网相关技术">
+<meta property="og:url" content="https://jysama.cn/2023/02/07/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/index.html">
+<meta property="og:site_name" content="JySama">
+<meta property="og:description" content="Note这部分简单学习一些目前比较新的计网相关的技术，不作特别深入，但尽可能保证介绍明白。 kubernetes简介kubernetes 简称 k8s，是一个容器自动化运维平台，可以高效管理容器集群。k8s 位于容器编排层，只管理容器，而不提供容器引擎来负责容器生命周期的管理，因此 k8s 需要借助docker 这类容器引擎才能工作。简单来说，容器提供应用级别的一个抽像去管理应用，而k8s 是提供">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%AE%B9%E5%99%A81.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/overlay.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/vxlan1.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/vxlan2.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/vxlan3.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/bpf1.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/ebpf1.png">
+<meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/ebpf2.png">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-d359453c9269146cd93de5eed43993c8_720w.webp">
+<meta property="og:image" content="https://pic3.zhimg.com/80/v2-f081e8fce13d8b00e5a786399d20ca06_720w.webp">
+<meta property="og:image" content="https://pic4.zhimg.com/80/v2-39d9c5742815718ffc3e616342c75c9b_720w.webp">
+<meta property="og:image" content="https://pic3.zhimg.com/80/v2-ee0175b746bbf5eed76de9f29bb4bbda_720w.webp">
+<meta property="og:image" content="https://pic3.zhimg.com/80/v2-f4b703475096e19c669d6cfc7128311e_720w.webp">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-a986564eecfb3e670ee5a6c05a2557ac_720w.webp">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-e3025ebe60021a3e34b2dd94615bf8c4_720w.webp">
+<meta property="article:published_time" content="2023-02-07T02:22:38.951Z">
+<meta property="article:modified_time" content="2023-02-07T10:44:15.948Z">
+<meta property="article:author" content="Jy">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%AE%B9%E5%99%A81.png">
+
+<link rel="canonical" href="https://jysama.cn/2023/02/07/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>计网相关技术 | JySama</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JySama</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2023/02/07/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          计网相关技术
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-02-07 10:22:38 / 修改时间：18:44:15" itemprop="dateCreated datePublished" datetime="2023-02-07T10:22:38+08:00">2023-02-07</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>12k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>11 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="Note"><a href="#Note" class="headerlink" title="Note"></a>Note</h1><p>这部分简单学习一些目前比较新的计网相关的技术，不作特别深入，但尽可能保证介绍明白。</p>
+<h1 id="kubernetes"><a href="#kubernetes" class="headerlink" title="kubernetes"></a>kubernetes</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>kubernetes 简称 k8s，是一个容器自动化运维平台，可以高效管理容器集群。k8s 位于容器编排层，只管理容器，而不提供容器引擎来负责容器生命周期的管理，因此 k8s 需要借助docker 这类容器引擎才能工作。简单来说，容器提供应用级别的一个抽像去管理应用，而k8s 是提供应用级别集群的抽象去管理容器集群。</p>
+<p>k8s 的用途有：跨主机编排容器、更充分地利用硬件资源来最大化地满足企业应用的需求、通过自动布局、自动重启、自动复制、自动伸缩实现应用的状态检查与自我修复、控制与自动化应用的部署与升级等等。在架构上，k8s 主要由 master 节点和 node 节点组成，master 管理 node 的功能实施：</p>
+<ul>
+<li>master 节点组件：<ul>
+<li>(1) etcd：k8s 集中的状态存储，存储所有的集群状态数据；</li>
+<li>(2) API server：k8s 的通讯接口和命令总线；</li>
+<li>(3) scheduler：k8s 负责调度决策的组件，掌握着当前集群资源的使用情况；</li>
+<li>(4) controller manager：通过 API server 监控集群的状态，确保集群实际状态和预期的一致。</li>
+</ul>
+</li>
+<li>node 节点组件：<ul>
+<li>(1) kubelet：资源管理，监 API server 上的事件；</li>
+<li>(2) kube-proxy：管理 k8s 上面的服务和网络；</li>
+<li>(3) docker：容器对象，负责实施应用功能。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="对比传统应用部署"><a href="#对比传统应用部署" class="headerlink" title="对比传统应用部署"></a>对比传统应用部署</h2><p>部署 kubernetes 应用与部署传统应用的不同之处：</p>
+<ul>
+<li>传统应用会部署在一个操作系统上，程序员开发程序面临的接口是操作系统的 api，并在单一主机上部署和运行程序。由于不同操作系统之间的 ABI（二进制接口），导致应用程序的移植面临巨大困难。而部署 kubernetes 应用则使用 k8s 集群对外提供的 api 接口，应用程序开发出来天然适应于运行在云平台之上，而非传统的单机应用程序。</li>
+<li>部署 kubernetes 应用不需要考虑具体的环境。kubernetes 使用容器化解决方案，每个应用可以被打包成一个容器镜像，这便于管理、扩展和回收，也不用管在哪个机器执行，具体的环境是什么。而这些是部署传统应用需要考虑的东西。</li>
+<li>由于部署 kubernetes 应用不需要考虑具体的环境，在应用开发与部署的过程中，应用不需要与其余的应用堆栈组合，也不依赖于生产环境基础结构，这使得从研发到测试、生产能提供一致环境，能够实现服务的无缝迁移。</li>
+<li>传统应用是运行在操作系统上的一个或多个进程，不管需不需要服务，应用程序都始终运行着。而 kubernetes 平时并不运行应用程序，而是等到有客户去访问服务时，才运行一个微服务。一旦访问完毕，应用程序的使命结束后将停止运行。直到再次被调用时，才再次运行。此时，应用程序变成了函数，也就是所谓的函数即服务。</li>
+</ul>
+<h1 id="container"><a href="#container" class="headerlink" title="container"></a>container</h1><h2 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h2><p>容器是一种沙盒技术，主要目的是为了将应用运行在其中，与外界隔离；及方便这个沙盒可以被转移到其它宿主机器。本质上，它是一个特殊的进程。通过名称空间（Namespace）、控制组（Control groups）、切根（chroot）技术把资源、文件、设备、状态和配置划分到一个独立的空间。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%AE%B9%E5%99%A81.png" alt="捕获">              </p>
+<p>与虚拟机不同，容器不提供操作系统级虚拟化，从而降低了初始化容器的开销。在实际场景中，一台物理计算机可能会运行数百个容器。</p>
+<p>Docker是最著名的容器平台。在docker的生命周期中，镜像和容器是最重要的两部分。其中镜像是文件，是一个只读的模板，一个独立的文件系统，里面包含运行容器所需的数据，可以用来创建新的容器；而容器是基于镜像创建的进程，容器中的进程依赖于镜像中的文件，容器具有写的功能，可以根据需要改写里面的软件、配置等，并可以保存为新的镜像。如果是用import方法生成，则是一个完全新的镜像。如果用的是commit方法生成的新的镜像，则新镜像与原来的镜像之间存在着继承关系。</p>
+<h2 id="对比虚拟机"><a href="#对比虚拟机" class="headerlink" title="对比虚拟机"></a>对比虚拟机</h2><p>容器和虚拟机都是用于创建可在其中运行应用程序的隔离环境的技术。但是，它们有一些关键差异。容器和虚拟机之间的主要区别之一是它们的实现方式。容器是一个轻量级、独立的可执行包，它包含应用程序运行所需的所有内容，包括应用程序代码、库、依赖项和运行时。另一方面，虚拟机是一个成熟的独立操作系统，它运行在主机操作系统之上并虚拟化所有硬件资源。</p>
+<p>另一个区别是提供的隔离级别。容器提供高级别的进程级隔离，这意味着每个容器运行自己的进程，并具有自己的文件系统和网络堆栈。但是，容器共享主机操作系统的内核，这意味着它们不提供与主机系统的完全隔离。另一方面，虚拟机提供与主机系统的完全隔离，因为它们有自己的内核和硬件虚拟化层。第三个区别是开销和资源要求。容器通常比虚拟机更轻量级，需要的资源更少，因为它们不需要虚拟化所有硬件资源。这使得它们的启动速度更快，运行效率更高。</p>
+<p>总体而言，容器和虚拟机之间的主要区别在于它们的实现方式、它们提供的隔离级别以及开销和资源要求。</p>
+<h1 id="vxlan"><a href="#vxlan" class="headerlink" title="vxlan"></a>vxlan</h1><h2 id="overlay"><a href="#overlay" class="headerlink" title="overlay"></a>overlay</h2><p>可以将覆盖网络（overlay）视为位于另一个网络之上的计算机网络。叠加网络中的所有节点都通过逻辑或虚拟链路相互连接，并且每个链路都对应于底层网络中的路径。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/overlay.png" alt="image"></p>
+<h2 id="vxlan简介"><a href="#vxlan简介" class="headerlink" title="vxlan简介"></a>vxlan简介</h2><p>VXLAN 通常被描述为一种覆盖技术（也是一种隧道技术），因为它允许通过将以太网帧封装（隧道）到包含 IP 地址的 VXLAN 数据包中，从而在干预的第 2 层网络上延伸第 3 层连接。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/vxlan1.png" alt="image (1)"></p>
+<p>每个协议标头中 VXLAN 数据包的关键字段包括：</p>
+<ul>
+<li>+ 外部 MAC 标头（14 字节，4 字节可选）— 包含源 VTEP（VXLAN 隧道端点）的 MAC 地址和下一跃点路由器的 MAC 地址。数据包路径上的每个路由器都会重写此标头，以便源地址是路由器的 MAC 地址，目标地址是下一跃点路由器的 MAC 地址。</li>
+<li>+ 外部 IP 标头（20 字节）- 包含源和目标 VTEP 的 IP 地址。</li>
+<li>+（外部）UDP 标头（8 字节）- 包含源和目标 UDP 端口：<ul>
+<li>– 源 UDP 端口：VXLAN 协议在 UDP 数据包标头中重新利用此标准字段。协议不会将此字段用于源 UDP 端口，而是将其用作 VTEP 之间特定流的数字标识符。VXLAN 标准没有定义如何派生此数字，但源 VTEP 通常根据来自内部第 2 层数据包和原始帧的第 3 层或第 4 层标头的字段组合的哈希值来计算它。</li>
+<li>– 目标 UDP 端口：VXLAN UDP 端口。互联网号码分配机构 （IANA） 将端口 4789 分配给 VXLAN。</li>
+</ul>
+</li>
+<li>+ VXLAN 标头（8 字节）- 包含 24 位 VNI。</li>
+<li>+ 原始以太网&#x2F;L2 帧 – 包含原始第 2 层以太网帧。</li>
+</ul>
+<p>总的来说，VXLAN 封装向原始以太网帧添加了 50 到 54 字节的额外标头信息。由于这可能导致以太网帧超过默认的 1514 字节 MTU，因此最佳做法是在整个网络中实现巨型帧。</p>
+<p>并且，我们可以看到VXLAN数据包只不过是一个MAC-in-UDP封装的数据包。VXLAN 报头将添加到原始第 2 层帧，然后放置在 UDP-IP 数据包中。此封装允许 VXLAN 数据包通过第 2 层网络从第 3 层网络进行隧道传输。</p>
+<h2 id="解决虚拟局域网问题"><a href="#解决虚拟局域网问题" class="headerlink" title="解决虚拟局域网问题"></a>解决虚拟局域网问题</h2><p>在两个虚拟局域网中的两台主机是无法互相ping通网络的，假设有两台虚拟机（相当于两个虚拟局域网），并且虚拟机中使用mininet创建主机节点，那么不同虚拟机中的节点不能互相ping通。</p>
+<p>网络不可达的原因是：</p>
+<ul>
+<li>在物理host主机里，两台虚拟机相当于在一个小型局域网下，它们之间是可以进行网络通信的（本身可达，即overlay下层网络underlay可达，只要建立上层逻辑层即可实现互联）；</li>
+<li>而继续在虚拟机中使用mininet创建host时，mininet相当于在每个虚拟机下又创建了小型局域网，此时这两个小型局域网又是虚拟机中的内网，mininet创建的主机相当于两个内网下的主机，当然是不能进行网络通信的。</li>
+</ul>
+<p>这时就可以利用VXLAN建立逻辑上的隧道，将两台虚拟机中的mininet互连。VXLAN在两个虚拟机上各自建立一个<strong>VTEP</strong>，所谓的VTEP（VXLAN Tunnel Endpoints，VXLAN隧道端点）就是VXLAN网络的边缘设备，是VXLAN隧道的起点和终点，VXLAN对用户原始数据帧的封装和解封装均在VTEP上进行。</p>
+<p>有了VTEP后，mininet中的数据包就能通过VTEP转发到另一台虚拟机的隧道端点并在链路层转发。这本质上是由于底层的物理链路（underlay）本就是连通的，因此只要在两个mininet只要在逻辑上建立一条隧道（overlay），就能打破内网限制。</p>
+<h2 id="WIRESHARK-抓包"><a href="#WIRESHARK-抓包" class="headerlink" title="WIRESHARK 抓包"></a>WIRESHARK 抓包</h2><p>使用WIRESHARK抓取VM1中host1 ping VM2中host2时发送的ICMP协议数据帧，可以看到包已经进行了VXLAN封装：</p>
+<ul>
+<li>最外层是源和目的VTEP的MAC地址；</li>
+<li>往里一层是源和目的VTPE的IP地址，也就是虚拟机的IP地址；</li>
+<li>接着是UDP首部，仅包含了端口号而不包含IP；</li>
+<li>然后是VXLAN首部，包含24-bit的VNI；</li>
+<li>最后是原始帧，从IP地址可以看到使用的是各自的私有地址。</li>
+</ul>
+<p>这次抓包显示了VTEP是如何工作的：将内部主机的报文进行VXLAN封装，通过配置的对端IP发送数据帧到对端VTEP上，对端的VTEP再进行VXLAN解包，再把原始的数据帧转发到内部主机。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/vxlan2.png" alt="image-20221112095122590"></p>
+<h2 id="MTU相关问题"><a href="#MTU相关问题" class="headerlink" title="MTU相关问题"></a>MTU相关问题</h2><p>根据<em>VXLAN 7348 RFC</em>，VXLAN报文不建议分片，<strong>否则在接收端VTEP上会丢弃分片的报文</strong>。</p>
+<img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/vxlan3.png" alt="image-20221111212853142" style="zoom:80%;" />
+
+<p>MTU是单个IP数据包的最大值，而MSS通常是MTU<strong>减去40字节的TCP&#x2F;IP首部</strong>。VTEP会进行VXLAN封装，通常情况下是增加50字节的首部内容，如果使用默认的MSS，那么数据帧的大小就会再加上40字节的TCP&#x2F;IP首部和50字节的VXLAN首部。<strong>默认的MTU是1500字节</strong>，<strong>默认的MSS是1460字节</strong>，如果使用VXLAN技术，就需要将<strong>MSS调整为1410字节</strong>，否则报文会丢失。</p>
+<p>因此在部署VXLAN网络前需要对MTU进行全局规划，有两种方式：</p>
+<ul>
+<li>方式一：修改应用层服务器发送报文的长度值，修改后的长度值加上VXLAN封装的50字节后，需保证在整个承载网中，均小于设备的MTU值。使用此方法，修改难度低，需要IT侧配合。这种方式是比较推荐的。</li>
+<li>方式二：修改承载网中每一跳网络设备的MTU值，需保证MTU值大于收到的VXLAN报文长度，从而保证不分片。此方式常常受到约束：承载网络中设备众多、分布广泛，且涉及不同厂商，修改难度大；常常没有修改权限（他人资产，不可控）。</li>
+</ul>
+<h1 id="eBPF"><a href="#eBPF" class="headerlink" title="eBPF"></a>eBPF</h1><h2 id="eBPF的背景"><a href="#eBPF的背景" class="headerlink" title="eBPF的背景"></a>eBPF的背景</h2><p>eBPF 全称 extended Berkeley Packet Filter，中文意思是 <code>扩展的伯克利包过滤器</code>。一般来说，要向内核添加新功能，需要修改内核源代码或者编写 <code>内核模块</code> 来实现。而 eBPF 允许程序在不修改内核源代码，或添加额外的内核模块情况下运行。</p>
+<h2 id="BPF"><a href="#BPF" class="headerlink" title="BPF"></a>BPF</h2><p>BPF（Berkeley Packet Filter ），中文翻译为伯克利包过滤器，是类 Unix 系统上数据链路层的一种原始接口，提供原始链路层封包的收发。BPF 在数据包过滤上引入了两大革新：</p>
+<ul>
+<li>一个新的虚拟机 (VM) 设计，可以有效地工作在基于寄存器结构的 CPU 之上；</li>
+<li>应用程序使用缓存只复制与过滤数据包相关的数据，不会复制数据包的所有信息。这样可以最大程度地减少BPF 处理的数据；</li>
+</ul>
+<p>由于这些巨大的改进，所有的 Unix 系统都选择采用 BPF 作为网络数据包过滤技术，直到今天，许多 Unix 内核的派生系统中（包括 Linux 内核）仍使用该实现。</p>
+<p>下面是tcpdump的运行架构。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/bpf1.png" alt="image-20200419215511484"></p>
+<h2 id="eBPF介绍"><a href="#eBPF介绍" class="headerlink" title="eBPF介绍"></a>eBPF介绍</h2><p>2014 年初，Alexei Starovoitov 实现了 eBPF（extended Berkeley Packet Filter）。经过重新设计，eBPF 演进为一个通用执行引擎，可基于此开发性能分析工具、软件定义网络等诸多场景。</p>
+<p><strong>eBPF 扩展到用户空间，这也成为了 BPF 技术的转折点</strong>。eBPF 不再局限于网络栈，已经成为内核顶级的子系统。eBPF 程序架构强调安全性和稳定性，看上去更像内核模块，但与内核模块不同，eBPF 程序不需要重新编译内核，并且可以确保 eBPF 程序运行完成，而不会造成系统的崩溃。</p>
+<p>下面是ebpf的<strong>简单架构</strong>，作基础介绍。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/ebpf1.png" alt="bpf-basic-arch"></p>
+<ul>
+<li><strong>用户态</strong></li>
+</ul>
+<ol>
+<li>用户编写 eBPF 程序，可以使用 eBPF 汇编或者 eBPF 特有的 C 语言来编写。</li>
+<li>使用 LLVM&#x2F;CLang 编译器，将 eBPF 程序编译成 eBPF 字节码。</li>
+<li>调用 <code>bpf()</code> 系统调用把 eBPF 字节码加载到内核。</li>
+</ol>
+<ul>
+<li><strong>内核态</strong></li>
+</ul>
+<ol>
+<li>当用户调用 <code>bpf()</code> 系统调用把 eBPF 字节码加载到内核时，内核先会对 eBPF 字节码进行安全验证。</li>
+<li>使用 <code>JIT（Just In Time）</code>技术将 eBPF 字节编译成本地机器码（Native Code）。</li>
+<li>然后根据 eBPF 程序的功能，将 eBPF 机器码挂载到内核的不同运行路径上（如用于跟踪内核运行状态的 eBPF 程序将会挂载在 <code>kprobes</code> 的运行路径上）。当内核运行到这些路径时，就会触发执行相应路径上的 eBPF 机器码。</li>
+</ol>
+<p>下面是ebpf的<strong>整体结构</strong>，这更为具体。</p>
+<p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/ebpf2.png" alt="linux_ebpf_internals"></p>
+<p>eBPF 分为用户空间程序和内核程序两部分：</p>
+<ul>
+<li>用户空间程序负责加载 BPF 字节码至内核，如需要也会负责读取内核回传的统计信息或者事件详情；</li>
+<li>内核中的 BPF 字节码负责在内核中执行特定事件，如需要也会将执行的结果通过 maps 或者 perf-event 事件发送至用户空间；</li>
+</ul>
+<p>其中用户空间程序与内核 BPF 字节码程序可以使用 map 结构实现双向通信，这为内核中运行的 BPF 字节码程序提供了更加灵活的控制。</p>
+<p>用户空间程序与内核中的 BPF 字节码交互的流程主要如下：</p>
+<ol>
+<li>可以使用 LLVM 或者 GCC 工具将编写的 BPF 代码程序编译成 BPF 字节码；</li>
+<li>然后使用加载程序 Loader 将字节码加载至内核；内核使用验证器（verfier） 组件保证执行字节码的安全性，以避免对内核造成灾难，在确认字节码安全后将其加载对应的内核模块执行；BPF 观测技术相关的程序程序类型可能是 kprobes&#x2F;uprobes&#x2F;tracepoint&#x2F;perf_events 中的一个或多个，其中：<ul>
+<li><strong>kprobes</strong>：实现内核中动态跟踪。 kprobes 可以跟踪到 Linux 内核中的函数入口或返回点，但是不是稳定 ABI 接口，可能会因为内核版本变化导致，导致跟踪失效。</li>
+<li><strong>uprobes</strong>：用户级别的动态跟踪。与 kprobes 类似，只是跟踪的函数为用户程序中的函数。</li>
+<li><strong>tracepoints</strong>：内核中静态跟踪。tracepoints 是内核开发人员维护的跟踪点，能够提供稳定的 ABI 接口，但是由于是研发人员维护，数量和场景可能受限。</li>
+<li><strong>perf_events</strong>：定时采样和 PMC。</li>
+</ul>
+</li>
+<li>内核中运行的 BPF 字节码程序可以使用两种方式将测量数据回传至用户空间<ul>
+<li><strong>maps</strong> 方式可用于将内核中实现的统计摘要信息（比如测量延迟、堆栈信息）等回传至用户空间；</li>
+<li><strong>perf-event</strong> 用于将内核采集的事件实时发送至用户空间，用户空间程序实时读取分析。</li>
+</ul>
+</li>
+</ol>
+<h2 id="eBPF-的限制"><a href="#eBPF-的限制" class="headerlink" title="eBPF 的限制"></a>eBPF 的限制</h2><p>eBPF 技术虽然强大，但是为了保证内核的处理安全和及时响应，内核中的 eBPF 技术也给予了诸多限制，当然随着技术的发展和演进，限制也在逐步放宽或者提供了对应的解决方案。</p>
+<ul>
+<li>eBPF 程序不能调用任意的内核参数，只限于内核模块中列出的 BPF Helper 函数，函数支持列表也随着内核的演进在不断增加。（todo 添加个数说明）</li>
+<li>eBPF 程序不允许包含无法到达的指令，防止加载无效代码，延迟程序的终止。</li>
+<li>eBPF 程序中循环次数限制且必须在有限时间内结束，这主要是用来防止在 kprobes 中插入任意的循环，导致锁住整个系统；解决办法包括展开循环，并为需要循环的常见用途添加辅助函数。Linux 5.3 在 BPF 中包含了对有界循环的支持，它有一个可验证的运行时间上限。</li>
+</ul>
+<h1 id="CNI插件"><a href="#CNI插件" class="headerlink" title="CNI插件"></a>CNI插件</h1><p>CNI的全称是 Container Network Interface，即容器网络的 API 接口。最早是由CoreOS发起的容器网络规范，是Kubernetes网络插件的基础。其基本思想为：Container Runtime在创建容器时，先创建好network namespace，然后调用CNI插件为这个netns配置网络，其后再启动容器内的进程。现已加入CNCF，成为CNCF主推的网络模型。</p>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>容器网络的配置是一个复杂的过程，为了应对各式各样的需求，容器网络的解决方案也多种多样，例如有flannel，calico，kube-ovn，weave等。同时，容器平台&#x2F;运行时也是多样的，例如有Kubernetes，Openshift，rkt等。如果每种容器平台都要跟每种网络解决方案一一对接适配，这将是一项巨大且重复的工程。当然，聪明的程序员们肯定不会允许这样的事情发生。想要解决这个问题，我们需要一个<strong>抽象的接口层，将容器网络配置方案与容器平台方案解耦</strong>。</p>
+<p>CNI（Container Network Interface）就是这样的一个接口层，它定义了一套接口标准，提供了规范文档以及一些标准实现。采用CNI规范来设置容器网络的容器平台不需要关注网络的设置的细节，只需要按CNI规范来调用CNI接口即可实现网络的设置。</p>
+<h2 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h2><p>CNI插件负责将网络接口插入容器网络命名空间（例如，veth对的一端，bridge网桥），并在主机上进行任何必要的改变（例如将veth的另一端连接到网桥）。然后将IP分配给接口，并通过调用适当的IPAM插件来设置与“IP地址管理”部分一致的路由。</p>
+<ul>
+<li>将容器添加至网络</li>
+<li>将容器从网络中删除</li>
+<li>IP分配</li>
+</ul>
+<h1 id="DPU智能网卡"><a href="#DPU智能网卡" class="headerlink" title="DPU智能网卡"></a>DPU智能网卡</h1><blockquote>
+<p> DPU（数据处理单元）</p>
+</blockquote>
+<h2 id="网卡发展"><a href="#网卡发展" class="headerlink" title="网卡发展"></a>网卡发展</h2><p>传统数据中心基于冯诺依曼架构，所有的数据都需要送到CPU进行处理。随着数据中心的高速发展，摩尔定律逐渐失效，CPU的增长速度无法满足数据的爆发式增长，CPU的处理速率已经不能满足数据处理的要求。计算架构从以CPU为中心的Onload模式，向以数据为中心的Offload模式转变，而给CPU减负的重任就落在了网卡（网络适配器）上，这也推动了网卡的高速发展；从服务器网卡的功能上看，可以分为三个阶段：</p>
+<p><strong>阶段1：基础功能网卡</strong></p>
+<p>基础功能网卡（即普通网卡）提供2x10G或2x25G带宽吞吐，具有较少的硬件卸载能力，主要是Checksum，LRO&#x2F;LSO等，支持SR-IOV，以及有限的多队列能力。在云平台虚拟化网络中，基础功能网卡向虚拟机（VM）提供网络接入的方式主要是有三种：由操作系统内核驱动接管网卡并向虚拟机（VM）分发网络流量；由OVS-DPDK接管网卡并向虚拟机（VM）分发网络流量；以及高性能场景下通过SR-IOV的方式向虚拟机（VM）提供网络接入能力。</p>
+<p><strong>阶段2：硬件卸载网卡</strong></p>
+<p>在这种背景下，SmartNIC（智能网卡）应运而生。SmartNIC 技术诞生的初衷是以比普通CPU低得多的成本实现对各种虚拟化功能的支持，如SRIOV，overlay encap&#x2F;decap，以及部分vSwitch处理逻辑的offload。在服务器侧引入智能网卡，将网络、存储、操作系统中不适合CPU处理的高性能数据处理功能<strong>卸载</strong>到硬件执行，提升数据处理能力，释放CPU算力。</p>
+<p><strong>阶段3：DPU智能网卡</strong></p>
+<p>传统智能网卡上没有CPU，需要Host CPU进行管理。传统智能网卡除了具备标准网卡的功能外，主要实现网络业务加速。随着网络速度的提高，传统智能网卡将消耗大量宝贵的CPU内核来进行流量的分类、跟踪和控制。</p>
+<p>DPU的出现是为了解决数据中心中存在三个方面共五大问题：节点间：服务器数据交换效率低、数据传输可靠性低，节点内：数据中心模型执行效率低，I&#x2F;O切换效率低、服务器架构不灵活，网络系统：不安全。</p>
+<p>DPU区别于SmartNIC最显著的特点，DPU<strong>本身构建了一个新的网络拓扑</strong>，而不是简单的数据处理卸载计算；DPU可以脱离host CPU存在，而SmartNIC不行。这个本质的区别就是DPU可以<strong>构建自己的总线系统</strong>，从而控制和管理其他设备，也就是一个真正意义上的中心芯片。</p>
+<h2 id="传统智能网卡-vs-DPU智能网卡"><a href="#传统智能网卡-vs-DPU智能网卡" class="headerlink" title="传统智能网卡 vs DPU智能网卡"></a>传统智能网卡 vs DPU智能网卡</h2><p>SmartNIC实现了部分卸载，即<strong>只卸载数据面</strong>，控制面仍然在Host CPU处理。从总体上来说SmartNIC的卸载操作是一个系统内的协作。</p>
+<p>DPU实现了<strong>完全的卸载</strong>，服务器的数据面和控制面都卸载运行在DPU内部的嵌入式CPU中。DPU实现包括软件卸载和硬件加速两个方面，即将负载从Host CPU卸载到DPU的嵌入式CPU中，同时将负载数据面通过DPU内部的其他类型硬件加速引擎，如协处理器、GPU、FPGA、DSA等来处理。从总体上来说，DPU是两个系统间的协作，把一个系统卸载到另一个运行实体，然后通过特定的接口交互。</p>
+<h1 id="RDMA"><a href="#RDMA" class="headerlink" title="RDMA"></a>RDMA</h1><p>参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/55142557">RDMA技术详解（一）：RDMA概述 - 知乎 (zhihu.com)</a>、<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1420687">来点硬核的：什么是RDMA？ - 腾讯云开发者社区-腾讯云 (tencent.com)</a></p>
+<h2 id="背景-1"><a href="#背景-1" class="headerlink" title="背景"></a>背景</h2><p>RDMA(RemoteDirect Memory Access)技术全称远程直接内存访问，是为了解决网络传输中服务器端数据处理的延迟而产生的。它将<strong>数据直接从一台计算机的内存传输到另一台计算机内存</strong>，无需双方操作系统的介入。这允许高吞吐、低延迟的网络通信，尤其适合在大规模并行计算机集群中使用。</p>
+<h2 id="传统TCP-x2F-IP通信模式"><a href="#传统TCP-x2F-IP通信模式" class="headerlink" title="传统TCP&#x2F;IP通信模式"></a>传统TCP&#x2F;IP通信模式</h2><ul>
+<li>内核空间协议栈拷贝以及内核空间喝用户空间的上下文切换开销：</li>
+</ul>
+<p>传统的TCP&#x2F;IP网络通信，数据需要通过用户空间发送到远程机器的用户空间。数据发送方需要讲数据从用户应用空间Buffer复制到<strong>内核空间</strong>的Socket Buffer中。然后Kernel空间中添加数据包头，进行数据封装。通过一系列多层网络协议的数据包处理工作，这些协议包括传输控制协议（TCP）、用户数据报协议（UDP）、互联网协议（IP）以及互联网控制消息协议（ICMP）等，数据才被Push到NIC网卡中的Buffer进行网络传输。消息接受方接受从远程机器发送的数据包后，要将数据包从NIC buffer中复制数据到Socket Buffer。然后经过一些列的多层网络协议进行数据包的解析工作。解析后的数据被复制到相应位置的用户应用空间Buffer。这个时候再进行系统上下文切换，用户应用程序才被调用。以上就是传统的TCP&#x2F;IP协议层的工作。如今随着社会的发展，我们希望更快和更轻量级的网络通信。</p>
+<hr>
+<ul>
+<li>当前以小消息的发送为主，处理开销占主导地位：</li>
+</ul>
+<p>当今随着计算机网络的发展。消息通信主要分为两类消息，一类是Large messages，在这类消息通信中，网络传输延迟占整个通信中的主导位置。还有一类消息是Small messages，在这类消息通信中，消息发送端和接受端的<strong>处理开销</strong>占整个通信的主导地位。然而在现实计算机网络中的通信场景中，主要是<strong>以发送小消息为主</strong>。所有说发送消息和接受消息的处理开销占整个通信的主导的地位。具体来说，处理开销指的是<strong>buffer管理、在不同内存空间中消息复制、以及消息发送完成后的系统中断</strong>。</p>
+<hr>
+<ul>
+<li>瓶颈在于消息经过内核进行一系列移动和复制：</li>
+</ul>
+<p>传统的TPC&#x2F;IP存在的问题主要是指<strong>I&#x2F;O bottleneck瓶颈问题</strong>。在高速网络条件下与网络I&#x2F;O相关的主机处理的高开销限制了可以在机器之间发送的带宽。这里感兴趣的高额开销是数据<strong>移动</strong>操作和<strong>复制</strong>操作。具体来讲，主要是传统的TCP&#x2F;IP网络通信是通过内核发送消息。<strong>Messaging passing through kernel</strong>这种方式会导致很低的性能和很低的灵活性。性能低下的原因主要是由于网络通信通过内核传递，这种通信方式存在的很高的数据移动和数据复制的开销。并且现如今<strong>内存带宽性相较如CPU带宽和网络带宽有着很大的差异</strong>。很低的灵活性的原因主要是所有网络通信协议通过内核传递，这种方式很难去支持新的网络协议和新的消息通信协议以及发送和接收接口。</p>
+<h2 id="DMA简介"><a href="#DMA简介" class="headerlink" title="DMA简介"></a>DMA简介</h2><p>DMA(直接内存访问)是一种能力，允许在计算机主板上的设备直接把数据发送到内存中去，数据搬运<strong>不需要CPU的参与</strong>。</p>
+<p>传统内存访问需要通过CPU进行数据copy来移动数据，通过CPU将内存中的Buffer1移动到Buffer2中。DMA模式：可以同DMA Engine之间通过硬件将数据从Buffer1移动到Buffer2，而不需要操作系统CPU的参与，大大降低了CPU Copy的开销。</p>
+<img src="https://pic1.zhimg.com/80/v2-d359453c9269146cd93de5eed43993c8_720w.webp" alt="img" style="zoom:80%;" />
+
+<h2 id="RDMA简介"><a href="#RDMA简介" class="headerlink" title="RDMA简介"></a>RDMA简介</h2><p>RDMA是一种概念，在两个或者多个计算机进行通讯的时候使用DMA， 从一个主机的内存直接访问另一个主机的内存。</p>
+<img src="https://pic3.zhimg.com/80/v2-f081e8fce13d8b00e5a786399d20ca06_720w.webp" alt="img" style="zoom:80%;" />
+
+<p>在实现上，RDMA实际上是一种智能网卡与软件架构充分优化的远端内存直接高速访问技术，通过将RDMA协议<strong>固化于硬件(即网卡)<strong>上，以及支持</strong>Zero-copy</strong>和<strong>Kernel bypass</strong>这两种途径来达到其高性能的远程直接数据存取的目标。 使用RDMA的优势如下：</p>
+<ul>
+<li>零拷贝(Zero-copy) - 应用程序能够直接执行数据传输，在<strong>不涉及到网络软件栈</strong>的情况下。数据能够被直接发送到缓冲区或者能够直接从缓冲区里接收，而不需要被复制到网络层。</li>
+<li>内核旁路(Kernel bypass) - 应用程序可以直接在用户态执行数据传输，<strong>不需要在内核态与用户态之间做上下文切换</strong>。</li>
+<li>不需要CPU干预(No CPU involvement) - 应用程序可以访问远程主机内存而<strong>不消耗远程主机中的任何CPU</strong>。远程主机内存能够被读取而不需要远程主机上的进程（或CPU)参与。远程主机的CPU的缓存(cache)不会被访问的内存内容所填充。</li>
+<li>消息基于事务(Message based transactions) - 数据被处理为<strong>离散消息</strong>而不是流，消除了应用程序将流切割为不同消息&#x2F;事务的需求。</li>
+<li>支持分散&#x2F;聚合条目(Scatter&#x2F;gather entries support) - RDMA原生态支持分散&#x2F;聚合。也就是说，<strong>读取多个内存缓冲区</strong>然后<strong>作为一个流</strong>发出去或者<strong>接收一个流</strong>然后<strong>写入到多个内存缓冲区</strong>里去。</li>
+</ul>
+<p>在具体的远程内存读写中，RDMA操作用于读写操作的远程虚拟内存地址包含在RDMA消息中传送，远程应用程序要做的只是在其本地网卡中<strong>注册相应的内存缓冲区</strong>。远程节点的CPU除在<strong>连接建立、注册调用</strong>等之外，在整个RDMA数据传输过程中并不提供服务，因此没有带来任何负载。</p>
+<h1 id="DPDK"><a href="#DPDK" class="headerlink" title="DPDK"></a>DPDK</h1><p>转自：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/347693559">DPDK的基本原理、学习路线总结 - 知乎 (zhihu.com)</a></p>
+<h2 id="背景-2"><a href="#背景-2" class="headerlink" title="背景"></a>背景</h2><p>网络设备（路由器、交换机、媒体网关、SBC、PS网关等）需要在瞬间进行大量的报文收发，因此在传统的网络设备上，往往能够看到专门的NP（Network Process）处理器，有的用FPGA，有的用ASIC。这些专用器件通过内置的硬件电路（或通过编程形成的硬件电路）高效转发报文，只有需要对报文进行深度处理的时候才需要CPU干涉。</p>
+<p>但在公有云、NFV等应用场景下，基础设施以CPU为运算核心，往往不具备专用的NP处理器，操作系统也以通用Linux为主，网络数据包的收发处理路径如下图所示：</p>
+<img src="https://pic4.zhimg.com/80/v2-39d9c5742815718ffc3e616342c75c9b_720w.webp" alt="img" style="zoom:80%;" />
+
+<p>在虚拟化环境中，路径则会更长：</p>
+<img src="https://pic3.zhimg.com/80/v2-ee0175b746bbf5eed76de9f29bb4bbda_720w.webp" alt="img" style="zoom:80%;" />
+
+<p>由于包处理任务存在<strong>内核态与用户态的切换</strong>，以及<strong>多次的内存拷贝</strong>，系统消耗变大，<strong>以CPU为核心的系统存在很大的处理瓶颈</strong>。为了提升在通用服务器（COTS）的数据包处理效能，Intel推出了服务于IA（Intel Architecture）系统的DPDK技术。</p>
+<h2 id="原理介绍"><a href="#原理介绍" class="headerlink" title="原理介绍"></a>原理介绍</h2><p>DPDK是Data Plane Development Kit（数据平面开发套件）的缩写。简单说，DPDK应用程序运行在操作系统的User Space，利用自身提供的数据面库进行收发包处理，<strong>绕过了Linux内核态协议栈</strong>，以提升报文处理效率。</p>
+<p>DPDK是一组lib库和工具包的集合。最简单的架构描述如下图所示：</p>
+<img src="https://pic3.zhimg.com/80/v2-f4b703475096e19c669d6cfc7128311e_720w.webp" alt="img" style="zoom:80%;" />
+
+<p>上图蓝色部分是DPDK的主要组件（更全面更权威的DPDK架构可以参考Intel官网），简单解释一下：</p>
+<ol>
+<li>PMD：Pool Mode Driver，轮询模式驱动，通过非中断，以及数据帧进出应用缓冲区内存的零拷贝机制，提高发送&#x2F;接受数据帧的效率</li>
+<li>流分类：Flow Classification，为N元组匹配和LPM（最长前缀匹配）提供优化的查找算法</li>
+<li>环队列：Ring Queue，针对单个或多个数据包生产者、单个数据包消费者的出入队列提供无锁机制，有效减少系统开销</li>
+<li>MBUF缓冲区管理：分配内存创建缓冲区，并通过建立MBUF对象，封装实际数据帧，供应用程序使用</li>
+<li>EAL：Environment Abstract Layer，环境抽象（适配）层，PMD初始化、CPU内核和DPDK线程配置&#x2F;绑定、设置HugePage大页内存等系统初始化</li>
+</ol>
+<p>总结一下DPDK的核心思想：</p>
+<ol>
+<li>用户态模式的PMD驱动，去除中断，避免内核态和用户态内存拷贝，减少系统开销，从而提升I&#x2F;O吞吐能力</li>
+<li>用户态有一个好处，一旦程序崩溃，不至于导致内核完蛋，带来更高的健壮性</li>
+<li>HugePage，通过更大的内存页（如1G内存页），减少TLB（Translation Lookaside Buffer，即快表） Miss，Miss对报文转发性能影响很大</li>
+<li>多核设备上创建多线程，每个线程绑定到独立的物理核，减少线程调度的开销。同时每个线程对应着独立免锁队列，同样为了降低系统开销</li>
+<li>向量指令集，提升CPU流水线效率，降低内存等待开销</li>
+</ol>
+<p>下图简单描述了DPDK的多队列和多线程机制：</p>
+<img src="https://pic1.zhimg.com/80/v2-a986564eecfb3e670ee5a6c05a2557ac_720w.webp" alt="img" style="zoom:80%;" />
+
+<p>DPDK将网卡接收队列分配给某个CPU核，该队列收到的报文都交给该核上的DPDK线程处理。存在两种方式将数据包发送到接收队列之上：</p>
+<ol>
+<li>RSS（Receive Side Scaling，接收方扩展）机制：根据关键字，比如根据UDP的四元组<srcIP><dstIP><srcPort><dstPort>进行哈希</li>
+<li>Flow Director机制：可设定根据数据包某些信息进行精确匹配，分配到指定的队列与CPU核</li>
+</ol>
+<p>当网络数据包（帧）被网卡接收后，DPDK网卡驱动将其存储在一个高效缓冲区中，并在MBUF缓存中创建MBUF对象与实际网络包相连，对网络包的分析和处理都会基于该MBUF，必要的时候才会访问缓冲区中的实际网络包</p>
+<img src="https://pic1.zhimg.com/80/v2-e3025ebe60021a3e34b2dd94615bf8c4_720w.webp" alt="img" style="zoom:80%;" />
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Jy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jysama.cn/2023/02/07/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/" title="计网相关技术">https://jysama.cn/2023/02/07/计算机网络相关技术/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2022/12/18/orange%E9%A1%B9%E7%9B%AE%E6%B5%8B%E8%AF%95%E4%B8%8E%E6%97%A5%E5%BF%97/" rel="prev" title="orange-debug和日志记录">
+      <i class="fa fa-chevron-left"></i> orange-debug和日志记录
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81NjM2Ny8zMjgzMA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Note"><span class="nav-number">1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#kubernetes"><span class="nav-number">2.</span> <span class="nav-text">kubernetes</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">2.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94%E4%BC%A0%E7%BB%9F%E5%BA%94%E7%94%A8%E9%83%A8%E7%BD%B2"><span class="nav-number">2.2.</span> <span class="nav-text">对比传统应用部署</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#container"><span class="nav-number">3.</span> <span class="nav-text">container</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B-1"><span class="nav-number">3.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">3.2.</span> <span class="nav-text">对比虚拟机</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vxlan"><span class="nav-number">4.</span> <span class="nav-text">vxlan</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#overlay"><span class="nav-number">4.1.</span> <span class="nav-text">overlay</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vxlan%E7%AE%80%E4%BB%8B"><span class="nav-number">4.2.</span> <span class="nav-text">vxlan简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E8%99%9A%E6%8B%9F%E5%B1%80%E5%9F%9F%E7%BD%91%E9%97%AE%E9%A2%98"><span class="nav-number">4.3.</span> <span class="nav-text">解决虚拟局域网问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WIRESHARK-%E6%8A%93%E5%8C%85"><span class="nav-number">4.4.</span> <span class="nav-text">WIRESHARK 抓包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MTU%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98"><span class="nav-number">4.5.</span> <span class="nav-text">MTU相关问题</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#eBPF"><span class="nav-number">5.</span> <span class="nav-text">eBPF</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#eBPF%E7%9A%84%E8%83%8C%E6%99%AF"><span class="nav-number">5.1.</span> <span class="nav-text">eBPF的背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BPF"><span class="nav-number">5.2.</span> <span class="nav-text">BPF</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#eBPF%E4%BB%8B%E7%BB%8D"><span class="nav-number">5.3.</span> <span class="nav-text">eBPF介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#eBPF-%E7%9A%84%E9%99%90%E5%88%B6"><span class="nav-number">5.4.</span> <span class="nav-text">eBPF 的限制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CNI%E6%8F%92%E4%BB%B6"><span class="nav-number">6.</span> <span class="nav-text">CNI插件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">6.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD"><span class="nav-number">6.2.</span> <span class="nav-text">功能</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DPU%E6%99%BA%E8%83%BD%E7%BD%91%E5%8D%A1"><span class="nav-number">7.</span> <span class="nav-text">DPU智能网卡</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E5%8D%A1%E5%8F%91%E5%B1%95"><span class="nav-number">7.1.</span> <span class="nav-text">网卡发展</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9F%E6%99%BA%E8%83%BD%E7%BD%91%E5%8D%A1-vs-DPU%E6%99%BA%E8%83%BD%E7%BD%91%E5%8D%A1"><span class="nav-number">7.2.</span> <span class="nav-text">传统智能网卡 vs DPU智能网卡</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RDMA"><span class="nav-number">8.</span> <span class="nav-text">RDMA</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF-1"><span class="nav-number">8.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9FTCP-x2F-IP%E9%80%9A%E4%BF%A1%E6%A8%A1%E5%BC%8F"><span class="nav-number">8.2.</span> <span class="nav-text">传统TCP&#x2F;IP通信模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DMA%E7%AE%80%E4%BB%8B"><span class="nav-number">8.3.</span> <span class="nav-text">DMA简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RDMA%E7%AE%80%E4%BB%8B"><span class="nav-number">8.4.</span> <span class="nav-text">RDMA简介</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DPDK"><span class="nav-number">9.</span> <span class="nav-text">DPDK</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF-2"><span class="nav-number">9.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D"><span class="nav-number">9.2.</span> <span class="nav-text">原理介绍</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jy"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Jy</p>
+  <div class="site-description" itemprop="description">Re：从零开始的写博客生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jy</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">359k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:26</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

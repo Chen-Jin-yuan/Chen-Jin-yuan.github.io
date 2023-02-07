@@ -167,6 +167,433 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/08/06/c++%E6%83%AF%E7%94%A8%E6%B3%95/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2022/08/06/c++%E6%83%AF%E7%94%A8%E6%B3%95/" class="post-title-link" itemprop="url">c++编程风格惯用法</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2022-08-06 23:31:21" itemprop="dateCreated datePublished" datetime="2022-08-06T23:31:21+08:00">2022-08-06</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2022-08-08 17:11:51" itemprop="dateModified" datetime="2022-08-08T17:11:51+08:00">2022-08-08</time>
+              </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>10k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>在基本的语法学习差不多学习完之后，来学一下编程风格惯用法。因为c++的语法支持我们以多种形式编写代码，但有些语法内容还需要进一步探讨，应该有一个明确的规范，这就是惯用法的作用。实际上有些部分在语法内容也有提到，这里再总结一下。当我们在编写这类代码时，应当遵循惯用法。</p>
+<p>参考自GitHub项目：CPlusPlusThings</p>
+<h1 id="初始化列表与赋值"><a href="#初始化列表与赋值" class="headerlink" title="初始化列表与赋值"></a>初始化列表与赋值</h1><p>本章学习编程过程中，何时用初始化列表，何时直接赋值。</p>
+<p>总结：</p>
+<ul>
+<li><strong>const成员</strong>的初始化只能在构造函数初始化列表中进行。</li>
+<li><strong>引用成员</strong>的初始化也只能在构造函数初始化列表中进行。</li>
+<li><strong>对象成员</strong>（对象成员所对应的类<strong>没有默认构造函数</strong>）的初始化，也只能在构造函数初始化列表中进行（调用拷贝构造函数）。</li>
+</ul>
+<p>下面具体学习一下：</p>
+<h2 id="类之间嵌套"><a href="#类之间嵌套" class="headerlink" title="类之间嵌套"></a>类之间嵌套</h2><p>这个比较重要，后面介绍的继承关系一律用初始化列表构造。</p>
+<h3 id="第一种：-使用初始化列表"><a href="#第一种：-使用初始化列表" class="headerlink" title="第一种： 使用初始化列表"></a>第一种： 使用初始化列表</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Animal</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Animal</span>() &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;Animal() is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">Animal</span>(<span class="type">const</span> Animal &amp;) &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;Animal (const Animal &amp;) is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Animal &amp;<span class="keyword">operator</span>=(<span class="type">const</span> Animal &amp;) &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;Animal &amp; operator=(const Animal &amp;) is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~<span class="built_in">Animal</span>() &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;~Animal() is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Dog</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Dog</span>(<span class="type">const</span> Animal &amp;animal) : __animal(animal) &#123;<span class="comment">//第一种方式，调用拷贝构造</span></span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;Dog(const Animal &amp;animal) is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~<span class="built_in">Dog</span>() &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;~Dog() is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    Animal __animal;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    Animal animal;</span><br><span class="line">    std::cout &lt;&lt; std::endl;</span><br><span class="line">    <span class="function">Dog <span class="title">d</span><span class="params">(animal)</span></span>;</span><br><span class="line">    std::cout &lt;&lt; std::endl;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//运行结果</span></span><br><span class="line"><span class="built_in">Animal</span>() is called</span><br><span class="line"><span class="comment">//构造，先构造成员对象（如果有多，按照声明的顺序），再调用类自己的构造函数</span></span><br><span class="line"><span class="built_in">Animal</span> (<span class="type">const</span> Animal &amp;) <span class="function">is called</span></span><br><span class="line"><span class="function"><span class="title">Dog</span><span class="params">(<span class="type">const</span> Animal &amp;animal)</span> is called</span></span><br><span class="line"><span class="function"></span></span><br><span class="line"><span class="function"><span class="comment">//析构，后定义的先析构；调用析构函数后再析构成员变量</span></span></span><br><span class="line"><span class="function">~<span class="title">Dog</span><span class="params">()</span> is called</span></span><br><span class="line"><span class="function">~<span class="title">Animal</span><span class="params">()</span> is called</span></span><br><span class="line"><span class="function">~<span class="title">Animal</span><span class="params">()</span> is called</span></span><br></pre></td></tr></table></figure>
+
+<p>依次分析从上到下：</p>
+<p>main函数中<code>Animal animal;</code>调用默认构造。</p>
+<p><code>Dog d(animal);</code>且初始化对象是一个类成员对象，等价于定义同时初始化：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Animal __animal = animal;</span><br></pre></td></tr></table></figure>
+
+<p>实际上就是调用了拷贝构造，因此输出了：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Animal (const Animal &amp;) is called</span><br></pre></td></tr></table></figure>
+
+<p>再然后打印Dog的构造函数里面的输出。</p>
+<p>最后调用析构，程序结束。</p>
+<p><strong>在初始化列表中不一定要调用拷贝构造，也可以调用默认构造函数或者有参构造函数。</strong>比如这里调用</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Dog</span>(<span class="type">const</span> Animal &amp;animal) : __animal()<span class="comment">//第二种方式，默认构造函数</span></span><br><span class="line"><span class="built_in">Dog</span>(<span class="type">const</span> Animal &amp;animal) : __animal(<span class="number">5</span>)<span class="comment">//第二种方式，有参构造函数（如果有）</span></span><br><span class="line"><span class="built_in">Dog</span>(<span class="type">int</span> x) : __animal(x)<span class="comment">//第二种方式，有参构造函数，进一步指定变量</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Animal() is called</span><br><span class="line"></span><br><span class="line">Animal() is called</span><br><span class="line">Dog(const Animal &amp;animal) is called</span><br><span class="line"></span><br><span class="line">~Dog() is called</span><br><span class="line">~Animal() is called</span><br><span class="line">~Animal() is called</span><br></pre></td></tr></table></figure>
+
+<p>也就是说，在初始化列表中初始化，等同于定义同时初始化（因此既能够使用构造函数（传入其他类型）、也能使用拷贝构造函数（传入类自己的类型）），而不是先声明。</p>
+<h3 id="第二种：构造函数赋值来初始化对象"><a href="#第二种：构造函数赋值来初始化对象" class="headerlink" title="第二种：构造函数赋值来初始化对象"></a>第二种：构造函数赋值来初始化对象</h3><p>构造函数修改如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Dog</span>(<span class="type">const</span> Animal &amp;animal) &#123;</span><br><span class="line">    __animal = animal;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Dog(const Animal &amp;animal) is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此时输出结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Animal() is called</span><br><span class="line"></span><br><span class="line">Animal() is called</span><br><span class="line">Animal &amp; operator=(const Animal &amp;) is called</span><br><span class="line">Dog(const Animal &amp;animal) is called</span><br><span class="line"></span><br><span class="line">~Dog() is called</span><br><span class="line">~Animal() is called</span><br><span class="line">~Animal() is called</span><br></pre></td></tr></table></figure>
+
+<p>于是得出：</p>
+<p>当调用<code>Dog d(animal);</code>时，等价于：</p>
+<p>先定义对象，再进行赋值，因此先调用了默认构造（<strong>因此如果没有默认构造函数会出错</strong>），再调用&#x3D;操作符重载函数（如果没重载赋值构造函数，使用默认的）。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// 假设之前已经有了animal对象</span><br><span class="line">Animal __animal;</span><br><span class="line">__animal = animal;</span><br></pre></td></tr></table></figure>
+
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>通过上述我们得出如下结论：</p>
+<ul>
+<li><strong>类中包含其他自定义的class或者struct，采用初始化列表，实际上就是创建对象同时并初始化（可用构造和拷贝构造，取决于参数类型）</strong></li>
+<li><strong>而采用类中赋值方式，等价于先定义对象，再进行赋值，一般会先调用默认构造，在调用&#x3D;操作符重载函数。</strong></li>
+</ul>
+<h2 id="无默认构造函数的继承关系"><a href="#无默认构造函数的继承关系" class="headerlink" title="无默认构造函数的继承关系"></a>无默认构造函数的继承关系</h2><p>现考虑把上述嵌套的关系改为继承，并修改Animal与Dog的构造函数，如下代码：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Animal</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Animal</span>(<span class="type">int</span> age) &#123;<span class="comment">//有参，非默认构造函数，且编译器不提供默认构造函数</span></span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;Animal(int age) is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">Animal</span>(<span class="type">const</span> Animal &amp; animal) &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;Animal (const Animal &amp;) is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Animal &amp;<span class="keyword">operator</span>=(<span class="type">const</span> Animal &amp; amimal) &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;Animal &amp; operator=(const Animal &amp;) is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~<span class="built_in">Animal</span>() &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;~Animal() is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Dog</span> : Animal &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Dog</span>(<span class="type">int</span> age) : <span class="built_in">Animal</span>(age) &#123;<span class="comment">//继承构造的标准形式，如果无参或默认构造，使用Animal()</span></span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;Dog(int age) is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ~<span class="built_in">Dog</span>() &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;~Dog() is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>上述是通过初始化列表给<strong>基类带参构造传递参数</strong>，如果不通过初始化列表传递，会发生什么影响？</p>
+<p>去掉初始化列表</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Dog(int age)  &#123;</span><br><span class="line">    std::cout &lt;&lt; &quot;Dog(int age) is called&quot; &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行程序：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: no matching function for call to ‘Animal::Animal()’</span><br></pre></td></tr></table></figure>
+
+<p>由于在Animal中没有默认构造函数，所以报错，遇到这种问题属于灾难性的，我们应该尽量避免，可以通过初始化列表给基类的构造初始化。</p>
+<h2 id="类中const数据成员、引用数据成员"><a href="#类中const数据成员、引用数据成员" class="headerlink" title="类中const数据成员、引用数据成员"></a>类中const数据成员、引用数据成员</h2><p>特别是引用数据成员，必须用初始化列表初始化，而不能通过赋值初始化！</p>
+<p>例如：在上述的Animal中添加私有成员，并修改构造函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Animal</span> &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">Animal</span>(<span class="type">int</span> age,std::string name) &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;Animal(int age) is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> &amp;age_;<span class="comment">//引用，定义同时必须初始化</span></span><br><span class="line">    <span class="type">const</span> std::string name_;<span class="comment">//const类型，定义同时必须初始化</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>报下面错误：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error: uninitialized reference member in ‘int&amp;’</span><br></pre></td></tr></table></figure>
+
+<p>应该改为下面：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">Animal</span>(<span class="type">int</span> age, std::string name) : <span class="built_in">age_</span>(age), <span class="built_in">name_</span>(name) &#123;<span class="comment">//使用初始化列表，相当于定义同时初始化</span></span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Animal(int age) is called&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="枚举类与命名空间"><a href="#枚举类与命名空间" class="headerlink" title="枚举类与命名空间"></a>枚举类与命名空间</h1><p>在Effective modern C++中Item 10: Prefer scoped enums to unscoped enum，<strong>要用有范围的enum class代替无范围的enum</strong>。</p>
+<p>例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="title class_">Shape</span> &#123;circle,retangle&#125;;</span><br><span class="line"><span class="keyword">auto</span> circle = <span class="number">10</span>;  <span class="comment">// error</span></span><br></pre></td></tr></table></figure>
+
+<p>上述错误是因为两个circle在同一范围。 对于enum等价于：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> circle 0</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> retangle 1</span></span><br></pre></td></tr></table></figure>
+
+<p>因此后面再去定义circle就会出错。</p>
+<p>所以不管枚举名是否一样，里面的成员只要有一致的,就会出问题。 例如：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">enum</span> <span class="title class_">A</span> &#123;a,b&#125;;</span><br><span class="line"><span class="keyword">enum</span> <span class="title class_">B</span> &#123;c,a&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>a出现两次，在enum B的a处报错。</p>
+<p>根据前面我们知道，enum名在范围方面没有什么作用，因此我们想到了namespace，如下例子:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在创建枚举时，将它们放在名称空间中，以便可以使用有意义的名称访问它们:</span></span><br><span class="line"><span class="keyword">namespace</span> EntityType &#123;</span><br><span class="line">    <span class="keyword">enum</span> <span class="title class_">Enum</span> &#123;</span><br><span class="line">        Ground = <span class="number">0</span>,</span><br><span class="line">        Human,</span><br><span class="line">        Aerial,</span><br><span class="line">        Total</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">(EntityType::Enum entityType)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (entityType == EntityType::Ground) &#123;<span class="comment">//使得Ground在EntityType空间才是全局的</span></span><br><span class="line">        <span class="comment">/*code*/</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>将命名空间起的有意思点，就可以达到想要的效果。</p>
+<p>但是不断的使用命名空间，势必太繁琐，而且如果我不想使用namespace，要达到这样的效果，便会变得不安全，也没有约束。</p>
+<p>因此在c++11后，引入<strong>enum class</strong>。</p>
+<p>enum class 解决了为enum成员定义类型、类型安全、约束等问题。 回到上述例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// enum class</span></span><br><span class="line"><span class="keyword">enum class</span> <span class="title class_">EntityType</span> &#123;</span><br><span class="line">    Ground = <span class="number">0</span>,</span><br><span class="line">    Human,</span><br><span class="line">    Aerial,</span><br><span class="line">    Total</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">foo</span><span class="params">(EntityType entityType)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (entityType == EntityType::Ground) &#123;<span class="comment">//Ground已非全局，属于枚举类的成员</span></span><br><span class="line">        <span class="comment">/*code*/</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这便是这一节要阐述的惯用法：enum class。</p>
+<h1 id="资源获取即初始化方法-RAII"><a href="#资源获取即初始化方法-RAII" class="headerlink" title="资源获取即初始化方法(RAII)"></a>资源获取即初始化方法(RAII)</h1><blockquote>
+<p>RAII 是 resource acquisition is initialization 的缩写，意为“资源获取即初始化”。它是 C++ 之父 Bjarne Stroustrup 提出的设计理念，其核心是把资源和对象的生命周期绑定，对象创建获取资源，对象销毁释放资源。在 RAII 的指导下，C++ 把底层的资源管理问题提升到了对象生命周期管理的更高层次。</p>
+</blockquote>
+<h2 id="导语"><a href="#导语" class="headerlink" title="导语"></a>导语</h2><p>在C语言中，有三种类型的内存分配:静态、自动和动态。静态变量是嵌入在源文件中的常数，因为它们有已知的大小并且从不改变，所以它们并不那么有趣。自动分配可以被认为是堆栈分配——当一个词法块进入时分配空间，当该块退出时释放空间。它最重要的特征与此直接相关。在C99之前，自动分配的变量需要在编译时知道它们的大小。这意味着任何字符串、列表、映射以及从这些派生的任何结构都必须存在于堆中的动态内存中。</p>
+<p>程序员使用四个基本操作明确地分配和释放动态内存:malloc、realloc、calloc和free。前两个不执行任何初始化，内存可能包含碎片。除了自由，他们都可能失败。在这种情况下，它们返回一个空指针，其访问是未定义的行为。</p>
+<p>例如：	</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   <span class="type">char</span> *str = (<span class="type">char</span> *) <span class="built_in">malloc</span>(<span class="number">7</span>); </span><br><span class="line">   <span class="built_in">strcpy</span>(str, <span class="string">&quot;toptal&quot;</span>);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;char array = \&quot;%s\&quot; @ %u\n&quot;</span>, str, str);</span><br><span class="line"></span><br><span class="line">   str = (<span class="type">char</span> *) <span class="built_in">realloc</span>(str, <span class="number">11</span>);</span><br><span class="line">   <span class="built_in">strcat</span>(str, <span class="string">&quot;.com&quot;</span>);</span><br><span class="line">   <span class="built_in">printf</span>(<span class="string">&quot;char array = \&quot;%s\&quot; @ %u\n&quot;</span>, str, str);</span><br><span class="line"></span><br><span class="line">   <span class="built_in">free</span>(str);</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">return</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> array = <span class="string">&quot;toptal&quot;</span> @ <span class="number">2762894960</span></span><br><span class="line"><span class="type">char</span> array = <span class="string">&quot;toptal.com&quot;</span> @ <span class="number">2762894960</span></span><br></pre></td></tr></table></figure>
+
+<p>尽管代码很简单，但它已经包含了一个反模式和一个有问题的决定。在现实生活中，你不应该直接写字节数，而应该使用sizeof函数。类似地，我们将char *数组精确地分配给我们需要的字符串大小的两倍(比字符串长度多一倍，以说明空终止)，这是一个相当昂贵的操作。一个更复杂的程序可能会构建一个更大的字符串缓冲区，允许字符串大小增长。</p>
+<h2 id="RAII的发明：新希望"><a href="#RAII的发明：新希望" class="headerlink" title="RAII的发明：新希望"></a>RAII的发明：新希望</h2><p>至少可以说，所有手动管理都是令人不快的。 在80年代中期，Bjarne Stroustrup为他的全新语言C ++发明了一种新的范例。 他将其称为“资源获取即初始化”，其基本见解如下：<strong>可以指定对象具有构造函数和析构函数，这些构造函数和析构函数在适当的时候由编译器自动调用，这为管理给定对象的内存提供了更为方便的方法。</strong> 并且该技术对于不是内存的资源也很有用。</p>
+<p>意味着上面的例子在c++中更简洁：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">   std::string str = std::<span class="built_in">string</span> (<span class="string">&quot;toptal&quot;</span>);</span><br><span class="line">   std::cout &lt;&lt; <span class="string">&quot;string object: &quot;</span> &lt;&lt; str &lt;&lt; <span class="string">&quot; @ &quot;</span> &lt;&lt; &amp;str &lt;&lt; <span class="string">&quot;\n&quot;</span>;</span><br><span class="line">   </span><br><span class="line">   str += <span class="string">&quot;.com&quot;</span>;</span><br><span class="line">   std::cout &lt;&lt; <span class="string">&quot;string object: &quot;</span> &lt;&lt; str &lt;&lt; <span class="string">&quot; @ &quot;</span> &lt;&lt; &amp;str &lt;&lt; <span class="string">&quot;\n&quot;</span>;</span><br><span class="line">   </span><br><span class="line">   <span class="keyword">return</span>(<span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">string object: toptal @ <span class="number">0x7fffa67b9400</span></span><br><span class="line">string object: toptal.com @ <span class="number">0x7fffa67b9400</span></span><br></pre></td></tr></table></figure>
+
+<p>在上述例子中，我们没有手动内存管理！构造string对象，调用重载方法，并在函数退出时自动销毁。不幸的是，同样的简单也会导致其他问题。让我们详细地看一个例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">vector&lt;string&gt; <span class="title">read_lines_from_file</span><span class="params">(string &amp;file_name)</span> </span>&#123;</span><br><span class="line">	vector&lt;string&gt; lines;</span><br><span class="line">	string line;</span><br><span class="line">	</span><br><span class="line">	<span class="function">ifstream <span class="title">file_handle</span> <span class="params">(file_name.c_str())</span></span>;</span><br><span class="line">	<span class="keyword">while</span> (file_handle.<span class="built_in">good</span>() &amp;&amp; !file_handle.<span class="built_in">eof</span>() &amp;&amp; file_handle.<span class="built_in">peek</span>()!=EOF) &#123;</span><br><span class="line">		<span class="built_in">getline</span>(file_handle, line);</span><br><span class="line">		lines.<span class="built_in">push_back</span>(line);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	file_handle.<span class="built_in">close</span>();</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> lines;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>* argv[])</span> </span>&#123;</span><br><span class="line">	<span class="comment">// get file name from the first argument</span></span><br><span class="line">	<span class="function">string <span class="title">file_name</span> <span class="params">(argv[<span class="number">1</span>])</span></span>;</span><br><span class="line">	<span class="type">int</span> count = <span class="built_in">read_lines_from_file</span>(file_name).<span class="built_in">size</span>();</span><br><span class="line">	cout &lt;&lt; <span class="string">&quot;File &quot;</span> &lt;&lt; file_name &lt;&lt; <span class="string">&quot; contains &quot;</span> &lt;&lt; count &lt;&lt; <span class="string">&quot; lines.&quot;</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">File makefile contains <span class="number">37</span> lines.</span><br></pre></td></tr></table></figure>
+
+<p>这看起来很简单。<code>vector</code>被填满、返回和调用。然而，作为关心性能的高效程序员，这方面的一些问题困扰着我们:在return语句中，由于使用了值语义，<code>vector</code>在销毁之前不久就被复制到一个新<code>vector</code>中（伴随main函数一直存在）。</p>
+<blockquote>
+<p>在现代C ++中，这不再是严格的要求了。 C ++ 11引入了移动语义的概念，其中将原点保留在有效状态（以便仍然可以正确销毁）但未指定状态。 对于编译器而言，返回调用是最容易优化以优化语义移动的情况，因为它知道在进行任何进一步访问之前不久将销毁源。 但是，该示例的目的是说明为什么人们在80年代末和90年代初发明了一大堆垃圾收集的语言，而在那个时候C ++ move语义不可用。</p>
+</blockquote>
+<p>对于数据量比较大的文件，这可能会变得昂贵。 让我们对其进行优化，只返回一个指针。 语法进行了一些更改，但其他代码相同：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">vector&lt;string&gt; * <span class="title">read_lines_from_file</span><span class="params">(string &amp;file_name)</span> </span>&#123;</span><br><span class="line">	vector&lt;string&gt; * lines;</span><br><span class="line">	string line;</span><br><span class="line">	</span><br><span class="line">	<span class="function">ifstream <span class="title">file_handle</span> <span class="params">(file_name.c_str())</span></span>;</span><br><span class="line">	<span class="keyword">while</span> (file_handle.<span class="built_in">good</span>() &amp;&amp; !file_handle.<span class="built_in">eof</span>() &amp;&amp; file_handle.<span class="built_in">peek</span>()!=EOF) &#123;</span><br><span class="line">		<span class="built_in">getline</span>(file_handle, line);</span><br><span class="line">		lines-&gt;<span class="built_in">push_back</span>(line);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	file_handle.<span class="built_in">close</span>();</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> lines;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>* argv[])</span> </span>&#123;</span><br><span class="line">	<span class="comment">// get file name from the first argument</span></span><br><span class="line">	<span class="function">string <span class="title">file_name</span> <span class="params">(argv[<span class="number">1</span>])</span></span>;</span><br><span class="line">	<span class="type">int</span> count = <span class="built_in">read_lines_from_file</span>(file_name).<span class="built_in">size</span>();</span><br><span class="line">	cout &lt;&lt; <span class="string">&quot;File &quot;</span> &lt;&lt; file_name &lt;&lt; <span class="string">&quot; contains &quot;</span> &lt;&lt; count &lt;&lt; <span class="string">&quot; lines.&quot;</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Segmentation fault (core dumped)</span><br></pre></td></tr></table></figure>
+
+<p>程序崩溃！我们只需要将上述的<code>lines</code>进行内存分配：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vector&lt;string&gt; * lines = <span class="keyword">new</span> vector&lt;string&gt;;</span><br></pre></td></tr></table></figure>
+
+<p>这样就可以运行了！</p>
+<p>不幸的是，尽管这看起来很完美，但它仍然有一个缺陷：它会泄露内存。在C++中，指向堆的指针在不再需要后必须手动删除（此时类对象的析构函数无法帮忙）；否则，一旦最后一个指针超出范围，该内存将变得不可用，并且直到进程结束时操作系统对其进行管理后才会恢复。惯用的现代C++将在这里使用<code>unique_ptr</code>，它实现了期望的行为。它删除指针超出范围时指向的对象。然而，这种行为直到C++11才成为语言的一部分。</p>
+<p>在这里，可以直接使用C++11之前的语法，只是把main中改一下即可：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">vector&lt;string&gt; * <span class="title">read_lines_from_file</span><span class="params">(string &amp;file_name)</span> </span>&#123;</span><br><span class="line">	vector&lt;string&gt; * lines = <span class="keyword">new</span> vector&lt;string&gt;;</span><br><span class="line">	string line;</span><br><span class="line">	</span><br><span class="line">	<span class="function">ifstream <span class="title">file_handle</span> <span class="params">(file_name.c_str())</span></span>;</span><br><span class="line">	<span class="keyword">while</span> (file_handle.<span class="built_in">good</span>() &amp;&amp; !file_handle.<span class="built_in">eof</span>() &amp;&amp; file_handle.<span class="built_in">peek</span>()!=EOF) &#123;</span><br><span class="line">		<span class="built_in">getline</span>(file_handle, line);</span><br><span class="line">		lines-&gt;<span class="built_in">push_back</span>(line);</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	file_handle.<span class="built_in">close</span>();</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> lines;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>* argv[])</span> </span>&#123;</span><br><span class="line">	<span class="comment">// get file name from the first argument</span></span><br><span class="line">	<span class="function">string <span class="title">file_name</span> <span class="params">(argv[<span class="number">1</span>])</span></span>;</span><br><span class="line">	vector&lt;string&gt; * file_lines = <span class="built_in">read_lines_from_file</span>(file_name);</span><br><span class="line">	<span class="type">int</span> count = file_lines-&gt;<span class="built_in">size</span>();</span><br><span class="line">	<span class="keyword">delete</span> file_lines;</span><br><span class="line">	cout &lt;&lt; <span class="string">&quot;File &quot;</span> &lt;&lt; file_name &lt;&lt; <span class="string">&quot; contains &quot;</span> &lt;&lt; count &lt;&lt; <span class="string">&quot; lines.&quot;</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>手动去分配内存与释放内存。</p>
+<p><strong>不幸的是，随着程序扩展到上述范围之外，很快就变得更加难以推理指针应该在何时何地被删除。当一个函数返回指针时，你现在拥有它吗？您应该在完成后自己删除它，还是它属于某个稍后将被一次性释放的数据结构？一方面出错，内存泄漏，另一方面出错，你已经破坏了正在讨论的数据结构和其他可能的数据结构，因为它们试图取消引用现在不再有效的指针。</strong></p>
+<h2 id="“使用垃圾收集器，flyboy！”"><a href="#“使用垃圾收集器，flyboy！”" class="headerlink" title="“使用垃圾收集器，flyboy！”"></a>“使用垃圾收集器，flyboy！”</h2><p>垃圾收集器不是一项新技术。 它们由John McCarthy在1959年为Lisp发明。 1980年，随着Smalltalk-80的出现，垃圾收集开始成为主流。 但是，1990年代代表了该技术的真正发芽：在1990年至2000年之间，发布了多种语言，所有语言都使用一种或另一种垃圾回收：Haskell，Python，Lua，Java，JavaScript，Ruby，OCaml 和C＃是最著名的。</p>
+<p>什么是垃圾收集？ 简而言之，这是一组用于<strong>自动执行手动内存管理的技术</strong>。 它通常作为具有手动内存管理的语言（例如C和C ++）的库提供，但在需要它的语言中更常用。 最大的优点是程序员根本不需要考虑内存。 都被抽象了。 例如，相当于我们上面的文件读取代码的Python就是这样：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">read_lines_from_file</span>(<span class="params">file_name</span>):</span><br><span class="line">	lines = []</span><br><span class="line">	<span class="keyword">with</span> <span class="built_in">open</span>(file_name) <span class="keyword">as</span> fp: </span><br><span class="line">		<span class="keyword">for</span> line <span class="keyword">in</span> fp:</span><br><span class="line">			lines.append(line)</span><br><span class="line">	<span class="keyword">return</span> lines</span><br><span class="line">	</span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">	<span class="keyword">import</span> sys</span><br><span class="line">	file_name = sys.argv[<span class="number">1</span>]</span><br><span class="line">	count = <span class="built_in">len</span>(read_lines_from_file(file_name))</span><br><span class="line">	<span class="built_in">print</span>(<span class="string">&quot;File &#123;&#125; contains &#123;&#125; lines.&quot;</span>.<span class="built_in">format</span>(file_name, count))</span><br></pre></td></tr></table></figure>
+
+<p>行数组是在第一次分配给它时出现的，并且不复制到调用范围就返回。 由于时间不确定，它会在超出该范围后的某个时间被垃圾收集器清理。 有趣的是，在Python中，用于非内存资源的RAII不是惯用语言。 允许我们可以简单地编写<code>fp = open（file_name）</code>而不是使用with块，然后让GC（Garbage Collection，垃圾回收）清理。 但是建议的模式是在可能的情况下使用上下文管理器，以便可以在确定的时间释放它们。</p>
+<p>尽管简化了内存管理，但要付出很大的代价。 在引用计数垃圾回收中，所有变量赋值和作用域出口都会获得少量成本来更新引用。在标记清除系统中，在GC清除内存的同时，所有程序的执行都<strong>以不可预测的时间间隔暂停</strong>。 这通常称为<strong>世界停止事件（stop the world）</strong>。「具体来说，<strong>就是当程序运行期间，若可以使用的内存被耗尽的时候，GC线程就会被触发并将程序暂停，随后将依旧存活的对象标记一遍，最终再将堆中所有没被标记的对象全部清除掉，接下来便让程序恢复运行</strong>。」 同时使用这两种系统的Python之类的实现都会受到两种惩罚。 这些问题降低了垃圾收集语言在性能至关重要或需要实时应用程序的情况下的适用性。 即使在以下玩具程序上，也可以看到实际的性能下降：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ make cpp &amp;&amp; time ./c++ makefile</span><br><span class="line">g++ -o c++ c++.cpp</span><br><span class="line">File makefile contains <span class="number">38</span> lines.</span><br><span class="line">real    <span class="number">0</span>m0<span class="number">.016</span>s</span><br><span class="line">user    <span class="number">0</span>m0<span class="number">.000</span>s</span><br><span class="line">sys     <span class="number">0</span>m0<span class="number">.015</span>s</span><br><span class="line"></span><br><span class="line">$ time python3 python3.py makefile</span><br><span class="line">File makefile contains <span class="number">38</span> lines.</span><br><span class="line"></span><br><span class="line">real    <span class="number">0</span>m0<span class="number">.041</span>s</span><br><span class="line">user    <span class="number">0</span>m0<span class="number">.015</span>s</span><br><span class="line">sys     <span class="number">0</span>m0<span class="number">.015</span>s</span><br></pre></td></tr></table></figure>
+
+<p>Python版本的实时时间几乎是C ++版本的三倍。 尽管并非所有这些差异都可以归因于垃圾收集，但它仍然是可观的。</p>
+<p>GC算法和特点参考：<a target="_blank" rel="noopener" href="https://www.cnblogs.com/piwenjun/p/5482855.html">GC算法 - 寐语者 - 博客园 (cnblogs.com)</a></p>
+<h2 id="所有权：RAII觉醒"><a href="#所有权：RAII觉醒" class="headerlink" title="所有权：RAII觉醒"></a>所有权：RAII觉醒</h2><p>我们知道对象的生存期由其范围决定。 但是，有时我们需要创建一个对象，该对象与创建对象的作用域无关，这是有用的，或者很有用。 在C ++中，运算符new用于创建这样的对象。 为了销毁对象，可以使用运算符delete。 由new操作员创建的对象是动态分配的，即在动态内存（也称为堆或空闲存储）中分配。 因此，由new创建的对象将继续存在，直到使用delete将其明确销毁为止。</p>
+<p>使用new和delete时可能发生的一些错误是：</p>
+<ul>
+<li><p>对象（或内存）泄漏：使用new分配对象，而忘记删除该对象。</p>
+</li>
+<li><p>过早删除（或悬挂引用）：持有指向对象的另一个指针，删除该对象，然而还有其他指针在引用它。</p>
+</li>
+<li><p>双重删除：尝试两次删除一个对象。</p>
+</li>
+</ul>
+<p>通常，范围变量是首选。 但是，RAII可以用作new和delete的替代方法，以使对象独立于其范围而存在。 这种技术包括将指针分配到在堆上分配的对象，并将其（堆空间&#x2F;对象）放在<strong>句柄&#x2F;管理器对象</strong>中。 后者具有一个<strong>析构函数</strong>，将负责销毁该对象。 这将确保该对象可用于任何想要访问它的函数，并且该对象<strong>在句柄对象的生存期结束时将被销毁</strong>，而无需进行显式清理。</p>
+<p>来自C ++标准库的使用RAII的示例为std :: string和std :: vector。</p>
+<p>考虑这段代码：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">fn</span><span class="params">(<span class="type">const</span> std::string&amp; str)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::vector&lt;<span class="type">char</span>&gt; vec;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span> c : str)</span><br><span class="line">        vec.<span class="built_in">push_back</span>(c);</span><br><span class="line">    <span class="comment">// do something</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当创建<code>vector</code>,并将元素推入<code>vector</code>时，您不必担心分配和取消分配此类元素内存。 <code>vector</code>使用new为其堆上的元素分配空间，并使用delete释放该空间。 作为vector的用户，您无需关心实现细节，并且会相信vector不会泄漏。 在这种情况下，vector是其元素的句柄对象。</p>
+<p>标准库中使用RAII的其他示例是std :: shared_ptr，std :: unique_ptr和std :: lock_guard。</p>
+<p>该技术的另一个名称是SBRM，是范围绑定资源管理的缩写。</p>
+<p>现在，我们将上述读取文件例子，进行修改：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cstring&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;fstream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;bits/unique_ptr.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line">unique_ptr&lt;vector&lt;string&gt;&gt; <span class="built_in">read_lines_from_file</span>(string &amp;file_name) &#123;</span><br><span class="line">    unique_ptr&lt;vector&lt;string&gt;&gt; <span class="built_in">lines</span>(<span class="keyword">new</span> vector&lt;string&gt;);</span><br><span class="line">    string line;</span><br><span class="line"></span><br><span class="line">    <span class="function">ifstream <span class="title">file_handle</span> <span class="params">(file_name.c_str())</span></span>;</span><br><span class="line">    <span class="keyword">while</span> (file_handle.<span class="built_in">good</span>() &amp;&amp; !file_handle.<span class="built_in">eof</span>() &amp;&amp; file_handle.<span class="built_in">peek</span>()!=EOF) &#123;</span><br><span class="line">        <span class="built_in">getline</span>(file_handle, line);</span><br><span class="line">        lines-&gt;<span class="built_in">push_back</span>(line);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    file_handle.<span class="built_in">close</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> lines;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>* argv[])</span> </span>&#123;</span><br><span class="line">	<span class="comment">// get file name from the first argument</span></span><br><span class="line">	<span class="function">string <span class="title">file_name</span> <span class="params">(argv[<span class="number">1</span>])</span></span>;</span><br><span class="line">	<span class="type">int</span> count = <span class="built_in">read_lines_from_file</span>(file_name).<span class="built_in">get</span>()-&gt;<span class="built_in">size</span>();</span><br><span class="line">    cout &lt;&lt; <span class="string">&quot;File &quot;</span> &lt;&lt; file_name &lt;&lt; <span class="string">&quot; contains &quot;</span> &lt;&lt; count &lt;&lt; <span class="string">&quot; lines.&quot;</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="只有在最后，你才意识到RAII的真正力量。"><a href="#只有在最后，你才意识到RAII的真正力量。" class="headerlink" title="只有在最后，你才意识到RAII的真正力量。"></a>只有在最后，你才意识到RAII的真正力量。</h2><p>自从编译器发明以来，手动内存管理是程序员一直在想办法避免的噩梦。 RAII是一种很有前途的模式，但由于没有一些奇怪的解决方法，它根本无法用于堆分配的对象，因此在C ++中会受到影响。 因此，在90年代出现了垃圾收集语言的爆炸式增长，旨在使程序员生活更加愉快，即使以性能为代价。</p>
+<p>最后，RAII总结如下：</p>
+<ul>
+<li><p>资源<strong>在析构函数中被释放</strong></p>
+</li>
+<li><p>该类的实例是<strong>堆栈分配的</strong></p>
+</li>
+<li><p>资源是<strong>在构造函数中获取的</strong>。</p>
+</li>
+</ul>
+<p>RAII代表“资源获取是初始化”。</p>
+<p>常见的例子有：</p>
+<ul>
+<li><p>文件操作</p>
+</li>
+<li><p>智能指针</p>
+</li>
+<li><p>互斥量</p>
+</li>
+</ul>
+<h1 id="拷贝交换copy-swap"><a href="#拷贝交换copy-swap" class="headerlink" title="拷贝交换copy-swap"></a>拷贝交换copy-swap</h1><p>这部分内容比较难懂，但特别巧妙。我花了挺长时间（起码比前面部分要多得多）理解，期间收集了多方的资料，并根据自己的理解整合（缝合）了一下，形成了一个比较完好、比较易懂的逻辑块，最后进行了一下总结。</p>
+<p>首先介绍一下异常安全的概念（主要是针对析构函数，也可以直接跳到copy and swap惯用法章节）</p>
+<h2 id="异常安全"><a href="#异常安全" class="headerlink" title="异常安全"></a>异常安全</h2><p>当异常发生时，会进行栈展开stack unwinding，具体步骤为：</p>
+<blockquote>
+<p>将暂停当前函数的执行，开始查找匹配的 catch 子句。首先检查 throw 本身是否在 try 块内部，如果是，检查与该 try 相关的 catch 子句，看是否有匹配的catch。如果不能处理，就退出当前函数，并且释放当前函数的局部对象，继续到上层的调用函数中查找，直到找到一个可以处理该异常的 catch 。这个过程称为栈展开(stack unwinding)。当处理该异常的 catch 结束之后，紧接着该 catch 之后的点继续执行。</p>
+</blockquote>
+<p>显然栈展开跟对象离开函数作用域，自动析构的功能一样，是为了避免内存泄漏。而stack unwinding只能对栈上的变量析构，堆上动态分配的new不会自动析构。<strong>所以当发生异常时，要特别当心内存泄漏的发生</strong>。</p>
+<p>异常处理威力很大，是处理错误的不二之选，但有时我们并不希望在有些函数中抛出异常，如：</p>
+<ul>
+<li><p><strong>析构函数不可以抛出异常，详见下文</strong>；</p>
+</li>
+<li><p><strong>构造函数可以抛出异常；</strong></p>
+<ul>
+<li>如果在构造函数对象时发生异常，此时该对象可能只是被部分构造，根据栈展开的原理，会把已经构造好的对象自动析构；</li>
+</ul>
+</li>
+<li><p><strong>移动赋值函数不应该抛出异常；</strong></p>
+<ul>
+<li>在STL标准库中很多容器在resize时都会通过<code>std::move_if_noexcept</code>模板来判断元素是否提供了noexcept（无异常）的移动赋值，如果提供那么move，否则调用拷贝赋值函数。所以不抛出异常的移动赋值函数效率会更高。</li>
+</ul>
+</li>
+<li><p><strong>拷贝赋值函数可以抛出异常</strong>；</p>
+</li>
+<li><p><strong>swap不应该抛出异常</strong>；</p>
+<ul>
+<li>根据copy and swap惯用法，swap是移动赋值函数的基石。swap不抛出异常，移动赋值才不会抛出异常。</li>
+</ul>
+</li>
+</ul>
+<p><strong>note：未捕获的异常将会终止程序。</strong>如果找不到匹配的catch，程序就会调用库函数std::terminate。</p>
+<h3 id="析构中的异常安全"><a href="#析构中的异常安全" class="headerlink" title="析构中的异常安全"></a>析构中的异常安全</h3><p>提问：析构函数可以抛出异常吗？答案是：不应该也不能。</p>
+<p>理由有二，假设某类能抛出异常：</p>
+<ol>
+<li>vector析构所有元素时，<strong>那么当有一个元素抛出异常，此时catch之后的处理显然是继续销毁剩下的元素，但是假设运气很不好，又有一个元素抛出异常</strong>，c++此时无能为力，要么结束执行，要么发生不预期的行为。</li>
+<li>析构函数往往不仅仅释放一个资源，<strong>当前一个资源释放时抛出异常，此时跳过异常点后面的代码，使得后一块资源没有释放，造成内存泄漏</strong>。</li>
+</ol>
+<p>因此得出结论，即便析构函数抛出了异常，程序猿catch后也无法处理这烫手山芋。不抛出异常是一种及时止损，如果抛会引起其他不可以预期的行为。<strong>c++资源释放不许失败。如果失败了，也不去管它，不抛异常让他去，let it go。</strong>（因为其他不可预期行为比资源释放失败更难以接受）</p>
+<p>那么当析构函数发生错误时，该怎么办呢：</p>
+<ul>
+<li>只好忍气吞声（吞下异常）；</li>
+<li>直接终止程序；</li>
+<li>其他释放会失败的资源，建议释放不要放析构，放第三方函数，让程序员手工操作；</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">DBConn</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    DBConn::~<span class="built_in">DBConn</span>();</span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">// 直接终止</span></span><br><span class="line">DBConn::~DBConn&#123;</span><br><span class="line">    <span class="keyword">try</span>&#123;db.<span class="built_in">close</span>();&#125;</span><br><span class="line">    <span class="built_in">catch</span>(...)&#123;</span><br><span class="line">        记录日志;</span><br><span class="line">        std::<span class="built_in">abort</span>();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//吞下异常</span></span><br><span class="line">DBConn::~DBConn&#123;</span><br><span class="line">    <span class="keyword">try</span>&#123;db.<span class="built_in">close</span>();&#125;</span><br><span class="line">    <span class="built_in">catch</span>(...)&#123;</span><br><span class="line">        记录日志;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>尽管吞下异常是个坏主意，但是没有办法的办法。</p>
+<p>其他释放会失败的资源，建议释放不要放析构，放第三方函数，让程序锁手工操作</p>
+<p>比如数据库连接断开操作</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">DBConn</span>&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="type">void</span> <span class="title">close</span><span class="params">()</span></span>&#123;</span><br><span class="line">        db.<span class="built_in">close</span>();</span><br><span class="line">        closed=<span class="literal">true</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    ~<span class="built_in">DBConn</span>()&#123;</span><br><span class="line">        <span class="keyword">if</span>(!closed)&#123;</span><br><span class="line">            <span class="keyword">try</span>&#123;</span><br><span class="line">                db.<span class="built_in">close</span>();</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="built_in">catch</span>(...)&#123;</span><br><span class="line">                记录日志;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    DBconnection db;</span><br><span class="line">    <span class="type">bool</span> closed;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>把数据库连接释放这样可能出错的操作交给程序员自行释放，如果程序猿没有自行释放，但由析构函释放。那么此时析构函数出错，程序员也无话可说。</p>
+<p>此外c++11之后，默认会把析构函数看成<code>noexcept(true)</code>，这意味着**如果析构函数抛出异常，直接<code>std::terminal</code>**。</p>
+<h2 id="swap"><a href="#swap" class="headerlink" title="swap"></a>swap</h2><p>本节是copy and swap的铺垫。</p>
+<p>交换函数是一种不抛异常函数，它交换一个类的两个对象或者成员。我们可能很想使用std :: swap而不是提供我们自己的方法，但这是不可能的。 std :: swap在实现中使用了copy-constructor和copy-assignment运算符，我们最终将尝试根据自身定义赋值运算符。</p>
+<p>（不仅如此，对swap的无条件调用将使用我们的自定义swap运算符，从而跳过了std :: swap会导致的不必要的类构造和破坏。）</p>
+<p>std中的swap是这么写的，应尽可能地<strong>对类的成员变量使用std::swap，而不是对整个类使用std::swap</strong>（如注释所写，若对整个类使用，在内部会调用拷贝构造和赋值构造，会导致的不必要的类构造和破坏）。实际上若使用copy-swap，赋值构造函数会需要调用swap函数，也就是说<strong>在使用swap函数时，赋值构造函数并没有完成。</strong></p>
+<p><strong>swap必须注重安全，不允许抛出异常。（std::swap是安全的）</strong></p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> std&#123;</span><br><span class="line">    <span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span></span><br><span class="line"><span class="function">    <span class="type">void</span> <span class="title">swap</span><span class="params">(T&amp; a,T&amp; b)</span></span>&#123;</span><br><span class="line">        <span class="function">T <span class="title">temp</span><span class="params">(a)</span></span>; <span class="comment">//拷贝构造，如果对象是类</span></span><br><span class="line">        a = b;</span><br><span class="line">        b = temp;<span class="comment">//赋值构造，如果对象是类</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="copy-and-swap惯用法"><a href="#copy-and-swap惯用法" class="headerlink" title="copy and swap惯用法"></a>copy and swap惯用法</h2><blockquote>
+<p>为什么我们需要复制和交换习惯？</p>
+</blockquote>
+<p>任何管理资源的类（包装程序，如智能指针）都需要实现big three。尽管拷贝构造函数和析构函数的目标和实现很简单。</p>
+<p>big three（亦即下列三个成员函数缺一不可）：</p>
+<ul>
+<li>析构函数（Destructor）</li>
+<li>拷贝构造函数（copy constructor）</li>
+<li>赋值构造函数（copy assignment operator）</li>
+</ul>
+<p>但是赋值构造函数无疑是最细微和最困难的。</p>
+<blockquote>
+<p>应该怎么做？需要避免什么陷阱？</p>
+</blockquote>
+<p>copy-swap是解决方案，可以很好地协助赋值运算符实现两件事：<strong>避免代码重复</strong>，并提供强大的<strong>异常保证</strong>。</p>
+<blockquote>
+<p>它是如何工作的？</p>
+</blockquote>
+<p><strong>从概念上讲，它通过使用拷贝构造函数的功能来创建数据的本地副本，然后使用交换功能获取复制的数据，将旧数据与新数据交换来工作。然后，临时副本将销毁，并随身携带旧数据。我们剩下的是新数据的副本。</strong></p>
+<p>为了使用copy-swap，我们需要三件事：</p>
+<ul>
+<li>一个有效的拷贝构造函数</li>
+<li>一个有效的析构函数（两者都是任何包装程序的基础，因此无论如何都应完整）以及交换功能（swap）。</li>
+</ul>
+<hr>
+<p><strong>实现方式对比</strong></p>
+<p>我们先不考虑存在继承关系的类的赋值运算符重写，只考虑最简单的情况。我们知道，按照C++ primer的理解，赋值运算符应该实现两个方面的工作：</p>
+<ul>
+<li>拷贝构造函数</li>
+<li>析构函数。</li>
+</ul>
+<p>只有完整实现了上述两步工作，赋值运算才能够正确进行。</p>
+<p>首先介绍自赋值安全和异常安全：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//当是自赋值的时候，pb已经先被删除了，那么后面的new就会为空，这是未知的计算。</span></span><br><span class="line">Widget&amp; Widget::<span class="keyword">operator</span>=(<span class="type">const</span> Widget&amp; rhs)&#123;</span><br><span class="line">    <span class="keyword">delete</span> pb;                   <span class="comment">// stop using current bitmap</span></span><br><span class="line">    pb = <span class="keyword">new</span> <span class="built_in">Bitmap</span>(*rhs.pb);    <span class="comment">// start using a copy of rhs&#x27;s bitmap</span></span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;                <span class="comment">// see Item 10</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">异常安全是指当异常发生时：</span></span><br><span class="line"><span class="comment">	1) 不会泄漏资源，</span></span><br><span class="line"><span class="comment">	2) 也不会使系统处于不一致的状态。</span></span><br><span class="line"><span class="comment"> 通常有三个异常安全级别：基本保证、强烈保证、不抛异常（nothrow）保证。</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//这个自赋值安全，但是没有异常安全，如果new处出现了异常，那么pb仍旧指向空。</span></span><br><span class="line">Widget&amp; Widget::<span class="keyword">operator</span>=(<span class="type">const</span> Widget&amp; rhs)&#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="keyword">this</span> == &amp;rhs) <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">    <span class="keyword">delete</span> pb;                   <span class="comment">// stop using current bitmap</span></span><br><span class="line">    pb = <span class="keyword">new</span> <span class="built_in">Bitmap</span>(*rhs.pb);    <span class="comment">// start using a copy of rhs&#x27;s bitmap</span></span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;                <span class="comment">// see Item 10</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面给出类A的定义，注意到类A中数据成员的数据类型，分别是内置整型以及整型指针。据此给出了构造以及析构函数。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span> &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> *b;</span><br><span class="line">    <span class="type">int</span> a;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">A</span>():<span class="built_in">a</span>(<span class="number">0</span>),<span class="built_in">b</span>(<span class="literal">nullptr</span>)&#123;&#125;;</span><br><span class="line">    <span class="built_in">A</span>(<span class="type">const</span> A&amp;rhs):<span class="built_in">a</span>(rhs.a),<span class="built_in">b</span>(rhs.b==<span class="literal">nullptr</span>?<span class="literal">nullptr</span>:<span class="keyword">new</span> <span class="built_in">int</span>(*rhs.b))&#123;&#125;;<span class="comment">//拷贝</span></span><br><span class="line">    ~<span class="built_in">A</span>()&#123;<span class="comment">//析构</span></span><br><span class="line">        <span class="keyword">delete</span> b;</span><br><span class="line">        b = <span class="literal">nullptr</span>;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>赋值运算符包括拷贝构造以及析构两方面，因此给出第一种定义：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//第一种写法</span></span><br><span class="line">A&amp; <span class="keyword">operator</span>=(<span class="type">const</span> A&amp; rhs) &#123;</span><br><span class="line">    <span class="keyword">if</span>(<span class="keyword">this</span>!=&amp;rhs) &#123; <span class="comment">// 防止自赋值</span></span><br><span class="line">        <span class="keyword">delete</span> b;</span><br><span class="line">        <span class="keyword">this</span>-&gt;b = <span class="keyword">new</span> <span class="built_in">int</span>(*rhs.b);<span class="comment">// 可能失败</span></span><br><span class="line">        <span class="keyword">this</span>-&gt;a = rhs.a;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>; <span class="comment">// 返回this对象的引用</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>可以看到我们的代码几乎是对拷贝构造函数和析构函数的完全复制，此外，上述代码虽然完成了自赋值的验证，但并未保障异常安全。一旦new失败，原this对象的b已经被删除，因此会<strong>引发异常</strong>（若再使用b取值）。</p>
+<p>effective C++ 关于本节的条款提到，无须在意自赋值，更多地考虑异常安全，异常安全得到保证，则自赋值自然得到处理。回到当前的例子，异常不安全主要在于，<strong>b对应的对象可能在异常到来之前被删除</strong>。因此我们首先保存该对象的副本，从而保证了异常安全特性，无论new是否成功，this对象中的b指针都会指向已知对象：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//第二种写法</span></span><br><span class="line">A&amp; <span class="keyword">operator</span>=(<span class="type">const</span> A&amp; rhs) &#123;</span><br><span class="line">    <span class="keyword">auto</span> orign = <span class="keyword">this</span>-&gt;b;</span><br><span class="line">    <span class="keyword">this</span>-&gt;b = <span class="keyword">new</span> <span class="built_in">int</span>(*rhs.b);</span><br><span class="line">    <span class="keyword">delete</span> orign;</span><br><span class="line">    <span class="keyword">this</span>-&gt;a = rhs.a;</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该写法<strong>不仅是异常安全</strong>的，同时也<strong>能够处理自赋值</strong>，但<strong>冗余代码</strong>的问题仍未得到解决，在effective C++中提到，可以写一个private函数进行调用，可是，这种写法并未解决根本问题：我们在赋值运算中<strong>重复实现了拷贝构造函数和析构函数</strong>。</p>
+<p>上述方法事实上是致命的。在不考虑继承关系的复杂情况下，如果更改类A，添加数据成员，我们<strong>在修改其它构造&#x2F;析构函数的同时，也必须修改赋值运算符</strong>。copy and swap技术则可以做到完全规避这一点，此外，所有调用工作由编译器自动完成，无需再做任何额外操作。</p>
+<p>该技术的核心就是不再使用引用作为赋值运算符参数，<strong>形参将直接是对象</strong>，这样的写法将会使编译器<strong>自动调用拷贝构造函数</strong>，由于拷贝构造函数的调用，异常安全将在进入函数体之前被避免（若拷贝失败则什么都不会发生，因为所有的swap是安全、不抛出异常的）。<strong>经过swap后的对象在离开函数体后会自动销毁</strong>，因此也就自动调用了析构函数，具体写法如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//第三种写法，copy-swap</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">swap</span><span class="params">(A&amp; rhs)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">using</span> std::swap;</span><br><span class="line">    <span class="built_in">swap</span>(<span class="keyword">this</span>-&gt;a,rhs.a);<span class="comment">//赋值或调用赋值构造函数（如果a是一个类对象），这导致rhs被销毁后，类本身的数据仍然存在</span></span><br><span class="line">    <span class="built_in">swap</span>(<span class="keyword">this</span>-&gt;b,rhs.b);<span class="comment">//浅拷贝，把指针内容（地址）交换，</span></span><br><span class="line">    			<span class="comment">//使得rhs调用析构函数时，释放的空间是原来的this-&gt;b的，而新的数据空间仍可以使用，一举两得</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">A&amp; <span class="keyword">operator</span>=(A rhs) &#123;</span><br><span class="line">    <span class="built_in">swap</span>(rhs);</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们的代码有着显而易见的优势：所有需要考虑的问题会由编译器处理，我们无需考虑任何事项，关键是，它的正确性是显而易见而且符合逻辑的。对于类的扩展，我们除了构造函数&#x2F;析构函数外，只需要修改swap函数即可。</p>
+<hr>
+<p><strong>考虑存在继承的复杂情形</strong></p>
+<p>本节对应的内容是<em>effective C++ 条款12，<strong>复制对象时勿忘记复制其每一成分。</strong></em> 假设有如下类B继承自上述类A：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">B</span> : <span class="keyword">public</span> A &#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="type">int</span> ab;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="built_in">B</span>():<span class="built_in">ab</span>(<span class="number">0</span>)&#123;&#125;</span><br><span class="line">    <span class="built_in">B</span>(<span class="type">const</span> B&amp;rhs):<span class="built_in">ab</span>(rhs.ab)&#123;&#125; <span class="comment">// copy constructor</span></span><br><span class="line">    B&amp; <span class="keyword">operator</span>=(<span class="type">const</span> B&amp;rhs)&#123;</span><br><span class="line">        <span class="keyword">this</span>-&gt;ab = rhs.ab;      <span class="comment">// assignment operator</span></span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>上述写法有两个错误，首先，B的拷贝构造函数只复制了B的数据成员，对于父类A中的私有成员，并没有进行复制，因此没有做到<strong>复制所有成员</strong>，对此拷贝构造函数需要修改为：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">B</span>(<span class="type">const</span> B&amp;rhs):<span class="built_in">A</span>(rhs),<span class="built_in">ab</span>(rhs.ab)&#123;&#125; <span class="comment">// copy constructor</span></span><br></pre></td></tr></table></figure>
+
+<p>同理：赋值运算符也应修改为：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">B&amp; <span class="keyword">operator</span>=(<span class="type">const</span> B&amp;rhs)&#123;</span><br><span class="line">        A::<span class="keyword">operator</span>=(rhs);</span><br><span class="line">        <span class="keyword">this</span>-&gt;ab = rhs.ab;      <span class="comment">// assignment operator</span></span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对于采用拷贝交换技术的类，我们则调用其父类的swap函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">swap</span><span class="params">(B&amp; rhs)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">using</span> std::swap;</span><br><span class="line">    A::<span class="built_in">swap</span>(rhs);</span><br><span class="line">    <span class="built_in">swap</span>(<span class="keyword">this</span>-&gt;ab,rhs.ab);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">B&amp; <span class="keyword">operator</span>=(B rhs) &#123;</span><br><span class="line">    <span class="built_in">swap</span>(rhs);</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>copy-swap惯用法实际上是利用编译器调用拷贝构造函数和析构函数来实现赋值构造函数（大前提是赋值构造函数的动作基本与拷贝构造函数（数据复制）和析构函数（原数据清除）相似）。</p>
+<ul>
+<li>基本的操作是通过传入函数的形参<strong>不是引用</strong>完成的（不是引用的话，则传入的参数会调用拷贝构造，当离开作用域时又会调用析构函数，使得赋值构造函数本身不用重复写这些代码）。<ul>
+<li>这同时使得赋值构造函数<strong>避免了自赋值</strong>（因为传入的形参是一个临时对象）；</li>
+<li>同时保证<strong>异常安全</strong>，由于拷贝构造函数的调用，异常安全将在进入函数体之前被避免（若拷贝失败则什么都不会发生，因为所有的swap是安全、不抛出异常的）。</li>
+</ul>
+</li>
+<li>然后把拷贝构造函数产生的对象拿来swap，为什么是swap而非继续直接赋值呢？<ul>
+<li>这主要是考虑对象中有指针与堆空间的释放，如果将指针直接赋值，则在临时对象析构后，赋值后指向的空间立马就释放了，做了无用功；同时又不保证异常安全了（空指针）。</li>
+<li>更重要的是，对象自身的指针也指向堆空间，直接赋值就导致内存空间未释放就丢失，明显是不行的。</li>
+<li>使用<strong>swap即可一举两得</strong>，swap一方面把自身指针的地址交换给临时对象的指针地址，当对方调用析构函数时释放掉这块空间；同时使原来拷贝构造出来的数据空间不会丢失。</li>
+</ul>
+</li>
+</ul>
+<h1 id="指向实现的指针"><a href="#指向实现的指针" class="headerlink" title="指向实现的指针"></a>指向实现的指针</h1><p>“指向实现的指针”或“pImpl”是一种 C++ 编程技巧，它将类的实现细节从对象表示中移除，<strong>放到一个分离的类中</strong>，并以一个不透明的指针进行访问。</p>
+<p>使用pImpl惯用法的原因如下：</p>
+<p>考虑如下例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">X</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  C c;</span><br><span class="line">  D d;  </span><br><span class="line">&#125; ;</span><br></pre></td></tr></table></figure>
+
+<p>变成pImpl就是下面这样子</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">X</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">XImpl</span>;</span><br><span class="line">  XImpl* pImpl;       </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>CPP定义：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">X</span>::XImpl</span><br><span class="line">&#123;</span><br><span class="line">  C c;</span><br><span class="line">  D d;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>二进制兼容性</li>
+</ul>
+<p>开发库时，可以在不破坏与客户端的二进制兼容性的情况下向XImpl添加&#x2F;修改字段（这将导致崩溃！）。 由于在向Ximpl类添加新字段时X类的二进制布局不会更改，因此可以安全地在次要版本更新中向库添加新功能。</p>
+<p>当然，也可以在不破坏二进制兼容性的情况下向X &#x2F; XImpl添加新的公共&#x2F;私有非虚拟方法，但这与标准的标头&#x2F;实现技术相当。</p>
+<ul>
+<li>数据隐藏</li>
+</ul>
+<p>如果您正在开发一个库，尤其是专有库，则可能不希望公开用于实现库公共接口的其他库&#x2F;实现技术。 要么是由于知识产权问题，要么是因为认为用户可能会被诱使对实现进行危险的假设，或者只是通过使用可怕的转换技巧来破坏封装。 PIMPL解决&#x2F;缓解了这一难题。</p>
+<ul>
+<li>编译时间</li>
+</ul>
+<p>编译时间减少了，因为当向XImpl类添加&#x2F;删除字段和&#x2F;或方法时（仅映射到标准技术中添加私有字段&#x2F;方法的情况），仅需要重建X的源（实现）文件。 实际上，这是一种常见的操作。</p>
+<p>使用标准的标头&#x2F;实现技术（没有PIMPL），当向X添加新字段时，曾经重新分配X（在堆栈或堆上）的每个客户端都需要重新编译，因为它必须调整分配的大小 。 好吧，每个从未分配X的客户端也都需要重新编译，但这只是开销（客户端上的结果代码是相同的）。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="https://jysama.cn/2022/08/03/c++%E8%AF%AD%E6%B3%95%E5%B0%8F%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -4372,7 +4799,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">28</span>
+          <span class="site-state-item-count">29</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -4400,7 +4827,7 @@
 <div class="copyright">
   
   &copy; 
-  <span itemprop="copyrightYear">2022</span>
+  <span itemprop="copyrightYear">2023</span>
   <span class="with-love">
     <i class="fa fa-heart"></i>
   </span>
@@ -4409,12 +4836,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">347k</span>
+    <span title="站点总字数">359k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">5:15</span>
+    <span title="站点阅读时长">5:26</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
   </div>

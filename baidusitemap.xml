@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://jysama.cn/2023/02/07/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/</loc>
+    <lastmod>2023-02-07</lastmod>
+  </url>
+  <url>
+    <loc>https://jysama.cn/2022/08/10/effectiveC++/</loc>
+    <lastmod>2023-02-06</lastmod>
+  </url>
+  <url>
+    <loc>https://jysama.cn/2022/08/23/%E5%8A%9B%E6%89%A3/</loc>
+    <lastmod>2023-01-11</lastmod>
+  </url>
+  <url>
     <loc>https://jysama.cn/2022/12/18/orange%E9%A1%B9%E7%9B%AE%E6%B5%8B%E8%AF%95%E4%B8%8E%E6%97%A5%E5%BF%97/</loc>
     <lastmod>2022-12-18</lastmod>
   </url>
@@ -53,16 +65,8 @@
     <lastmod>2022-10-14</lastmod>
   </url>
   <url>
-    <loc>https://jysama.cn/2022/08/23/%E5%8A%9B%E6%89%A3/</loc>
-    <lastmod>2022-10-01</lastmod>
-  </url>
-  <url>
     <loc>https://jysama.cn/2022/09/09/TinyWebServer/</loc>
     <lastmod>2022-09-23</lastmod>
-  </url>
-  <url>
-    <loc>https://jysama.cn/2022/08/10/effectiveC++/</loc>
-    <lastmod>2022-08-18</lastmod>
   </url>
   <url>
     <loc>https://jysama.cn/2022/08/03/c++%E8%AF%AD%E6%B3%95%E5%B0%8F%E8%AE%B0/</loc>
