@@ -20,12 +20,12 @@
     var CONFIG = {"hostname":"jysama.cn","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="Note这部分简单学习一些目前比较新的计网相关的技术，不作特别深入，但尽可能保证介绍明白。 kubernetes简介kubernetes 简称 k8s，是一个容器自动化运维平台，可以高效管理容器集群。k8s 位于容器编排层，只管理容器，而不提供容器引擎来负责容器生命周期的管理，因此 k8s 需要借助docker 这类容器引擎才能工作。简单来说，容器提供应用级别的一个抽像去管理应用，而k8s 是提供">
+  <meta name="description" content="Note这部分简单学习一些目前比较新的计网相关的技术，不作特别深入，但尽可能保证介绍明白。 kubernetes简介kubernetes 简称 k8s，是一个容器自动化运维平台，可以高效管理容器集群。k8s 位于容器编排层，只管理容器，而不提供容器引擎来负责容器生命周期的管理，因此 k8s 需要借助docker 这类容器引擎才能工作。简单来说，容器引擎提供应用级别的一个抽像去管理应用，而k8s 是">
 <meta property="og:type" content="article">
 <meta property="og:title" content="计网相关技术">
 <meta property="og:url" content="https://jysama.cn/2023/02/07/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/index.html">
 <meta property="og:site_name" content="JySama">
-<meta property="og:description" content="Note这部分简单学习一些目前比较新的计网相关的技术，不作特别深入，但尽可能保证介绍明白。 kubernetes简介kubernetes 简称 k8s，是一个容器自动化运维平台，可以高效管理容器集群。k8s 位于容器编排层，只管理容器，而不提供容器引擎来负责容器生命周期的管理，因此 k8s 需要借助docker 这类容器引擎才能工作。简单来说，容器提供应用级别的一个抽像去管理应用，而k8s 是提供">
+<meta property="og:description" content="Note这部分简单学习一些目前比较新的计网相关的技术，不作特别深入，但尽可能保证介绍明白。 kubernetes简介kubernetes 简称 k8s，是一个容器自动化运维平台，可以高效管理容器集群。k8s 位于容器编排层，只管理容器，而不提供容器引擎来负责容器生命周期的管理，因此 k8s 需要借助docker 这类容器引擎才能工作。简单来说，容器引擎提供应用级别的一个抽像去管理应用，而k8s 是">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%AE%B9%E5%99%A81.png">
 <meta property="og:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/overlay.png">
@@ -43,7 +43,7 @@
 <meta property="og:image" content="https://pic1.zhimg.com/80/v2-a986564eecfb3e670ee5a6c05a2557ac_720w.webp">
 <meta property="og:image" content="https://pic1.zhimg.com/80/v2-e3025ebe60021a3e34b2dd94615bf8c4_720w.webp">
 <meta property="article:published_time" content="2023-02-07T02:22:38.951Z">
-<meta property="article:modified_time" content="2023-02-07T10:44:15.948Z">
+<meta property="article:modified_time" content="2023-02-17T08:05:40.617Z">
 <meta property="article:author" content="Jy">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%AE%B9%E5%99%A81.png">
@@ -208,10 +208,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2023-02-07 10:22:38 / 修改时间：18:44:15" itemprop="dateCreated datePublished" datetime="2023-02-07T10:22:38+08:00">2023-02-07</time>
+              <time title="创建时间：2023-02-07 10:22:38" itemprop="dateCreated datePublished" datetime="2023-02-07T10:22:38+08:00">2023-02-07</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-02-17 16:05:40" itemprop="dateModified" datetime="2023-02-17T16:05:40+08:00">2023-02-17</time>
+              </span>
 
           <br>
             <span class="post-meta-item" title="本文字数">
@@ -219,14 +225,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>12k</span>
+              <span>14k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>11 分钟</span>
+              <span>12 分钟</span>
             </span>
 
         </div>
@@ -239,7 +245,7 @@
 
       
         <h1 id="Note"><a href="#Note" class="headerlink" title="Note"></a>Note</h1><p>这部分简单学习一些目前比较新的计网相关的技术，不作特别深入，但尽可能保证介绍明白。</p>
-<h1 id="kubernetes"><a href="#kubernetes" class="headerlink" title="kubernetes"></a>kubernetes</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>kubernetes 简称 k8s，是一个容器自动化运维平台，可以高效管理容器集群。k8s 位于容器编排层，只管理容器，而不提供容器引擎来负责容器生命周期的管理，因此 k8s 需要借助docker 这类容器引擎才能工作。简单来说，容器提供应用级别的一个抽像去管理应用，而k8s 是提供应用级别集群的抽象去管理容器集群。</p>
+<h1 id="kubernetes"><a href="#kubernetes" class="headerlink" title="kubernetes"></a>kubernetes</h1><h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>kubernetes 简称 k8s，是一个容器自动化运维平台，可以高效管理容器集群。k8s 位于容器编排层，只管理容器，而不提供容器引擎来负责容器生命周期的管理，因此 k8s 需要借助docker 这类容器引擎才能工作。简单来说，容器引擎提供应用级别的一个抽像去管理应用，而k8s 是提供应用级别集群的抽象去管理容器集群。</p>
 <p>k8s 的用途有：跨主机编排容器、更充分地利用硬件资源来最大化地满足企业应用的需求、通过自动布局、自动重启、自动复制、自动伸缩实现应用的状态检查与自我修复、控制与自动化应用的部署与升级等等。在架构上，k8s 主要由 master 节点和 node 节点组成，master 管理 node 的功能实施：</p>
 <ul>
 <li>master 节点组件：<ul>
@@ -250,7 +256,7 @@
 </ul>
 </li>
 <li>node 节点组件：<ul>
-<li>(1) kubelet：资源管理，监 API server 上的事件；</li>
+<li>(1) kubelet：资源管理，监听 API server 上的事件；</li>
 <li>(2) kube-proxy：管理 k8s 上面的服务和网络；</li>
 <li>(3) docker：容器对象，负责实施应用功能。</li>
 </ul>
@@ -264,6 +270,34 @@
 <li>由于部署 kubernetes 应用不需要考虑具体的环境，在应用开发与部署的过程中，应用不需要与其余的应用堆栈组合，也不依赖于生产环境基础结构，这使得从研发到测试、生产能提供一致环境，能够实现服务的无缝迁移。</li>
 <li>传统应用是运行在操作系统上的一个或多个进程，不管需不需要服务，应用程序都始终运行着。而 kubernetes 平时并不运行应用程序，而是等到有客户去访问服务时，才运行一个微服务。一旦访问完毕，应用程序的使命结束后将停止运行。直到再次被调用时，才再次运行。此时，应用程序变成了函数，也就是所谓的函数即服务。</li>
 </ul>
+<hr>
+<h2 id="部署"><a href="#部署" class="headerlink" title="部署"></a>部署</h2><ul>
+<li>购买一台弹性云服务器（ECS）</li>
+<li>安装minikube，这是轻量化的k8s集群</li>
+<li>安装docker作为底层容器引擎</li>
+<li>安装kubectl，这是k8s集群的命令行管理工具</li>
+<li>安装coredns（插件式）作为集群的DNS服务器，用于服务发现，也就是服务(应用)之间相互定位的过程。</li>
+</ul>
+<h3 id="为什么需要服务发现"><a href="#为什么需要服务发现" class="headerlink" title="为什么需要服务发现"></a>为什么需要服务发现</h3><p><strong>在K8S集群中，POD有以下特性：</strong></p>
+<blockquote>
+<p><strong>Pod</strong> 是可以在 Kubernetes 中创建和管理的、最小的可部署的计算单元。</p>
+</blockquote>
+<ol>
+<li>服务动态性强<br>容器在k8s中迁移会导致POD的IP地址变化</li>
+<li>更新发布频繁<br>版本迭代快，新旧POD的IP地址会不同</li>
+<li>支持自动伸缩<br>大促或流量高峰需要动态伸缩，IP地址会动态增减</li>
+</ol>
+<p><strong>service资源解决POD服务发现：</strong><br>为了解决pod地址变化的问题，需要部署service资源，用service资源代理后端pod，通过暴露service资源的固定地址(集群IP)，来解决以上POD资源变化产生的IP变动问题，并且多个提供相同服务的pod可以用service实习负载均衡。</p>
+<p><strong>那service资源的服务发现呢？</strong></p>
+<p>service资源提供了一个不变的集群IP供外部访问，但</p>
+<ol>
+<li>IP地址毕竟难以记忆</li>
+<li>service资源可能也会被销毁和创建</li>
+<li>能不能将service资源名称和service暴露的集群网络IP对于</li>
+<li>类似域名与IP关系，则只需记服务名就能自动匹配服务IP</li>
+<li>岂不就达到了service服务的自动发现</li>
+</ol>
+<p><strong>在k8s中，coredns就是为了解决以上问题。</strong></p>
 <h1 id="container"><a href="#container" class="headerlink" title="container"></a>container</h1><h2 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h2><p>容器是一种沙盒技术，主要目的是为了将应用运行在其中，与外界隔离；及方便这个沙盒可以被转移到其它宿主机器。本质上，它是一个特殊的进程。通过名称空间（Namespace）、控制组（Control groups）、切根（chroot）技术把资源、文件、设备、状态和配置划分到一个独立的空间。</p>
 <p><img src="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%AE%B9%E5%99%A81.png" alt="捕获">              </p>
 <p>与虚拟机不同，容器不提供操作系统级虚拟化，从而降低了初始化容器的开销。在实际场景中，一台物理计算机可能会运行数百个容器。</p>
@@ -398,6 +432,39 @@
 <p>DPU区别于SmartNIC最显著的特点，DPU<strong>本身构建了一个新的网络拓扑</strong>，而不是简单的数据处理卸载计算；DPU可以脱离host CPU存在，而SmartNIC不行。这个本质的区别就是DPU可以<strong>构建自己的总线系统</strong>，从而控制和管理其他设备，也就是一个真正意义上的中心芯片。</p>
 <h2 id="传统智能网卡-vs-DPU智能网卡"><a href="#传统智能网卡-vs-DPU智能网卡" class="headerlink" title="传统智能网卡 vs DPU智能网卡"></a>传统智能网卡 vs DPU智能网卡</h2><p>SmartNIC实现了部分卸载，即<strong>只卸载数据面</strong>，控制面仍然在Host CPU处理。从总体上来说SmartNIC的卸载操作是一个系统内的协作。</p>
 <p>DPU实现了<strong>完全的卸载</strong>，服务器的数据面和控制面都卸载运行在DPU内部的嵌入式CPU中。DPU实现包括软件卸载和硬件加速两个方面，即将负载从Host CPU卸载到DPU的嵌入式CPU中，同时将负载数据面通过DPU内部的其他类型硬件加速引擎，如协处理器、GPU、FPGA、DSA等来处理。从总体上来说，DPU是两个系统间的协作，把一个系统卸载到另一个运行实体，然后通过特定的接口交互。</p>
+<h2 id="处理过程"><a href="#处理过程" class="headerlink" title="处理过程"></a>处理过程</h2><p>主机上传统网卡处理报文的过程大致如下：</p>
+<ol>
+<li>传统网卡接收来自网络或主机的数据包，并将其存储在网卡硬件缓存中。</li>
+<li>传统网卡通过DMA（直接内存访问）将数据包从硬件缓存转移到服务器内存中的ring buffer，同时申请一个描述符指向数据包的物理地址。</li>
+<li>传统网卡产生一个硬件中断，通知内核处理数据包。</li>
+<li>内核根据中断号找到对应的中断处理函数，将数据包从ring buffer复制到socket buffer，并进行TCP&#x2F;IP协议栈的逐层处理。</li>
+<li>内核根据数据包的目标地址，将其转发到网络上的其他节点或者交给应用程序进行进一步的解析和处理。</li>
+</ol>
+<p>主机上传统网卡与智能网卡或DPU智能网卡的区别在于，传统网卡依赖于CPU和内核进行数据包的处理，而智能网卡或DPU智能网卡可以在自身完成大部分网络功能，从而减少CPU和内核的负担。</p>
+<hr>
+<p><strong>主机上智能网卡</strong>处理过程：</p>
+<p>主机上的智能网卡处理报文的过程大致如下：</p>
+<ol>
+<li>智能网卡接收来自网络或主机的数据包，并对其进行解析、分类和过滤。</li>
+<li>智能网卡根据数据包的类型和目标，执行相应的网络功能，如路由、转发、加密、负载均衡等。</li>
+<li>智能网卡将处理后的数据包发送到目标地址，无论是网络上的其他节点还是主机内的其他设备。</li>
+<li>智能网卡通过DMA（直接内存访问）将数据保存到主机内存中，并通知CPU处理。</li>
+<li>CPU通过中断或轮询的方式检查智能网卡的状态，并从内存中读取数据。</li>
+<li>CPU将数据交给应用层软件进行进一步的解析和处理。</li>
+</ol>
+<p>主机上的智能网卡与DPU智能网卡的区别在于，主机上的智能网卡仍然依赖于CPU和内存进行数据处理，而DPU智能网卡可以独立于CPU和内存存在和运行。</p>
+<hr>
+<p><strong>主机上DPU智能网卡</strong>处理过程：</p>
+<p>主机上的DPU智能</p>
+<p>网卡处理报文的过程大致如下：</p>
+<ol>
+<li>DPU接收来自网络或主机的数据包，并对其进行解析、分类和过滤。</li>
+<li>DPU根据数据包的类型和目标，执行相应的网络功能，如路由、转发、加密、负载均衡等。</li>
+<li>DPU将处理后的数据包发送到目标地址，无论是网络上的其他节点还是主机内的其他设备。</li>
+<li>DPU通过自己的总线系统，管理和控制与主机或网络连接的其他设备，如存储、加速器等。</li>
+<li>DPU将数据处理&#x2F;预处理结果发送给主机CPU，或者直接将数据发送给算力分布在更靠近数据源端的边缘计算节点。</li>
+</ol>
+<p>主机上的DPU智能网卡与DPU智能网卡相同之处在于，它们都可以独立于CPU和内存存在和运行，并且都可以构建一个新的网络拓扑。主机上的DPU智能网卡与DPU智能网卡不同之处在于，它们所连接的设备类型和位置不同。</p>
 <h1 id="RDMA"><a href="#RDMA" class="headerlink" title="RDMA"></a>RDMA</h1><p>参考：<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/55142557">RDMA技术详解（一）：RDMA概述 - 知乎 (zhihu.com)</a>、<a target="_blank" rel="noopener" href="https://cloud.tencent.com/developer/article/1420687">来点硬核的：什么是RDMA？ - 腾讯云开发者社区-腾讯云 (tencent.com)</a></p>
 <h2 id="背景-1"><a href="#背景-1" class="headerlink" title="背景"></a>背景</h2><p>RDMA(RemoteDirect Memory Access)技术全称远程直接内存访问，是为了解决网络传输中服务器端数据处理的延迟而产生的。它将<strong>数据直接从一台计算机的内存传输到另一台计算机内存</strong>，无需双方操作系统的介入。这允许高吞吐、低延迟的网络通信，尤其适合在大规模并行计算机集群中使用。</p>
 <h2 id="传统TCP-x2F-IP通信模式"><a href="#传统TCP-x2F-IP通信模式" class="headerlink" title="传统TCP&#x2F;IP通信模式"></a>传统TCP&#x2F;IP通信模式</h2><ul>
@@ -503,7 +570,10 @@
     <a href="/2022/12/18/orange%E9%A1%B9%E7%9B%AE%E6%B5%8B%E8%AF%95%E4%B8%8E%E6%97%A5%E5%BF%97/" rel="prev" title="orange-debug和日志记录">
       <i class="fa fa-chevron-left"></i> orange-debug和日志记录
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2023/03/04/%E5%B8%B8%E8%A7%81%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="next" title="常见设计模式">
+      常见设计模式 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -567,7 +637,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Note"><span class="nav-number">1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#kubernetes"><span class="nav-number">2.</span> <span class="nav-text">kubernetes</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">2.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94%E4%BC%A0%E7%BB%9F%E5%BA%94%E7%94%A8%E9%83%A8%E7%BD%B2"><span class="nav-number">2.2.</span> <span class="nav-text">对比传统应用部署</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#container"><span class="nav-number">3.</span> <span class="nav-text">container</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B-1"><span class="nav-number">3.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">3.2.</span> <span class="nav-text">对比虚拟机</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vxlan"><span class="nav-number">4.</span> <span class="nav-text">vxlan</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#overlay"><span class="nav-number">4.1.</span> <span class="nav-text">overlay</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vxlan%E7%AE%80%E4%BB%8B"><span class="nav-number">4.2.</span> <span class="nav-text">vxlan简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E8%99%9A%E6%8B%9F%E5%B1%80%E5%9F%9F%E7%BD%91%E9%97%AE%E9%A2%98"><span class="nav-number">4.3.</span> <span class="nav-text">解决虚拟局域网问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WIRESHARK-%E6%8A%93%E5%8C%85"><span class="nav-number">4.4.</span> <span class="nav-text">WIRESHARK 抓包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MTU%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98"><span class="nav-number">4.5.</span> <span class="nav-text">MTU相关问题</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#eBPF"><span class="nav-number">5.</span> <span class="nav-text">eBPF</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#eBPF%E7%9A%84%E8%83%8C%E6%99%AF"><span class="nav-number">5.1.</span> <span class="nav-text">eBPF的背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BPF"><span class="nav-number">5.2.</span> <span class="nav-text">BPF</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#eBPF%E4%BB%8B%E7%BB%8D"><span class="nav-number">5.3.</span> <span class="nav-text">eBPF介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#eBPF-%E7%9A%84%E9%99%90%E5%88%B6"><span class="nav-number">5.4.</span> <span class="nav-text">eBPF 的限制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CNI%E6%8F%92%E4%BB%B6"><span class="nav-number">6.</span> <span class="nav-text">CNI插件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">6.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD"><span class="nav-number">6.2.</span> <span class="nav-text">功能</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DPU%E6%99%BA%E8%83%BD%E7%BD%91%E5%8D%A1"><span class="nav-number">7.</span> <span class="nav-text">DPU智能网卡</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E5%8D%A1%E5%8F%91%E5%B1%95"><span class="nav-number">7.1.</span> <span class="nav-text">网卡发展</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9F%E6%99%BA%E8%83%BD%E7%BD%91%E5%8D%A1-vs-DPU%E6%99%BA%E8%83%BD%E7%BD%91%E5%8D%A1"><span class="nav-number">7.2.</span> <span class="nav-text">传统智能网卡 vs DPU智能网卡</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RDMA"><span class="nav-number">8.</span> <span class="nav-text">RDMA</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF-1"><span class="nav-number">8.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9FTCP-x2F-IP%E9%80%9A%E4%BF%A1%E6%A8%A1%E5%BC%8F"><span class="nav-number">8.2.</span> <span class="nav-text">传统TCP&#x2F;IP通信模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DMA%E7%AE%80%E4%BB%8B"><span class="nav-number">8.3.</span> <span class="nav-text">DMA简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RDMA%E7%AE%80%E4%BB%8B"><span class="nav-number">8.4.</span> <span class="nav-text">RDMA简介</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DPDK"><span class="nav-number">9.</span> <span class="nav-text">DPDK</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF-2"><span class="nav-number">9.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D"><span class="nav-number">9.2.</span> <span class="nav-text">原理介绍</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Note"><span class="nav-number">1.</span> <span class="nav-text">Note</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#kubernetes"><span class="nav-number">2.</span> <span class="nav-text">kubernetes</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B"><span class="nav-number">2.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94%E4%BC%A0%E7%BB%9F%E5%BA%94%E7%94%A8%E9%83%A8%E7%BD%B2"><span class="nav-number">2.2.</span> <span class="nav-text">对比传统应用部署</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%83%A8%E7%BD%B2"><span class="nav-number">2.3.</span> <span class="nav-text">部署</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0"><span class="nav-number">2.3.1.</span> <span class="nav-text">为什么需要服务发现</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#container"><span class="nav-number">3.</span> <span class="nav-text">container</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%80%E4%BB%8B-1"><span class="nav-number">3.1.</span> <span class="nav-text">简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94%E8%99%9A%E6%8B%9F%E6%9C%BA"><span class="nav-number">3.2.</span> <span class="nav-text">对比虚拟机</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#vxlan"><span class="nav-number">4.</span> <span class="nav-text">vxlan</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#overlay"><span class="nav-number">4.1.</span> <span class="nav-text">overlay</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vxlan%E7%AE%80%E4%BB%8B"><span class="nav-number">4.2.</span> <span class="nav-text">vxlan简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E8%99%9A%E6%8B%9F%E5%B1%80%E5%9F%9F%E7%BD%91%E9%97%AE%E9%A2%98"><span class="nav-number">4.3.</span> <span class="nav-text">解决虚拟局域网问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WIRESHARK-%E6%8A%93%E5%8C%85"><span class="nav-number">4.4.</span> <span class="nav-text">WIRESHARK 抓包</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MTU%E7%9B%B8%E5%85%B3%E9%97%AE%E9%A2%98"><span class="nav-number">4.5.</span> <span class="nav-text">MTU相关问题</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#eBPF"><span class="nav-number">5.</span> <span class="nav-text">eBPF</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#eBPF%E7%9A%84%E8%83%8C%E6%99%AF"><span class="nav-number">5.1.</span> <span class="nav-text">eBPF的背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#BPF"><span class="nav-number">5.2.</span> <span class="nav-text">BPF</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#eBPF%E4%BB%8B%E7%BB%8D"><span class="nav-number">5.3.</span> <span class="nav-text">eBPF介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#eBPF-%E7%9A%84%E9%99%90%E5%88%B6"><span class="nav-number">5.4.</span> <span class="nav-text">eBPF 的限制</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#CNI%E6%8F%92%E4%BB%B6"><span class="nav-number">6.</span> <span class="nav-text">CNI插件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">6.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD"><span class="nav-number">6.2.</span> <span class="nav-text">功能</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DPU%E6%99%BA%E8%83%BD%E7%BD%91%E5%8D%A1"><span class="nav-number">7.</span> <span class="nav-text">DPU智能网卡</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E5%8D%A1%E5%8F%91%E5%B1%95"><span class="nav-number">7.1.</span> <span class="nav-text">网卡发展</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9F%E6%99%BA%E8%83%BD%E7%BD%91%E5%8D%A1-vs-DPU%E6%99%BA%E8%83%BD%E7%BD%91%E5%8D%A1"><span class="nav-number">7.2.</span> <span class="nav-text">传统智能网卡 vs DPU智能网卡</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E8%BF%87%E7%A8%8B"><span class="nav-number">7.3.</span> <span class="nav-text">处理过程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#RDMA"><span class="nav-number">8.</span> <span class="nav-text">RDMA</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF-1"><span class="nav-number">8.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9FTCP-x2F-IP%E9%80%9A%E4%BF%A1%E6%A8%A1%E5%BC%8F"><span class="nav-number">8.2.</span> <span class="nav-text">传统TCP&#x2F;IP通信模式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DMA%E7%AE%80%E4%BB%8B"><span class="nav-number">8.3.</span> <span class="nav-text">DMA简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RDMA%E7%AE%80%E4%BB%8B"><span class="nav-number">8.4.</span> <span class="nav-text">RDMA简介</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DPDK"><span class="nav-number">9.</span> <span class="nav-text">DPDK</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%83%8C%E6%99%AF-2"><span class="nav-number">9.1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E7%90%86%E4%BB%8B%E7%BB%8D"><span class="nav-number">9.2.</span> <span class="nav-text">原理介绍</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -583,7 +653,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">31</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -620,12 +690,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">359k</span>
+    <span title="站点总字数">376k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">5:26</span>
+    <span title="站点阅读时长">5:42</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
   </div>

@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jysama.cn","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="背景随着信息化的浪潮和互联网的兴起，传统的RDBMS（关系型数据库管理系统）在一些业务上开始出现问题。  首先，对数据库存储的容量要求越来越高，单机无法满足需求，很多时候需要用集群来解决问题，而RDBMS由于要支持join，union等操作，一般不支持分布式集群。 其次，在大数据大行其道的今天，很多的数据都“频繁读和增加，不频繁修改”，而RDBMS对所有操作一视同仁，这就带来了优化的空间。 另外，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NoSQL和K-V存储简介">
+<meta property="og:url" content="https://jysama.cn/2023/03/04/NoSQL/index.html">
+<meta property="og:site_name" content="JySama">
+<meta property="og:description" content="背景随着信息化的浪潮和互联网的兴起，传统的RDBMS（关系型数据库管理系统）在一些业务上开始出现问题。  首先，对数据库存储的容量要求越来越高，单机无法满足需求，很多时候需要用集群来解决问题，而RDBMS由于要支持join，union等操作，一般不支持分布式集群。 其次，在大数据大行其道的今天，很多的数据都“频繁读和增加，不频繁修改”，而RDBMS对所有操作一视同仁，这就带来了优化的空间。 另外，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200815113356885.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM4Mzc4Mzg0,size_16,color_FFFFFF,t_70#pic_center">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200911110902473.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0NvYmJ5ZXI=,size_16,color_FFFFFF,t_70#pic_center">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/6e01adf96b9244a29f8dd47d2f61c4a9.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80ODAyNDM0OA==,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://ask.qcloudimg.com/http-save/yehe-6524455/9xyqk9zlrq.png?imageView2/2/w/1620">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/ac7a8e12f88d4413973df8963bba2fc8.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80ODAyNDM0OA==,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200815113849280.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM4Mzc4Mzg0,size_16,color_FFFFFF,t_70#pic_center">
+<meta property="article:published_time" content="2023-03-04T13:40:51.412Z">
+<meta property="article:modified_time" content="2023-03-04T13:41:20.332Z">
+<meta property="article:author" content="Jy">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200815113356885.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM4Mzc4Mzg0,size_16,color_FFFFFF,t_70#pic_center">
+
+<link rel="canonical" href="https://jysama.cn/2023/03/04/NoSQL/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>NoSQL和K-V存储简介 | JySama</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JySama</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2023/03/04/NoSQL/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          NoSQL和K-V存储简介
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-03-04 21:40:51 / 修改时间：21:41:20" itemprop="dateCreated datePublished" datetime="2023-03-04T21:40:51+08:00">2023-03-04</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.5k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h1><p>随着信息化的浪潮和互联网的兴起，传统的RDBMS（关系型数据库管理系统）在一些业务上开始出现问题。</p>
+<ul>
+<li>首先，对数据库存储的容量要求越来越高，单机无法满足需求，很多时候需要用集群来解决问题，而RDBMS由于要支持join，union等操作，一般不支持<strong>分布式集群</strong>。</li>
+<li>其次，在大数据大行其道的今天，很多的数据都“频繁读和增加，不频繁修改”，而RDBMS对所有操作一视同仁，这就带来了优化的空间。</li>
+<li>另外，互联网时代业务的不确定性导致数据库的存储模式也需要频繁变更，不自由的存储模式增大了运维的复杂性和扩展的难度。</li>
+</ul>
+<p>现在的大数据的特点是，数据维度比较多（<strong>宽行</strong>），但是每一行数据的却并不是所有信息都具备的，于是就形成<strong>稀疏矩阵</strong>。如果采取过去的存储方式的话，将会浪费大量的空间，在存储时，需要将没有数据内容<strong>置空</strong>等（这里的置空也是需要消耗存储空间的，并且也会增加寻址的时间），在小数据量的情况下，这样也没有什么劣势，但是到了大数据情况下，积少成多，便变得明显了起来。</p>
+<p>传统的关系型数据库还存在以下缺点：</p>
+<ul>
+<li><strong>大数据场景下 I&#x2F;O 较高</strong> - 因为数据是按行存储，即使只针对其中某一列进行运算，关系型数据库也会将整行数据从存储设备中读入内存，导致 I&#x2F;O 较高。</li>
+<li>存储的是行记录，<strong>无法存储数据结构</strong>。</li>
+<li><strong>表结构 schema 扩展不方便</strong> - 如要需要修改表结构，需要执行执行 DDL(data definition language)，语句修改，修改期间会导致<strong>锁表</strong>，部分服务不可用。</li>
+<li><strong>存储和处理复杂关系型数据功能较弱</strong> - 许多应用程序需要了解和导航高度连接数据之间的关系，才能启用社交应用程序、推荐引擎、欺诈检测、知识图谱、生命科学和 IT&#x2F;网络等用例。然而传统的关系数据库并不善于处理数据点之间的关系。它们的表格数据模型和严格的模式使它们很难添加新的或不同种类的关联信息。</li>
+</ul>
+<h1 id="理论基础"><a href="#理论基础" class="headerlink" title="理论基础"></a>理论基础</h1><h2 id="分布式系统"><a href="#分布式系统" class="headerlink" title="分布式系统"></a>分布式系统</h2><p>分布式系统的核心理念是让多台服务器协同工作，完成单台服务器无法处理的任务，尤其是高并发或者大数据量的任务。分布式是NoSQL数据库的<strong>必要条件</strong>。</p>
+<p>分布式系统由独立的服务器通过网络松散耦合组成的。每个服务器都是一台独立的PC机，服务器之间通过<strong>内部网络</strong>连接，内部网络速度一般比较快。因为分布式集群里的服务器是通过内部网络松散耦合，各节点之间的通讯有一定的<strong>网络开销</strong>，因此分布式系统在设计上尽可能减少节点间通讯。此外，因为网络传输瓶颈，单个节点的性能高低对分布式系统整体性能影响不大。</p>
+<p>因此，分布式系统每个节点一般不采用高性能的服务器，而是使用<strong>性能相对一般的普通PC服务器</strong>。提升分布式系统的整体性能是通过<strong>横向扩展</strong>（增加更多的服务器），而不是<strong>纵向扩展</strong>（提升每个节点的服务器性能）实现。</p>
+<p>分布式系统最大的特点是<strong>可扩展性</strong>，它能够适应需求变化而扩展。</p>
+<h2 id="CAP理论与BASE理论"><a href="#CAP理论与BASE理论" class="headerlink" title="CAP理论与BASE理论"></a>CAP理论与BASE理论</h2><p>关系型数据库一般为了保证事务可靠，需要具备ACID四个特性。ACID，是指数据库管理系统（DBMS）在写入或更新资料的过程中，为保证事务（transaction）是正确可靠的，所必须具备的四个特性：原子性（atomicity，或称不可分割性）、一致性（consistency）、隔离性（isolation，又称独立性）、持久性（durability）。</p>
+<p>NoSQL的基本需求就是支持分布式存储，严格一致性与可用性需要互相取舍，由此延伸出了CAP理论来定义分布式存储遇到的问题。CAP理论告诉我们：一个分布式系统<strong>不可能同时</strong>满足<strong>一致性</strong>(C:Consistency)、<strong>可用性</strong>(A:Availability)、<strong>分区容错性</strong>(P:Partitiontolerance)这三个基本需求，并且最多只能满足其中的<strong>两项</strong>。</p>
+<ul>
+<li><strong>C – Consistency – 一致性（与ACID的C完全不同，那里的C是保证数据库数据之间规则没有被破坏）</strong></li>
+</ul>
+<p>一致性是指“all nodes see the same data at the same time”，即更新操作成功并返回客户端完成后，<strong>所有节点在同一时间的数据完全一致</strong>。对于一致性，可以分为从客户端和服务端两个不同的视角。</p>
+<ul>
+<li>从客户端来看，一致性主要指的是多并发访问时更新过的数据如何获取的问题。</li>
+<li>从服务端来看，则是更新如何复制分布到整个系统，以保证数据最终一致。一致性是因为<strong>有并发读写</strong>才有的问题，因此在理解一致性的问题时，一定要注意结合考虑并发读写的场景。</li>
+<li>从客户端角度，多进程并发访问时，更新过的数据在不同进程如何获取的不同策略，决定了不同的一致性。对于关系型数据库，要求更新过的数据能被后续的访问都能看到，这是<strong>强一致性</strong>。如果能容忍后续的部分或者全部访问不到，则是<strong>弱一致性</strong>。如果经过一段时间后要求能访问到更新后的数据，则是<strong>最终一致性</strong>。</li>
+</ul>
+<ul>
+<li><strong>A – Availability – 可用性</strong></li>
+</ul>
+<p>可用性是指“Reads and writes always succeed”，即服务一直可用，而且是正常响应时间。</p>
+<p>对于一个可用性的分布式系统，每一个非故障的节点必须<strong>对每一个请求作出响应</strong>。也就是说，该系统使用的任何算法必须最终终止。当同时要求分区容忍性时，这是一个很强的定义：即使是严重的网络错误，每个请求必须完成。</p>
+<p>好的可用性主要是指系统能够很好的为用户服务，不出现用户操作失败或者访问超时等用户体验不好的情况。在通常情况下，可用性与分布式数据冗余、负载均衡等有着很大的关联。</p>
+<ul>
+<li><strong>P – Partition tolerance – 分区容错性</strong></li>
+</ul>
+<p>分区容错性是指“the system continues to operate despite arbitrary message loss or failureof part of the system”，即分布式系统在遇到某节点或网络分区故障的时候，仍然能够对外提供满足一致性和可用性的服务。</p>
+<p>分区容错性和扩展性紧密相关。在分布式应用中，可能因为一些分布式的原因导致系统无法正常运转。好的分区容错性要求能够使应用虽然是一个分布式系统，但看上去却好像是一个<strong>可以运转正常的整体</strong>。比如现在的分布式系统中有某一个或者几个机器宕掉了，其它剩下的机器还能够正常运转满足系统需求，或者是机器之间有网络异常，将分布式系统分隔成未独立的几个部分，各个部分还能维持分布式系统的运作，这样就具有好的分区容错性。</p>
+<hr>
+<ul>
+<li><strong>CA without P</strong></li>
+</ul>
+<p>如果不要求P（不允许分区），则C（强一致性）和A（可用性）是可以保证的。但其实分区不是你想不想的问题，而是始终会存在，因此CA的系统更多的是允许分区后<strong>各子系统依然保持CA</strong>。</p>
+<ul>
+<li><strong>CP without A</strong></li>
+</ul>
+<p>如果不要求A（可用），相当于每个请求都需要在Server之间强一致，而P（分区）会导致<strong>同步时间无限延长</strong>，如此CP也是可以保证的。很多传统的数据库分布式事务都属于这种模式。</p>
+<ul>
+<li><strong>AP without C</strong></li>
+</ul>
+<p>要高可用并允许分区，则需放弃一致性。一旦分区发生，节点之间可能会失去联系，为了高可用，每个节点<strong>只能用本地数据提供服务</strong>，而这样会<strong>导致全局数据的不一致性</strong>。现在众多的NoSQL都属于此类。</p>
+<p>CAP理论定义了分布式存储的根本问题，但并没有指出一致性和可用性之间到底应该如何权衡。于是出现了BASE理论，给出了权衡A与C的一种可行方案。</p>
+<hr>
+<p>权衡一致性与可用性 - BASE理论</p>
+<p>Base &#x3D; Basically Available + Soft state + Eventually consistent 基本可用性+软状态+最终一致性，由eBay架构师DanPritchett提出。Base是对CAP中一致性A和可用性C权衡的结果，源于提出者自己在大规模分布式系统上实践的总结。核心思想是无法做到强一致性，但每个应用都可以根据自身的特点，采用适当方式达到最终一致性。</p>
+<ul>
+<li><strong>BA - Basically Available - 基本可用</strong></li>
+</ul>
+<p>基本可用。这里是指分布式系统在出现故障的时候，允许损失部分可用性，即<strong>保证核心功能或者当前最重要功能可用</strong>。对于用户来说，他们当前最关注的功能或者最常用的功能的可用性将会获得保证，但是其他功能会被削弱。</p>
+<ul>
+<li><strong>S – Soft State - 软状态</strong></li>
+</ul>
+<p>允许系统数据存在中间状态，但不会影响到系统的整体可用性，即允许系统在不同节点的数据副本之间进行数据同步时<strong>存在延时</strong>。</p>
+<ul>
+<li><strong>E - Eventually Consistent - 最终一致性</strong></li>
+</ul>
+<p>要求系统数据副本<strong>最终能够一致</strong>，而不需要实时保证数据副本一致。最终一致性是弱一致性的一种特殊情况。</p>
+<p>总结：保证<strong>核心功能</strong>可用+允许<strong>同步延时</strong>（中间状态）+节点数据<strong>最终一致</strong></p>
+<h1 id="一致性算法"><a href="#一致性算法" class="headerlink" title="一致性算法"></a>一致性算法</h1><p>在一个分布式数据库系统中，如果各节点的初始状态一致，每个节点执行相同的操作序列，那么他们最后能得到一个一致的状态。</p>
+<h2 id="通信"><a href="#通信" class="headerlink" title="通信"></a>通信</h2><p>节点之间需要进行操作指令的同步，存在两种模型：</p>
+<ul>
+<li>共享内存</li>
+<li>消息传递</li>
+</ul>
+<h2 id="分区"><a href="#分区" class="headerlink" title="分区"></a>分区</h2><p>原来所有的数据都是在一个数据库上的，网络IO及文件IO都集中在一个数据库上的，因此CPU、内存、文件IO、网络IO都可能会成为系统瓶颈。而分区的方案就是把某一个表或某几个相关的表的数据放在一个独立的数据库上，这样就可以把CPU、内存、文件IO、网络IO分解到多个机器中，从而提升系统处理能力。</p>
+<h2 id="分片"><a href="#分片" class="headerlink" title="分片"></a>分片</h2><p>分区有两种模式，一种是主从模式，用于做读写分离；另外一种模式是分片模式，也就是说把一个表中的数据分解到多个表中。一个分区只能是其中的一种模式，要么主从（副本），一个读一个写；要么分片，把数据分解。</p>
+<h2 id="一致性哈希"><a href="#一致性哈希" class="headerlink" title="一致性哈希"></a>一致性哈希</h2><p>将数据分离后，需要映射到不同的节点上，可用使用一致性哈希，允许动态扩展，每个节点仅需要维护少量相邻节点的信息。</p>
+<h1 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h1><p><strong>关系型数据库的优势：</strong></p>
+<ol>
+<li>便于理解：二维表构造非常贴近逻辑；</li>
+<li>应用方便：支持通用的SQL（结构化查询语言）语句；</li>
+<li>易于维护：全部由表结构组成，文件格式一致；</li>
+<li>事务管理：促使针对安全性性能很高的数据信息浏览规定得到完成。</li>
+</ol>
+<p><strong>关系型数据库存在的不足</strong></p>
+<ol>
+<li>读写性能差，尤其是海量信息的效率高读写能力；</li>
+<li>格式不灵活，固定不动的表构造；</li>
+<li>高并发读写时，硬盘I&#x2F;O存在瓶颈；</li>
+<li>可扩展性不足，不像web server和app server那样简单的添加硬件和服务节点来拓展性能和负荷工作能力（数据之间耦合度高，不易扩展）</li>
+</ol>
+<p><strong>非关系型数据库的优点</strong></p>
+<ol>
+<li>格式灵活：数据存储格式非常多样，应用领域广泛，而关系型数据库则只适用基础的关系模型。</li>
+<li>性能优越：NOSQL得益于无关系性，数据结构简单，NoSQL的Cache是记录级的，是一种细粒度的Cache。一般MySQL使用Query Cache，每次表更新Cache就失效，是一种大粒度的Cache，针对web2.0的交互频繁的应用，Cache性能不高。</li>
+<li>可扩展性：数据之间无关系，数据之间耦合度极低，因此容易水平扩展。</li>
+<li>低成本：非关系型数据库部署简易，且大部分可以开源使用。</li>
+<li>高可用：NoSQL在不太影响性能的情况下，就可以方便地实现高可用的架构。</li>
+</ol>
+<p><strong>非关系型数据库的不足：</strong></p>
+<ol>
+<li>不支持sql，学习和运用成本比较高；</li>
+<li>特性不够丰富，产品不够成熟。</li>
+<li>不支持事务。</li>
+</ol>
+<p><strong>关系型与非关系型数据库的区别：</strong></p>
+<ol>
+<li>成本：Nosql数据库易部署，不用像Oracle那般花费较高成本选购。</li>
+<li>查询速率：Nosql数据库将数据储存于缓存当中，不用历经SQL层的分析；关系型数据库将数据储存在电脑硬盘中，查询速率远不如Nosql数据库。</li>
+<li><strong>储存格式</strong>：Nosql的储存文件格式是key,value方式、文本文档方式、照片方式这些，能储存的对象种类灵活；关系数据库则只适用基础类型。</li>
+<li><strong>可扩展性</strong>：关系型数据库有join那样的多表查询机制限定造成拓展性较差。Nosql依据键值对，数据中间沒有耦合度，因此容易水平拓展。</li>
+<li><strong>数据一致性</strong>：非关系型数据库注重最终一致性；关系型数据库注重数据整个生命周期的强一致性。</li>
+<li><strong>事务处理</strong>：SQL数据库支持事务原子性粒度控制，且方便进行事务回滚；NoSQL也支持事务处理，但可靠性不足，其价值在于可扩展性和大数据量处理。</li>
+</ol>
+<p><strong>NoSQL与SQL的对比</strong></p>
+<table>
+<thead>
+<tr>
+<th align="left"></th>
+<th align="left">RDBMS</th>
+<th align="left">NoSQL</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">模式</td>
+<td align="left">预定义的模式</td>
+<td align="left">没有预定义的模式</td>
+</tr>
+<tr>
+<td align="left">查询语言</td>
+<td align="left">结构化查询语言（SQL）</td>
+<td align="left">没有声明性查询语言</td>
+</tr>
+<tr>
+<td align="left">一致性</td>
+<td align="left">严格的一致性</td>
+<td align="left">最终一致性</td>
+</tr>
+<tr>
+<td align="left">事务</td>
+<td align="left">支持</td>
+<td align="left">不支持</td>
+</tr>
+<tr>
+<td align="left">理论基础</td>
+<td align="left">ACID</td>
+<td align="left">CAP, BASE</td>
+</tr>
+<tr>
+<td align="left">扩展</td>
+<td align="left">纵向扩展</td>
+<td align="left">横向扩展(分布式)</td>
+</tr>
+</tbody></table>
+<h1 id="K-V数据库"><a href="#K-V数据库" class="headerlink" title="K-V数据库"></a>K-V数据库</h1><h2 id="K-V-数据库特性"><a href="#K-V-数据库特性" class="headerlink" title="K-V 数据库特性"></a>K-V 数据库特性</h2><ul>
+<li>用一个key标识一行数据（一个数据实例）。</li>
+<li>在一行数据的列部分，每个列的数据都包含元数据（键），数据（值），时间戳（为了某些其他目的，非必须）。</li>
+</ul>
+<p><strong>优点如下：</strong></p>
+<ul>
+<li>避免造成数据表稀疏矩阵，高效利用空间。</li>
+<li>大数据时代需求变化快，能灵活更改结构。比如新增一个属性，传统数据库模型需要对表中所有行同时增加一列（不需要的置空或者默认），而kv存储只需要在列族中添加一个列信息，找到要修改的一行即可。</li>
+</ul>
+<p><strong>缺点如下：</strong> </p>
+<ul>
+<li>针对 ACID，Redis 事务不能支持原子性和持久性(A 和 D)，只支持隔离性和一致性(I 和 C) </li>
+<li>特别说明一下，这里所说的无法保证原子性，是针对 Redis 的事务操作，因为事务是不支持回滚（roll back），而因为 Redis 的单线程模型，<strong>Redis 的普通操作是原子性的</strong>。</li>
+</ul>
+<p>大部分业务不需要严格遵循 ACID 原则，例如游戏实时排行榜，粉丝关注等场景，即使部分数据持久化失败，其实业务影响也非常小。因此在设计方案时，需要根据业务特征和要求来做选择</p>
+<h2 id="K-V-数据库使用场景"><a href="#K-V-数据库使用场景" class="headerlink" title="K-V 数据库使用场景"></a>K-V 数据库使用场景</h2><ul>
+<li><strong>适用场景</strong> - 储存用户信息(比如会话)、配置文件、参数、购物车等等。这些信息一般都和 ID（键）挂钩。</li>
+<li><strong>不适用场景</strong></li>
+<li>需要通过值来查询，而不是键来查询。Key-Value 数据库中根本<strong>没有通过值查询的途径</strong>。</li>
+<li>需要储存数据之间的关系。在 Key-Value 数据库中<strong>不能通过两个或以上的键来关联数据</strong></li>
+<li>需要事务的支持。在 Key-Value 数据库中故障产生时<strong>不可以进行回滚</strong>。</li>
+</ul>
+<h1 id="Redis存储简单介绍"><a href="#Redis存储简单介绍" class="headerlink" title="Redis存储简单介绍"></a>Redis存储简单介绍</h1><h2 id="redis快的原因"><a href="#redis快的原因" class="headerlink" title="redis快的原因"></a>redis快的原因</h2><p>单线程的处理机制</p>
+<ul>
+<li>一个主线程负责读写数据，其他附属的线程负责维护 Redis 服务的稳定，单线程的一个好处就是<strong>没有线程资源竞争</strong>的问题，采用多线程开发一般会引入同步原语来保护共享资源的并发访问，这也会降低系统代码的易调试性和可维护性。为了避免这些问题，Redis 直接采用了单线程模式。Redis 6.0 支持了多线程，具体大家可以自行了解。</li>
+</ul>
+<p>io 的多路复用模型</p>
+<ul>
+<li>使用了 <strong>epoll 多路复用的模型</strong>，该机制允许内核中，同时存在多个监听套接字和已连接套接字。内核会一直监听这些套接字上的连接请求或数据请求。一旦有请求到达，就会交给 Redis 线程处理，这就实现了一个 Redis 线程处理多个 IO 流的效果，本质上就是通过事件监听的方式，如果有个连接没有请求，那就进入休眠状态，让出时间片，等待被激活。</li>
+</ul>
+<p>优秀的底层数据结构</p>
+<ul>
+<li>一个好的数据存储结构决定了一半的性能，Redis 底层实现了多种数据结构，包括 简单动态字符串（SNS)，压缩列表，双向链表，哈希表，跳表，整形数组等底层数据结构，当然它也同样支持我们将自己实现的数据结构也添加到底层中，Redis 会根据性能来判断选择使用哪一个数据结构作为存储，并作自动转换，除了字符串类型统一使用了SNS,其他的类型（list，hash, set ,sortset )均有两种底层结构的支持</li>
+</ul>
+<p>基于内存的读写</p>
+<ul>
+<li>Redis 是直接读写<strong>内存中</strong>的数据的，我们知道 只有内存中的数据才能够被程序使用，很多存储都有基于内存的优化策略，像 MySQL 的buffer机制，有效的利用内存，可以减少大量的 磁盘随机 io 读取，毕竟从文件中读取数据到内存是一个十分消耗性能的操作，为了数据的稳定，Redis 也提供了 RDB 和 AOF 机制，来保证数据的稳定性</li>
+</ul>
+<h2 id="过期删除"><a href="#过期删除" class="headerlink" title="过期删除"></a>过期删除</h2><p>过期数据的清除从来不容易，为每一条key设置一个timer，到点立刻删除的消耗太大，每秒遍历所有数据消耗也大，Redis使用了一种相对务实的做法： 当client<strong>主动访问</strong>key会先对key进行超时判断，过时的key会立刻删除。 </p>
+<p>如果clien永远都不再get那条key呢？ 它会在Master的后台，每秒10次的执行如下操作： <strong>随机选取</strong>100个key校验是否过期，如果有<strong>25个以上</strong>的key过期了，立刻额外随机选取下100个key。</p>
+<h2 id="存储原理"><a href="#存储原理" class="headerlink" title="存储原理"></a>存储原理</h2><h3 id="存储结构"><a href="#存储结构" class="headerlink" title="存储结构"></a>存储结构</h3><p>Redis 的存储方式使用的是散列表（哈希桶）的形式。</p>
+<p><img src="https://img-blog.csdnimg.cn/20200815113356885.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM4Mzc4Mzg0,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<ul>
+<li>redis的存储结构从外层往内层依次是redisDb、dict、dictht、dictEntry。</li>
+<li>redis的Db默认情况下有16个，每个redisDb内部包含一个dict的数据结构。</li>
+<li>redis的dict内部包含dictht的数组，数组个数为2，主要用于hash扩容使用。</li>
+<li>dictht内部包含dictEntry的数组，可以理解就是hash的桶，然后如果冲突通过挂链法解决。</li>
+</ul>
+<p><img src="https://img-blog.csdnimg.cn/20200911110902473.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0NvYmJ5ZXI=,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+<p>整体架构如下：</p>
+<p><img src="https://img-blog.csdnimg.cn/6e01adf96b9244a29f8dd47d2f61c4a9.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80ODAyNDM0OA==,size_16,color_FFFFFF,t_70" alt="img"></p>
+<ul>
+<li>dict是一个用于维护key和value映射关系的数据结构，底层用来存数据的hash表 2个， dictht。至于为什么是2个，主要涉及到hash表的扩容和缩容。</li>
+<li>dictht 定义了一个hash表的结构，表中保存的是指向dictEntry的指针。如果产生了hash冲突，这些dictEntry会采用链表的方式使用next指针来连接。</li>
+<li>dictEntry是redis中key和value的结合。<ul>
+<li>key是字符串，但是Redis没有直接使用C的字符数组，而是存储在自定义的SDS中。同一个桶中key是不一样的，<strong>key要保存起来作为rehash的根据</strong>。</li>
+<li>value既不是直接作为字符串存储，也不是直接存储在SDS中，而是存储在redisObject中。实际上五种常用的数据类型的任何一种，都是通过redisObject来存储的。</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://ask.qcloudimg.com/http-save/yehe-6524455/9xyqk9zlrq.png?imageView2/2/w/1620" alt="img"></p>
+<h3 id="SDS"><a href="#SDS" class="headerlink" title="SDS"></a>SDS</h3><p><strong>为什么Redis要用SDS实现字符串？</strong></p>
+<p><strong>C语言本身没有字符串类型</strong>（只能用字符数组char[]实现）。</p>
+<p>1、使用字符数组必须先给目标变量分配足够的空间，否则可能会<strong>溢出</strong>。</p>
+<p>2、如果要获取字符<strong>长度</strong>，必须遍历字符数组，时间复杂度是O(n)。</p>
+<p>3、C字符串长度的变更会对字符数组做<strong>内存重分配</strong>。</p>
+<p>4、通过从字符串开始到结尾碰到的第一个’\0’来标记字符串的结束，因此不能保存图片、音频、视频、压缩文件等二进制(bytes)保存的内容，<strong>二进制不安全</strong>。</p>
+<p><strong>SDS的特点：</strong></p>
+<p>1、不用担心内存溢出问题，如果需要会对SDS进行扩容。</p>
+<p>2、获取字符串长度时间复杂度为O(1)，因为定义了<strong>len属性</strong>。</p>
+<p>3、通过“空间<strong>预分配</strong>”（sdsMakeRoomFor）和“惰性空间释放”，防止多次重分配内存。</p>
+<p>4、判断是否<strong>结束的标志是len属性</strong>（它同样以’\0’结尾是因为这样就可以使用C语言中函数库操作字符串的函数了），可以包含’\0’。</p>
+<h3 id="redisObject"><a href="#redisObject" class="headerlink" title="redisObject"></a>redisObject</h3><p>redisObject 是 Redis 类型系统的核心, 数据库中的每个键、值, 以及 Redis 本身处理的参数, 都表示为这种数据类型。比如list，set, hash等redis支持的数据类型，在底层都会以redisObject的方式来存储。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="class"><span class="keyword">struct</span> <span class="title">redisObject</span> &#123;</span></span><br><span class="line">    <span class="type">unsigned</span> type:<span class="number">4</span>;  </span><br><span class="line">    <span class="type">unsigned</span> encoding:<span class="number">4</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="type">unsigned</span> lru:LRU_BITS; </span><br><span class="line">    <span class="type">int</span> refcount;	</span><br><span class="line">    <span class="type">void</span> *ptr;</span><br><span class="line">&#125; robj;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>type: 4位，表示具体的数据类型，比如String, Hash, List, Set, Sorted Set等。</p>
+<p>encoding: 表示该值具体的编码方式或使用的数据结构，比如sds，压缩列表， hash表等</p>
+<p>lru：最近一次被访问的时间。用于通过LRU算法进行内存淘汰的时候使用</p>
+<p>refcount： 对象引用计数</p>
+<p>ptr： 指向真正数据的指针，在我们通过key获取value时，其实最终就是通过这个ptr指针找到真正的数据。</p>
+<h3 id="数据类型"><a href="#数据类型" class="headerlink" title="数据类型"></a>数据类型</h3><p><img src="https://img-blog.csdnimg.cn/ac7a8e12f88d4413973df8963bba2fc8.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3dlaXhpbl80ODAyNDM0OA==,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h2 id="扩容与缩容"><a href="#扩容与缩容" class="headerlink" title="扩容与缩容"></a>扩容与缩容</h2><h3 id="rehash"><a href="#rehash" class="headerlink" title="rehash"></a>rehash</h3><p>当存在冲突的时候，会将对应的冲突实体放在一起搞成一个链表，此时哈希桶的指针会增加一个next 指针，用来指向下一个冲突实体，当数据量足够大的时候，这个链表可能会被拉的越来越长，因为链表的查询只能从头结点开始遍历下去，也就是 O(n) 的复杂度(n为链表长度)，<strong>所以当链表过长时，会影响最终的查询速度</strong>。所以这时候不能袖手旁观。</p>
+<p>因此，在这种情况下，Redis 会有另外一个线程专门去处理。我们称这种方式为 rehash ，和很多语言的数组底层一样，这种rehash 机制也是基于复制状态机的，说白了就是申请<strong>另一块空间</strong>（通常是原来的两倍），然后把数据信息复制过去，再释放原来的空间。通常来说程序不会快死的时候才想着救自己，当数值达到<strong>预警值</strong>时，就会开始自救，我们常常将其称之为装填因子，计算方式十分的简单，就是 use&#x2F;total, 不同的存储对装填因子的判断规则不同，内容也比较底层，这里我们就不展开叙述了。</p>
+<p>所以在 Redis 中，会存在<strong>另一张全局哈希表</strong>，其实它就是一个备胎，每次需要拓容的时候，这个备胎往往空间要比原配更大，rehash 线程会将原配的数据复制到备胎中，然后备胎就可以转正了。但是在复制的过程中，会有两个问题，一个是<strong>内存占用率会突然飙升</strong>，另一个就是Redis <strong>阻塞</strong>的问题，复制的操作又耗时又耗空间，因此我们还需要更加聪明一点，能不能让一次的操作分成多步呢？温水煮青蛙听过没，如果每次来一个请求我就迁徙一点，这样的话，是不是慢慢的我就复制完了。这就是 Redis 的渐进式 rehash。</p>
+<h3 id="渐进式rehash"><a href="#渐进式rehash" class="headerlink" title="渐进式rehash"></a>渐进式rehash</h3><p>假设我要取 key 为 csdn 的 value ，而通过hash 算法得到的 索引位置为 1，但是该索引上有一个三个 entry, 此时处理的线程正常的去遍历这个链表拿到真正正确的值，此时 rehash进程 顺便把这个索引的 entry 从 ht0 复制到 ht1 中。并且释放 ht0 该索引的空间。</p>
+<p><img src="https://img-blog.csdnimg.cn/20200815113849280.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM4Mzc4Mzg0,size_16,color_FFFFFF,t_70#pic_center" alt="在这里插入图片描述"></p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Jy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jysama.cn/2023/03/04/NoSQL/" title="NoSQL和K-V存储简介">https://jysama.cn/2023/03/04/NoSQL/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/03/04/%E5%B8%B8%E8%A7%81%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" rel="prev" title="常见设计模式">
+      <i class="fa fa-chevron-left"></i> 常见设计模式
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81NjM2Ny8zMjgzMA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">背景</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%90%86%E8%AE%BA%E5%9F%BA%E7%A1%80"><span class="nav-number">2.</span> <span class="nav-text">理论基础</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F"><span class="nav-number">2.1.</span> <span class="nav-text">分布式系统</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CAP%E7%90%86%E8%AE%BA%E4%B8%8EBASE%E7%90%86%E8%AE%BA"><span class="nav-number">2.2.</span> <span class="nav-text">CAP理论与BASE理论</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E7%AE%97%E6%B3%95"><span class="nav-number">3.</span> <span class="nav-text">一致性算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%80%9A%E4%BF%A1"><span class="nav-number">3.1.</span> <span class="nav-text">通信</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%8C%BA"><span class="nav-number">3.2.</span> <span class="nav-text">分区</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E7%89%87"><span class="nav-number">3.3.</span> <span class="nav-text">分片</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E5%93%88%E5%B8%8C"><span class="nav-number">3.4.</span> <span class="nav-text">一致性哈希</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="nav-number">4.</span> <span class="nav-text">优缺点</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#K-V%E6%95%B0%E6%8D%AE%E5%BA%93"><span class="nav-number">5.</span> <span class="nav-text">K-V数据库</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#K-V-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%89%B9%E6%80%A7"><span class="nav-number">5.1.</span> <span class="nav-text">K-V 数据库特性</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#K-V-%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BD%BF%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="nav-number">5.2.</span> <span class="nav-text">K-V 数据库使用场景</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Redis%E5%AD%98%E5%82%A8%E7%AE%80%E5%8D%95%E4%BB%8B%E7%BB%8D"><span class="nav-number">6.</span> <span class="nav-text">Redis存储简单介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#redis%E5%BF%AB%E7%9A%84%E5%8E%9F%E5%9B%A0"><span class="nav-number">6.1.</span> <span class="nav-text">redis快的原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%87%E6%9C%9F%E5%88%A0%E9%99%A4"><span class="nav-number">6.2.</span> <span class="nav-text">过期删除</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E5%8E%9F%E7%90%86"><span class="nav-number">6.3.</span> <span class="nav-text">存储原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84"><span class="nav-number">6.3.1.</span> <span class="nav-text">存储结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SDS"><span class="nav-number">6.3.2.</span> <span class="nav-text">SDS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#redisObject"><span class="nav-number">6.3.3.</span> <span class="nav-text">redisObject</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="nav-number">6.3.4.</span> <span class="nav-text">数据类型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%A9%E5%AE%B9%E4%B8%8E%E7%BC%A9%E5%AE%B9"><span class="nav-number">6.4.</span> <span class="nav-text">扩容与缩容</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#rehash"><span class="nav-number">6.4.1.</span> <span class="nav-text">rehash</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B8%90%E8%BF%9B%E5%BC%8Frehash"><span class="nav-number">6.4.2.</span> <span class="nav-text">渐进式rehash</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jy"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Jy</p>
+  <div class="site-description" itemprop="description">Re：从零开始的写博客生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jy</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">376k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">5:42</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>

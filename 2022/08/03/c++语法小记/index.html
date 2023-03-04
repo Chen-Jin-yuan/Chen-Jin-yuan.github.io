@@ -28,7 +28,7 @@
 <meta property="og:description" content="常对象在 C++ 中，const 也可以用来修饰对象，称为常对象。一旦将对象定义为常对象之后，就只能调用类的 const 成员（包括 const 成员变量和 const 成员函数）了。 定义常对象的语法和定义常量的语法类似： 12const  class  object(params);class const object(params);  当然你也可以定义 const 指针： 12const">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2022-08-03T02:10:09.648Z">
-<meta property="article:modified_time" content="2022-08-13T13:54:21.114Z">
+<meta property="article:modified_time" content="2023-02-19T05:56:05.178Z">
 <meta property="article:author" content="Jy">
 <meta name="twitter:card" content="summary">
 
@@ -200,7 +200,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2022-08-13 21:54:21" itemprop="dateModified" datetime="2022-08-13T21:54:21+08:00">2022-08-13</time>
+                <time title="修改时间：2023-02-19 13:56:05" itemprop="dateModified" datetime="2023-02-19T13:56:05+08:00">2023-02-19</time>
               </span>
 
           <br>
@@ -209,7 +209,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>23k</span>
+              <span>24k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -502,7 +502,11 @@
 <li>当有多个对象成员时，将按它们在派生类中的声明次序调用，与它们在构造函数初始化列表中的次序无关。</li>
 <li>当构造函数初始化列表中的基类和对象成员的构造函数调用完成之后，才执行派生类构造函数体中的程序代码。</li>
 </ul>
-<h1 id="虚函数与抽象类"><a href="#虚函数与抽象类" class="headerlink" title="虚函数与抽象类"></a>虚函数与抽象类</h1><h2 id="多态性"><a href="#多态性" class="headerlink" title="多态性"></a>多态性</h2><p>多态就是在同一个类或继承体系结构的基类与派生类中，用<strong>同名函数</strong>来实现各种不同的功能。</p>
+<h1 id="虚函数与抽象类"><a href="#虚函数与抽象类" class="headerlink" title="虚函数与抽象类"></a>虚函数与抽象类</h1><blockquote>
+<p><strong>虚函数表位于只读数据段（.rodata），也就是C++内存模型中的常量区；而虚函数则位于代码段（.text），也就是C++内存模型中的代码区。</strong></p>
+<p>类的虚表会被这个类的所有对象所共享。类的对象可以有很多，但是他们的虚表指针都指向同一个虚表</p>
+</blockquote>
+<h2 id="多态性"><a href="#多态性" class="headerlink" title="多态性"></a>多态性</h2><p>多态就是在同一个类或继承体系结构的基类与派生类中，用<strong>同名函数</strong>来实现各种不同的功能。</p>
 <ul>
 <li><strong>静态绑定又称静态联编</strong>：是指在编译程序时就根据调用函数提供的信息，把它所对应的具体函数确定下来，即在编译时就把调用函数名与具体函数绑定在一起。</li>
 <li><strong>动态绑定又称动态联编</strong>：是指在编译程序时还不能确定函数调用所对应的具体函数，只有在程序运行过程中才能够确定函数调用所对应的具体函数，即在程序运行时才把调用函数名与具体函数绑定在一起。</li>
@@ -703,7 +707,11 @@
 <ul>
 <li>函数模板只有特化，没有偏特化；</li>
 <li>模板、模板的特化和模板的偏特化都存在的情况下，编译器在编译阶段进行匹配，优先匹配特殊的（如能匹配全特化就不会匹配偏特化）；</li>
-<li>模板函数不能是虚函数；因为每个包含虚函数的类具有一个virtual table,包含该类的所有虚函数的地址，因此vtable的大小是确定的。模板只有被使用时才会被实例化，将其声明为虚函数会使vtable的大小不确定。所以，成员函数模板不能为虚函数。</li>
+<li><strong>模板函数不能是虚函数</strong>；因为每个包含虚函数的类具有一个virtual table,包含该类的所有虚函数的地址，因此vtable的大小是确定的。模板只有被使用时才会被实例化，将其声明为虚函数会使vtable的大小不确定（函数模板可能用到，可能用不到）。所以，成员函数模板不能为虚函数。<ul>
+<li>编译器在编译一个类的时候，需要确定这个类的虚函数表的大小。一般来说，如果一个类有N个虚函数，它的虚函数表的大小就是N，如果按字节算的话那么就是4*N。 如果允许一个成员模板函数为虚函数的话，因为我们可以为该成员模板函数实例化出很多不同的版本，也就是可以实例化出很多不同版本的虚函数</li>
+<li>那么编译器为了确定类的虚函数表的大小，就必须要知道我们一共为该成员模板函数实例化了多少个不同版本的虚函数。显然编译器需要查找所有的代码文件，才能够知道到底有几个虚函数，这对于多文件的项目来说，代价是非常高的，所以才规定成员模板函数不能够为虚函数。</li>
+</ul>
+</li>
 </ul>
 <h1 id="异常处理"><a href="#异常处理" class="headerlink" title="异常处理"></a>异常处理</h1><p>异常是程序在执行期间产生的问题。C++ 异常是指在程序运行时发生的特殊情况，比如尝试除以零的操作。</p>
 <p>提供<strong>异常</strong>的<strong>基本目的</strong>就是为了处理上面的问题。<strong>基本思想</strong>是：让一个函数在发现了自己无法处理的错误时抛出（throw）一个异常，然后它的（直接或者间接）调用者能够处理这个问题。也就是《C++ primer》中说的：将<strong>问题检测</strong>和<strong>问题处理</strong>相分离。</p>
@@ -1278,7 +1286,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-count">31</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1315,12 +1323,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">359k</span>
+    <span title="站点总字数">376k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">5:26</span>
+    <span title="站点阅读时长">5:42</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
   </div>
