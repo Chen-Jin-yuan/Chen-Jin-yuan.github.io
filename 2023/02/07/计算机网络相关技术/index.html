@@ -43,7 +43,7 @@
 <meta property="og:image" content="https://pic1.zhimg.com/80/v2-a986564eecfb3e670ee5a6c05a2557ac_720w.webp">
 <meta property="og:image" content="https://pic1.zhimg.com/80/v2-e3025ebe60021a3e34b2dd94615bf8c4_720w.webp">
 <meta property="article:published_time" content="2023-02-07T02:22:38.951Z">
-<meta property="article:modified_time" content="2023-02-17T08:05:40.617Z">
+<meta property="article:modified_time" content="2023-03-05T15:52:47.238Z">
 <meta property="article:author" content="Jy">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://fastly.jsdelivr.net/gh/Chen-Jin-yuan/blogSources@master/%E5%AE%B9%E5%99%A81.png">
@@ -216,7 +216,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-02-17 16:05:40" itemprop="dateModified" datetime="2023-02-17T16:05:40+08:00">2023-02-17</time>
+                <time title="修改时间：2023-03-05 23:52:47" itemprop="dateModified" datetime="2023-03-05T23:52:47+08:00">2023-03-05</time>
               </span>
 
           <br>
@@ -293,9 +293,7 @@
 <ol>
 <li>IP地址毕竟难以记忆</li>
 <li>service资源可能也会被销毁和创建</li>
-<li>能不能将service资源名称和service暴露的集群网络IP对于</li>
-<li>类似域名与IP关系，则只需记服务名就能自动匹配服务IP</li>
-<li>岂不就达到了service服务的自动发现</li>
+<li>能不能将service资源名称和service暴露的集群网络IP对应类似域名与IP关系，则只需记服务名就能自动匹配服务IP，岂不就达到了service服务的自动发现</li>
 </ol>
 <p><strong>在k8s中，coredns就是为了解决以上问题。</strong></p>
 <h1 id="container"><a href="#container" class="headerlink" title="container"></a>container</h1><h2 id="简介-1"><a href="#简介-1" class="headerlink" title="简介"></a>简介</h2><p>容器是一种沙盒技术，主要目的是为了将应用运行在其中，与外界隔离；及方便这个沙盒可以被转移到其它宿主机器。本质上，它是一个特殊的进程。通过名称空间（Namespace）、控制组（Control groups）、切根（chroot）技术把资源、文件、设备、状态和配置划分到一个独立的空间。</p>
@@ -491,7 +489,7 @@
 <p>在实现上，RDMA实际上是一种智能网卡与软件架构充分优化的远端内存直接高速访问技术，通过将RDMA协议<strong>固化于硬件(即网卡)<strong>上，以及支持</strong>Zero-copy</strong>和<strong>Kernel bypass</strong>这两种途径来达到其高性能的远程直接数据存取的目标。 使用RDMA的优势如下：</p>
 <ul>
 <li>零拷贝(Zero-copy) - 应用程序能够直接执行数据传输，在<strong>不涉及到网络软件栈</strong>的情况下。数据能够被直接发送到缓冲区或者能够直接从缓冲区里接收，而不需要被复制到网络层。</li>
-<li>内核旁路(Kernel bypass) - 应用程序可以直接在用户态执行数据传输，<strong>不需要在内核态与用户态之间做上下文切换</strong>。</li>
+<li>内核旁路(Kernel bypass) - 应用程序可以直接在<strong>用户态</strong>执行数据传输，<strong>不需要在内核态与用户态之间做上下文切换</strong>。</li>
 <li>不需要CPU干预(No CPU involvement) - 应用程序可以访问远程主机内存而<strong>不消耗远程主机中的任何CPU</strong>。远程主机内存能够被读取而不需要远程主机上的进程（或CPU)参与。远程主机的CPU的缓存(cache)不会被访问的内存内容所填充。</li>
 <li>消息基于事务(Message based transactions) - 数据被处理为<strong>离散消息</strong>而不是流，消除了应用程序将流切割为不同消息&#x2F;事务的需求。</li>
 <li>支持分散&#x2F;聚合条目(Scatter&#x2F;gather entries support) - RDMA原生态支持分散&#x2F;聚合。也就是说，<strong>读取多个内存缓冲区</strong>然后<strong>作为一个流</strong>发出去或者<strong>接收一个流</strong>然后<strong>写入到多个内存缓冲区</strong>里去。</li>
@@ -653,7 +651,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">31</span>
+          <span class="site-state-item-count">32</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -690,12 +688,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">376k</span>
+    <span title="站点总字数">462k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">5:42</span>
+    <span title="站点阅读时长">7:01</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
   </div>
