@@ -2,7 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://jysama.cn/2023/03/29/%E5%A4%8D%E7%9B%98/</loc>
+    <loc>https://jysama.cn/2023/03/29/2023%E6%9A%91%E6%9C%9F%E5%A4%8D%E7%9B%98/</loc>
+    
+    <lastmod>2023-03-30</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://jysama.cn/2023/03/04/NoSQL/</loc>
     
     <lastmod>2023-03-30</lastmod>
     
@@ -23,15 +32,6 @@
     <loc>https://jysama.cn/2023/02/07/%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%BD%91%E7%BB%9C%E7%9B%B8%E5%85%B3%E6%8A%80%E6%9C%AF/</loc>
     
     <lastmod>2023-03-05</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://jysama.cn/2023/03/04/NoSQL/</loc>
-    
-    <lastmod>2023-03-04</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
