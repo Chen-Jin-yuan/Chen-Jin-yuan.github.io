@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jysama.cn","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="前言经济学的研究对研究性能与成本之间的权衡也有一定的指导意义，并且我对经济学也挺感兴趣，因此假期花两天时间阅读了经济学原理：微观经济学分册（第七版）。 这本书基本都是大白话，一开始也打算就读一读。读了一会觉得有些方面确实值得记录一下，索性对整本书的一些关键的点都做一个记录。 1.十大原理 人们如何做出决策 1.人们面临权衡取舍 2.某种东西的成本是为了得到它所放弃的东西（机会成本） 3.理性人考虑">
+<meta property="og:type" content="article">
+<meta property="og:title" content="经济学原理：微观经济学分册（第七版）">
+<meta property="og:url" content="https://jysama.cn/2023/05/01/%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%88%86%E5%86%8C/index.html">
+<meta property="og:site_name" content="JySama">
+<meta property="og:description" content="前言经济学的研究对研究性能与成本之间的权衡也有一定的指导意义，并且我对经济学也挺感兴趣，因此假期花两天时间阅读了经济学原理：微观经济学分册（第七版）。 这本书基本都是大白话，一开始也打算就读一读。读了一会觉得有些方面确实值得记录一下，索性对整本书的一些关键的点都做一个记录。 1.十大原理 人们如何做出决策 1.人们面临权衡取舍 2.某种东西的成本是为了得到它所放弃的东西（机会成本） 3.理性人考虑">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://pic1.zhimg.com/80/v2-3ce646b628d0453b4decbf308682dcb4_720w.webp?source=1940ef5c">
+<meta property="article:published_time" content="2023-05-01T02:47:58.141Z">
+<meta property="article:modified_time" content="2023-05-01T02:47:42.033Z">
+<meta property="article:author" content="Jy">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://pic1.zhimg.com/80/v2-3ce646b628d0453b4decbf308682dcb4_720w.webp?source=1940ef5c">
+
+<link rel="canonical" href="https://jysama.cn/2023/05/01/%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%88%86%E5%86%8C/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>经济学原理：微观经济学分册（第七版） | JySama</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">JySama</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-resources">
+
+    <a href="/resources/" rel="section"><i class="download fa-fw"></i>资源</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jysama.cn/2023/05/01/%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%88%86%E5%86%8C/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Jy">
+      <meta itemprop="description" content="Re：从零开始的写博客生活">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="JySama">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          经济学原理：微观经济学分册（第七版）
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-05-01 10:47:58 / 修改时间：10:47:42" itemprop="dateCreated datePublished" datetime="2023-05-01T10:47:58+08:00">2023-05-01</time>
+            </span>
+
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>9.6k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>经济学的研究对研究性能与成本之间的权衡也有一定的指导意义，并且我对经济学也挺感兴趣，因此假期花两天时间阅读了<code>经济学原理：微观经济学分册（第七版）</code>。</p>
+<p>这本书基本都是大白话，一开始也打算就读一读。读了一会觉得有些方面确实值得记录一下，索性对整本书的一些关键的点都做一个记录。</p>
+<h1 id="1-十大原理"><a href="#1-十大原理" class="headerlink" title="1.十大原理"></a>1.十大原理</h1><ul>
+<li>人们如何做出决策<ul>
+<li>1.人们面临权衡取舍</li>
+<li>2.某种东西的成本是为了得到它所放弃的东西（机会成本）</li>
+<li>3.理性人考虑边际量（围绕所做的事情的边缘进行微小调整，而不是非黑即白地考虑问题）</li>
+<li>4.人们会对激励做出反应</li>
+</ul>
+</li>
+<li>人们如何相互影响<ul>
+<li>5.贸易可以使每个人的状况都变得更好</li>
+<li>6.市场通常是组织经济活动的一种好方法</li>
+<li>7.政府有时可以改善市场的结果</li>
+</ul>
+</li>
+<li>整体经济如何运行<ul>
+<li>8.一国的生活水平取决于它生产物品与服务的能力</li>
+<li>9.当政府发行了过多货币时，物价上升</li>
+<li>10.社会面临通货膨胀与失业之间的短期权衡取舍（经济周期，通胀-&gt;失业-&gt;通胀…）<ul>
+<li>长期来看，通货膨胀导致物价水平上升。但短期来看比较复杂：<ul>
+<li>经济中货币量增加刺激了社会支出水平，从而增加了对物品与服务的需求</li>
+<li>需求的增加会提高企业物价，同时鼓舞企业雇佣更多工人，意味更少的失业</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h1 id="2-像经济学家一样思考"><a href="#2-像经济学家一样思考" class="headerlink" title="2.像经济学家一样思考"></a>2.像经济学家一样思考</h1><ul>
+<li>客观、适当假设、建立经济模型</li>
+<li>实证表述：关于世界是什么的论断；规范表述：关于世界应该是什么的论断。</li>
+<li>经济学家做出实证表述时，是以科学家的角度；做出规范表述时，是以政策顾问的角度。</li>
+<li>经济学家的建议有时会相互矛盾（科学判断的差别、价值观的差别）。</li>
+<li>由于政治过程施加的力量和约束，决策者可能不会采取建议。</li>
+</ul>
+<h1 id="3-贸易"><a href="#3-贸易" class="headerlink" title="3.贸易"></a>3.贸易</h1><ul>
+<li>绝对优势、比较优势、机会成本（贸易的优势）</li>
+</ul>
+<h1 id="4-市场"><a href="#4-市场" class="headerlink" title="4.市场"></a>4.市场</h1><ul>
+<li>完全竞争与垄断（两个极端）</li>
+<li>需求曲线（价格越低需求越多、曲线移动因素）</li>
+<li>供给曲线（价格越高供给越多、曲线移动因素）</li>
+<li>供给与需求曲线相交（均衡价格、均衡数量）</li>
+<li>过剩（价格降低、需求上升、供给降低，沿曲线移动而非曲线本身移动），短缺相反</li>
+<li>供求定理：价格自发调整</li>
+<li>均衡变动</li>
+<li>哄抬物价为什么合理的（更平等地分配资源、限制了囤积物品）</li>
+</ul>
+<h1 id="5-弹性"><a href="#5-弹性" class="headerlink" title="5.弹性"></a>5.弹性</h1><ul>
+<li>需求价格弹性（需求量对价格变动的反应很大：富有弹性、缺乏弹性）</li>
+<li>相近替代品（有相近替代品的物品的需求往往富有弹性）</li>
+<li>必需品的需求往往缺乏弹性、奢侈品的需求往往富有弹性</li>
+<li>需求价格弹性 &#x3D; 需求量变动百分比 &#x2F; 价格变动百分比，中点法计算</li>
+<li>如果需求富有弹性，那么价格上升导致总收益减少（需求减少幅度大）；缺乏弹性则价格上升导致总收益增加</li>
+<li>供给价格弹性，和需求价格弹性差不多的逻辑</li>
+</ul>
+<p>提高&#x2F;降低价格、增加&#x2F;减少供给，能否最终提高总收益，要看需求&#x2F;供给是富有弹性还是缺乏弹性。</p>
+<h1 id="6-政策"><a href="#6-政策" class="headerlink" title="6.政策"></a>6.政策</h1><ul>
+<li>价格控制</li>
+</ul>
+<p>税收：</p>
+<ul>
+<li>税收归宿（税收负担在市场参与者之间如何分配）</li>
+<li>政府对一个物品征税，无论是对买家还是卖家征税，一旦达到新的均衡时，都是买者与卖者共同承担税收负担，最后的情况是等同的，由供需市场决定。</li>
+<li>税收归宿仍取决于供给和需求的力量，税收负担更多地落在缺乏弹性的市场一方（买方或卖方；即需求和供给哪个更缺乏弹性）。<ul>
+<li>缺乏弹性意味着征税-&gt;提高价格后，由于缺乏替代品，这一方不愿意离开市场，愿意承担更多的税收负担。</li>
+</ul>
+</li>
+<li>对一个物品征税使得这种物品的市场规模缩小。</li>
+</ul>
+<h1 id="7-消费者、生产者与市场效率"><a href="#7-消费者、生产者与市场效率" class="headerlink" title="7.消费者、生产者与市场效率"></a>7.消费者、生产者与市场效率</h1><ul>
+<li><p>消费者剩余（愿意支付的量 减去 实际支付的量）</p>
+</li>
+<li><p>需求曲线以下和价格以上的面积衡量一个市场上的消费者剩余</p>
+</li>
+<li><p>物品价格降低增加消费者剩余</p>
+</li>
+<li><p>消费者剩余衡量了买者从一种物品中得到的自己感觉到的利益</p>
+</li>
+<li><p>消费者剩余在某种程度上反映了经济福利</p>
+</li>
+<li><p>生产者剩余（卖者出售物品得到的量 减去 成本）</p>
+</li>
+<li><p>价格之下和供给曲线以上的面积衡量一个市场上的生产者剩余</p>
+</li>
+<li><p>总剩余 &#x3D; 买者的评价 - 卖者的成本 &#x3D; 消费者剩余 + 生产者剩余</p>
+</li>
+</ul>
+<p>总剩余最大化是价格处于均衡点的位置。在前面的计算中，“曲线之下”和“曲线之上”的前提是要满足供给了一定有需求，有需求一定有供给。假如不再均衡的位置，要么过剩要么缺乏，需要考虑实际的数量来计算面积。</p>
+<p>在过剩的时候，实际上只有低成本（相应的低价格）的卖家才能卖出。</p>
+<p><img src="https://pic1.zhimg.com/80/v2-3ce646b628d0453b4decbf308682dcb4_720w.webp?source=1940ef5c" alt="img"></p>
+<p>因此，市场结果使总剩余达到了最大化，均衡的结果是资源的有效配置（有效率）。</p>
+<p>市场失灵（不受管制的市场不能有效配置资源）：</p>
+<ul>
+<li>市场势力（如单一买家、单一卖家）会使价格和数量背离供求均衡，使市场无效率。</li>
+<li>外部性（比如环境污染）这种市场副作用使市场福利不仅仅取决于买者评价和卖者成本，也会使市场无效率。</li>
+<li>从整体看，市场均衡可能是无效率的。</li>
+</ul>
+<h1 id="8-赋税的代价"><a href="#8-赋税的代价" class="headerlink" title="8.赋税的代价"></a>8.赋税的代价</h1><ul>
+<li>税收使物品市场规模缩小，同时使得买者支付价格提高，卖者收入降低，导致买者和卖者的利益（剩余）损失</li>
+<li>政府因税收获得收入，但这些收入小于买者和卖者的损失</li>
+<li>因此税收使得总剩余（加上税收本身）减少，减少的部分称为无谓损失（由市场扭曲 [比如税收] 产生的总剩余的减少）</li>
+<li>无谓损失减少了买者与卖者之间贸易的好处</li>
+<li>需求和供给的价格弹性决定无谓损失的大小</li>
+<li>需求和供给的弹性越大，税收的无谓损失也就越大。<ul>
+<li>弹性越大，表明数量 —— 价格图中需求和供给曲线斜率低</li>
+<li>由于税收增加了需求和供给之间的价格差距，同样的差距，斜率越低，数量降低就越多</li>
+<li>数量降低越多，无谓损失也就越大</li>
+</ul>
+</li>
+<li>税收越大，无谓损失就越大，但税收收入本身是先变大后变小，不能太极端（无税收和高税收）<ul>
+<li>税收在一个合理的规模，才能保证一定规模的交易发生，并且每次交易产生的税收较大</li>
+</ul>
+</li>
+</ul>
+<h1 id="9-国际贸易"><a href="#9-国际贸易" class="headerlink" title="9.国际贸易"></a>9.国际贸易</h1><ul>
+<li>世界价格：一种物品在世界市场上通行的价格<ul>
+<li>如果先前国内价格低于世界价格，那么出口是合适的。此时由于需求上来了，价格会提高，国内的需求量下降（国内买家利益受损了），但总需求量上升。</li>
+<li>反之进口是合适的</li>
+</ul>
+</li>
+<li>关税：对进口的（国外生产）于国内销售的物品征收的税<ul>
+<li>如果没有关税，那么在进出口后，国内价格会降低，等于世界价格。</li>
+<li>关税使得售卖的价格可以再提高，提高量等于关税量</li>
+<li>使得价格更接近于没有贸易时的均衡价格</li>
+<li>让国内供给者的状况变好了，国内购买者的状况变差了</li>
+<li>产生无谓损失，消费者的损失大于供给者的好处和税收收入</li>
+</ul>
+</li>
+<li>好处：<ul>
+<li>增加物品多样性</li>
+<li>通过规模经济降低成本（规模经济是指一种物品只有大量生产时，才能以低成本生产），自由贸易使得企业进入更大的市场，充分实现规模经济</li>
+<li>增加竞争</li>
+</ul>
+</li>
+<li>质疑的观点：<ul>
+<li>工作岗位论：产生失业，但可以流动到国内优势行业</li>
+<li>国家安全论：行业对国家安全是至关重要的，是合理的，但如果是行业代表提出而非国防机构提出，要小心其夸大公司的作用</li>
+<li>不公平竞争：每个国家的政策不同（如进出口补贴），会使一些人受到不公平的对待</li>
+</ul>
+</li>
+</ul>
+<h1 id="10-外部性"><a href="#10-外部性" class="headerlink" title="10.外部性"></a>10.外部性</h1><ul>
+<li><p>负外部性（比如生成造成的污染），会产生外部成本</p>
+<ul>
+<li>供给者的私人成本加上外部成本就是社会成本</li>
+<li>最优量便是社会成本和需求（私人价值）曲线的交点</li>
+<li>均衡量大于最优量，因为市场均衡仅仅反应生产的私人成本</li>
+<li>添加外部成本的一种方式是征税，这种税的运用称为外部性内在化，生产者考虑成本时由于税收也要考虑外部成本</li>
+</ul>
+</li>
+<li><p>正外部性（比如教育带来了社会隐含的利益），会产生外部利益</p>
+<ul>
+<li>社会价值就是需求（私人价值）加上外部利益</li>
+<li>最优量便是社会价值和供给（私人成本）曲线的交点</li>
+<li>最优量大于均衡量，因为市场均衡仅仅反应消费者私人价值</li>
+<li>添加外部利益的方式是，政府进行补贴（如补贴教育），同样也是外部性内在化</li>
+</ul>
+</li>
+<li><p>一些针对外部性的公共政策（使资源配置更接近于社会最优状态）</p>
+<ul>
+<li>管制：完全禁止某些事情（比如因为污染完全禁止工业生产）是不太可能的，因此需要在某种程度上权衡、管制</li>
+<li>基于市场，使用矫正税和补贴，矫正税与其他税（引发无谓损失）不同，它使资源配置向社会最优水平移动</li>
+<li>基于市场，采用可交易的许可证（污染许可证）</li>
+<li>个人方式，如慈善、道德约束，或者私人之间达成协议（科斯定理说明这往往是有效率的）。但私人解决的方法并不总是有效，可能由于交易成本过高无法达成协议，或者人数过多难以协商。</li>
+</ul>
+</li>
+</ul>
+<h1 id="11-公共物品和公共资源"><a href="#11-公共物品和公共资源" class="headerlink" title="11.公共物品和公共资源"></a>11.公共物品和公共资源</h1><ul>
+<li>物品的属性：<ul>
+<li>排他性：该物品可以阻止一个人使用该物品</li>
+<li>消费中的竞争性：一个人使用某种物品会减少其他人对该物品的使用</li>
+</ul>
+</li>
+<li>既排他又竞争：如某些私人物品（食物、衣服），由于是私人物品，除非付费购买，否则无法使用（排他）；由于吃了食物或者穿了衣服，别人就不能吃&#x2F;穿。</li>
+<li>排他但无竞争：如俱乐部用品（电视），除非付费购买，否则无法使用（排他）；但一旦购买了，大家都可以享用。</li>
+<li>无排他但竞争：如公共资源（鱼塘里的鱼），不会阻止人们去获取，但一个人获取了其他人就少了（竞争）。</li>
+<li>无排他无竞争：如公共物品（报警器），每个人都可以获取，且一个人听到报警并不会使其他人减少听到报警的收益。<ul>
+<li>排他总是需要购买的，竞争总是资源有限的</li>
+<li>公共资源是有限的，公共物品在某种程度上是可以复用的</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ul>
+<li>由于公共物品没有排他性，搭便车者（得到利益但避免付费的人）的存在就使得私人市场无法提供公共物品。因为这会使得个人生产者无法获利</li>
+<li>但如果公共物品的总收益大于成本，政府就可以用税收收入进行支付，提供公共物品，使所有人状况变好。<ul>
+<li>比如：国防、基础研究（指一般性的知识）、脱贫</li>
+</ul>
+</li>
+<li>有效地评估公共物品（如修建高速公路）的收益是困难的，因为这是免费的，没有可供观察的价格信号。</li>
+</ul>
+<hr>
+<ul>
+<li>公共资源没有排他性，但有竞争性，因此需要关注它被使用了多少。</li>
+<li>公共资源是有限的，过度使用会导致资源无法再生（鱼全捕完了，或者土地过度使用了），产生负外部性。<ul>
+<li>人们往往考虑自己的价值，而不考虑负外部性，就会导致灾难。</li>
+<li>因此，需要政府或管理者介入</li>
+</ul>
+</li>
+<li>为什么大象濒临灭绝而奶牛不用担心呢（它们都具有商业价值）。因为大象是公共资源（不排他）、奶牛是私人物品（排他）。这使得购买了奶牛的农场主会维护自己的奶牛。</li>
+</ul>
+<hr>
+<p>在所有的情况，市场没有有效地配置资源，是因为没有很好地建立产权，即某些有价值的东西并没有其所有者。</p>
+<p>比如清新的空气，没有一个人有权给它一个价格，并从它的使用中获得收益。</p>
+<h1 id="12-税制的设计"><a href="#12-税制的设计" class="headerlink" title="12.税制的设计"></a>12.税制的设计</h1><ul>
+<li>政府有时能改善市场结果，比如政府解决一种外部性、提供一种公共物品、管制公共资源，能增进经济福利。但政府需要通过税收来筹集收入。</li>
+<li>预算赤字：政府支出大于收入；预算盈余：政府收入大于支出。</li>
+</ul>
+<hr>
+<ul>
+<li>税制的效率：它给纳税人带来的成本。除了资源从纳税人向政府的转移，还有两种成本：<ul>
+<li>无谓损失</li>
+<li>纳税人遵从管理（填税表等）带来的负担</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ul>
+<li>平均税率：支付的总税收除以总收入；边际税率：增加1元收入所支付的税收（就是当前级别下的税率）</li>
+<li>理性人考虑边际量：边际税率衡量税制在多大程度上鼓励人们不工作；比如多工作几小时，边际税率决定了在多增加的收入中拿走多少税收。</li>
+<li>决定所得税无谓损失的是边际税率。</li>
+</ul>
+<hr>
+<ul>
+<li>如何平等：<ul>
+<li>受益原则：人们应该根据他们从政府服务中得到的利益来纳税。比如汽油税用来修路，因为多买汽油的人可能多使用道路。</li>
+<li>支付能力原则：应该根据一个人所能承受的负担来对这个人征税。即所有公民都应该做出“平等的牺牲”。<ul>
+<li>比例税、累退税、累进税。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>公司所得税的最终承担者是顾客和工人。倘若征税，那么公司拥有者就不愿意生产这类东西（生产别的去了），导致供给减少，部分工人失业，物品价格也提高。</li>
+<li>税收负担的分配与税单的分配并不相同<ul>
+<li>税收负担是指税收对经济主体的经济负担，是一个经济学概念。税款的分配是指政府按照一定的税收制度对纳税人征收的税款，是一个税收制度的概念。</li>
+<li>在税收制度中，政府会对纳税人征收不同的税款，这些税款可能会对不同的人造成不同的经济负担。不同纳税人所承担的税收负担可能会有所不同，这与税款的分配并不完全相同。</li>
+</ul>
+</li>
+</ul>
+<h1 id="13-生产成本"><a href="#13-生产成本" class="headerlink" title="13.生产成本"></a>13.生产成本</h1><ul>
+<li>企业目标是利润最大化，利润 &#x3D; 总收益 - 总成本</li>
+<li>企业的成本有显性的和隐性的，显性是指表面上花费的，隐性是指为了做这件事情而放弃的</li>
+<li>随着投入量增加，典型企业的生产函数变得平坦，表现出边际产量递减的性质。<ul>
+<li>随着产量增加，企业的总成本曲线变得更陡峭</li>
+</ul>
+</li>
+<li>总成本可以分为固定成本和可变成本</li>
+<li>总成本的衡量有两种方式，平均总成本（包含固定成本和可变成本）和边际成本（产量增加一单位时总成本的增加量）<ul>
+<li>画出平均总成本和边际成本的图形往往是有帮助的</li>
+<li>一般，边际成本随产量增加而增加，平均总成本随产量先下降后上升</li>
+<li>边际成本曲线总是与平均总成本曲线相交于平均总成本的最低点</li>
+</ul>
+</li>
+<li>许多成本短期中是固定的，但在长期中是可变的。</li>
+</ul>
+<h1 id="14-竞争市场上的企业"><a href="#14-竞争市场上的企业" class="headerlink" title="14.竞争市场上的企业"></a>14.竞争市场上的企业</h1><p>竞争企业是价格接受者（受市场调控）</p>
+<ul>
+<li>平均收益：总收益除以产量；边际收益：每增加一单位销售量所引起的总收益变动量（一般等于物品的单价）</li>
+<li>为了使利润最大化，企业选择使边际收益等于边际成本的产量。由于竞争企业的边际收益等于市场价格，所以企业选择价格等于边际成本的产量。因此边际成本曲线又是其供给曲线。</li>
+<li>短期内，当企业不能回收固定成本时，如果物品价格小于平均可变成本（亏钱），应该选择暂时停止营业。</li>
+<li>长期内，当企业能回收固定成本时，如果物品价格小于平均总成本（固定成本 + 可变成本），应该选择退出市场。</li>
+<li>沉没成本：已经发生而且无法回收的成本。在做决策时，可以不考虑沉没成本。</li>
+<li>在可以自由进入与退出的市场，长期中利润为零。在长期均衡时，价格等于最低平均总成本，企业数量会自发调整，以满足在这种价格时的需求量。<ul>
+<li>利润为零，填补了显性和隐性的成本。</li>
+</ul>
+</li>
+<li>在短期中，需求增加引起价格上升并带来利润，需求减少引起价格下降并带来亏损。</li>
+<li>在长期中，如果企业可以自由进入和退出市场，那么企业数量会自发调整，使市场回到零利润。</li>
+</ul>
+<h1 id="15-垄断"><a href="#15-垄断" class="headerlink" title="15.垄断"></a>15.垄断</h1><p>垄断企业是价格决定者</p>
+<p>垄断产生的三个基本原因：</p>
+<ul>
+<li>垄断资源：生产所需要的关键资源由单个企业所拥有</li>
+<li>政府管制：政府给予单个企业排他性地生产某种物品或服务的权力</li>
+<li>生产流程：某个企业能以低于大量企业的成本生产产品<ul>
+<li>自然垄断：一个企业能以低于两个或更多企业的成本向整个市场供给一种物品或服务而产生的垄断</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ul>
+<li>垄断者增加销售数量时面临两种情况：<ul>
+<li>产量效应：由于销量多，可能增加收益</li>
+<li>价格效应：价格下降了，可能减少收益</li>
+</ul>
+</li>
+<li>垄断者面临向右下方倾斜的产品需求曲线，因为当其增加产量时，价格就会下降，减少了所有单位的产量赚到的收益量。因此垄断者的边际收益总是低于其物品的价格。<ul>
+<li>竞争企业的产品需求曲线是平的，因为无论一个企业生产多少产品，面临的价格都是市场价格</li>
+<li>注意边际收益是增加一单位产品新增的收益，假如2个产量时各买了10元，3个产量时各买了9元，那么2-&gt;3的边际收益是7，而不是9（价格），因为增加产量使得本可以按更高价格卖出的产品按较低的价格卖出。</li>
+<li>需求曲线限制了垄断者通过市场势力获得超高利润的能力。</li>
+</ul>
+</li>
+<li>利润最大化产量是：边际收益和边际成本曲线的交点，这与竞争企业相同（产量是边际收益 &#x3D; 边际成本的时候）。</li>
+<li>垄断企业与竞争企业关键差别是：竞争市场上，价格等于边际成本（因为等于边际收益）；垄断市场上，价格大于边际成本。</li>
+</ul>
+<hr>
+<ul>
+<li>垄断者没有供给曲线，因为其是价格的制定者，不是价格的接受者，垄断者在选择供给量的同时决定价格</li>
+<li>因此垄断者需要分析需求曲线，而不像竞争企业一样可以分析供给曲线来进行决策。</li>
+</ul>
+<hr>
+<ul>
+<li>边际成本曲线与需求曲线相交的位置是有效率的（最优产量）</li>
+<li>由于垄断者最优情况下，销售价格大于边际成本，一些对物品评价大于生产成本的消费者也不去购买了，因此垄断者生产的产量小于最优产量。（相当于边际成本曲线上移与需求曲线相交）</li>
+<li>这种情况下就产生了无谓损失，引起经济福利减少。</li>
+</ul>
+<hr>
+<ul>
+<li>垄断者可以通过买者的支付意愿对同一种物品收取不同的价格来增加利润。这种价格歧视的做法可以通过使一些本来不想购买的消费者购买物品从而增加经济福利。</li>
+<li>在完全价格歧视下，无谓损失完全消除了，所有的消费者都按支付意愿的价格购买，市场上所有的剩余都归垄断者所有。</li>
+<li>更一般的情况下，价格歧视不完全，可能会增加或减少福利。</li>
+<li>竞争市场上无法实行价格歧视，因为普通价格已经能销售了（或者说有需求），没人愿意降低价格；同时如果提高价格，就会丢失需求（去别家买）。</li>
+</ul>
+<hr>
+<p>四种方式应对垄断：</p>
+<ul>
+<li>增强竞争（反对合并、垄断的形成）</li>
+<li>管制</li>
+<li>公有化</li>
+<li>不作为</li>
+</ul>
+<h1 id="16-垄断竞争"><a href="#16-垄断竞争" class="headerlink" title="16.垄断竞争"></a>16.垄断竞争</h1><p>很多行业介于完全竞争和垄断的极端情况之间的某个位置，也称为不完全竞争。不完全竞争有两种类型：</p>
+<ul>
+<li>寡头：只有少数几个提供相似或相同产品的卖者的市场结构</li>
+<li>垄断竞争：存在许多出售相似但不相同产品的企业的市场结构</li>
+</ul>
+<p>垄断竞争描述了具有以下特征的市场：</p>
+<ul>
+<li>许多卖者：争夺相同的顾客群体</li>
+<li>产品存在差别：每个企业生产的一种产品至少与其他企业生产的这种产品略有不同<ul>
+<li>因此企业不是价格的接受者，面临一条向右下方倾斜的需求曲线</li>
+</ul>
+</li>
+<li>自由进入和退出：企业可以无限制地进入和退出一个市场。因此市场上企业的数量要一直调整到经济利润为零时为止。</li>
+<li>与完全竞争的区别在于：每个卖者提供略有差别的产品</li>
+</ul>
+<hr>
+<ul>
+<li>短期内，垄断竞争企业和垄断企业相似：选择生产边际收益等于边际成本的产量，然后用需求曲线找出它可以销售的价格（高于边际成本）</li>
+<li>长期中，和竞争市场相似：由于企业的进入（盈利）和退出（亏损），企业最终变成零经济利润（价格等于平均总成本）</li>
+</ul>
+<p>使平均总成本最小的产量称为企业的有效规模。在长期中，完全竞争企业在有效规模上生产，而垄断竞争企业的产量低于这一水平（因为价格加成，高于边际成本，使得需求会少，产量适应需求）。因此，垄断竞争企业生产能力过剩（可以增加生产，但放弃，因为增加就要降价）</p>
+<hr>
+<ul>
+<li>由于垄断竞争中固有的产品差别，使企业使用广告与品牌。<ul>
+<li>广告操纵人们的爱好，许多广告是心理性的而非信息性的。夸大了产品的差别，减小竞争。</li>
+<li>同时，广告也向顾客提供某些信息、信任，使竞争更激烈。</li>
+</ul>
+</li>
+</ul>
+<h1 id="17-寡头"><a href="#17-寡头" class="headerlink" title="17.寡头"></a>17.寡头</h1><p>寡头市场只有几个卖者，因此关键特征是：合作与利己之间的冲突</p>
+<ul>
+<li>寡头合作（卡特尔：联合起来行事的企业集团）则像一个垄断者，，获取高利润</li>
+<li>然而每个寡头只关心自己的利润，因此也有强大的激励作用使寡头之间难以维持合作</li>
+</ul>
+<hr>
+<ul>
+<li>纳什均衡：相互作用的经济主体在假定所有其他主体所选策略为既定的情况下选择他们自己最优策略的状态。</li>
+<li>在纳什均衡的状态下，寡头独立做出决策，结果是产量大于垄断（合作）的产量，价格低于垄断价格。</li>
+<li>市场上的寡头数量越多，价格和产量越接近于完全竞争状态下的水平。</li>
+</ul>
+<p>囚徒困境表明，利己使人们即使在合作符合他们共同利益时也无法合作。</p>
+<h1 id="18-生产要素市场"><a href="#18-生产要素市场" class="headerlink" title="18.生产要素市场"></a>18.生产要素市场</h1><ul>
+<li>生产要素：用于生产物品与服务的投入，三种最重要的生产要素：劳动、土地、资本</li>
+<li>生产要素如销售物品一样，由供求力量支配（趋于平衡）</li>
+<li>竞争的、以利润最大化为目标的企业在某要素的边际产量值等于其价格这一点上使用该要素。（相当于供需交点）</li>
+<li>劳动的供给产生于个人在工作和闲暇间的权衡取舍。向右上方倾斜的劳动供给曲线意味着人们对工资上升的反应是做更多工作和少享受闲暇。</li>
+</ul>
+<h1 id="19-收入与歧视"><a href="#19-收入与歧视" class="headerlink" title="19.收入与歧视"></a>19.收入与歧视</h1><ul>
+<li>补偿性工资差别：由于非货币特性所引起的工资差别。比如有些工作轻松有趣，那么需求就多，工资就少。</li>
+<li>人力资本：对人投资的积累，比如教育，与一个特定的人相关联。</li>
+<li>教育、经验、工作特性影响收入，但能力（天赋）、努力、机遇同样以难以衡量的方式影响收入。</li>
+<li>有时候，教育本身不能提高工作能力，而是作为一种“信号”，来告知雇主自己有更高的学习能力（等）</li>
+<li>工资有时候会高于供求平衡的水平，产生的三个原因是：最低工资法、工会（号召罢工威胁雇主）、效率工资（企业为了提高工人的生产效率而支付更高的工资）</li>
+</ul>
+<hr>
+<ul>
+<li>收入的一些差别的产生因素是歧视，歧视的衡量很困难。</li>
+<li>竞争市场倾向于限制歧视对工资的影响。<ul>
+<li>如果一个群体的工资由于与边际生产率无关的原因而低于另一个群体，那么非歧视企业将比歧视企业盈利更多</li>
+<li>因为非歧视企业可以用相对更低的工资雇佣被歧视的群体</li>
+<li>但如果顾客或政府乐意为歧视企业支付更多，那么歧视就会持续下去。</li>
+</ul>
+</li>
+</ul>
+<h1 id="20-收入不平等与贫困"><a href="#20-收入不平等与贫困" class="headerlink" title="20.收入不平等与贫困"></a>20.收入不平等与贫困</h1><ul>
+<li>世界上不平等的问题是十分严重的。</li>
+<li>衡量不平等出现的问题。<ul>
+<li>实物转移支付：以物品和服务而不是现金形式给予穷人的转移支付。不平等衡量时没有考虑这些实物转移支付。</li>
+<li>经济生命周期：人的一生中收入总是在变动的，因此人们总以借款与储蓄来缓解这些变动。因此收入不平等不代表生活水平真正不平等。</li>
+<li>暂时收入与持久收入：暂时收入受变动更容易，购买能力主要取决于持久收入。</li>
+</ul>
+</li>
+<li>经济流动性：“富人”与“穷人”的群体总是在不同的阶层上变动的。</li>
+<li>关于收入分配的观点：<ul>
+<li>功利主义：使效用之和最大化</li>
+<li>自由主义：在“无知”下进行收入分配，使最小效用最大化（关注最不幸的人）。</li>
+<li>自由至上主义：不关注不平等</li>
+</ul>
+</li>
+<li>政策<ul>
+<li>最低工资法</li>
+<li>福利</li>
+<li>负所得税</li>
+<li>实物转移支付</li>
+</ul>
+</li>
+<li>穷人往往面临很高的有效边际税率，高有效边际税率不鼓励贫困家庭依靠自己的力量脱贫<ul>
+<li>因为脱贫后会瞬间丢失福利（或部分福利）</li>
+</ul>
+</li>
+</ul>
+<h1 id="21-消费者选择理论"><a href="#21-消费者选择理论" class="headerlink" title="21.消费者选择理论"></a>21.消费者选择理论</h1><ul>
+<li>预算约束：对消费者可以支付得起的消费组合的限制。预算约束曲线往往是向有下倾斜的直线</li>
+<li>无差异曲线：代表偏好，一条表示给消费者带来相同满足程度的消费组合的曲线<ul>
+<li>向下倾斜、不相交、凸向原点、消费者往往倾向于更大的曲线（多消费）</li>
+<li>曲线上一点的斜率称为边际替代率，表示消费者愿意以一种物品交换另一种物品（而获得相同满足）的比率</li>
+<li>一个消费者有无数条不相交的无差异曲线，因为满足程度是无限的</li>
+</ul>
+</li>
+<li>完全替代品：无差异曲线为直线的两种物品，意思是减少某一种东西，完全可以线性地由另一种东西替换。</li>
+<li>完全互补品：无差异曲线为直角的两种物品，意思是买了一种东西就必须要有另一种东西才行（左鞋子和右鞋子）</li>
+<li>最优化：预算约束线和无差异曲线相切的那一点。</li>
+</ul>
+<hr>
+<ul>
+<li>收入变动使得预算约束线向右上方平行地移动（斜率不变）</li>
+<li>正常物品：收入增加引起需求增加的物品；低档物品：收入增加引起需求减少的物品</li>
+<li>价格变动使得预算约束线斜率改变</li>
+</ul>
+<hr>
+<p>一种物品价格变动对消费影响可以分解为：</p>
+<ul>
+<li>收入效应：价格变动使消费者移动到更高或耕地无差异曲线</li>
+<li>替代效应：价格变动使消费者沿着一条既定的无差异曲线变动到新边际替代率的一点</li>
+<li>在实际上，消费者可以会转移到新的无差异曲线上，但替代效应中的移动对阐述是有用的</li>
+</ul>
+<hr>
+<p>通过收入、替代效应，可以解释为什么工资提高极可能增加也可能减少劳动供给量、为什么高利率既可能增加也可能减少储蓄。</p>
+<p>单位时间工资提高，不同人由于偏好会做出不同的反应。工资反应了消费，现在有两种物品：消费和闲暇时间，本质上是消费和闲暇的权衡。</p>
+<ul>
+<li>由于收入效应，工资增加导致移动到更高的无差异曲线上，现在倾向于用这种福利享受更高的消费和更高的闲暇（闲暇变多了，劳动时间即供给变少了）</li>
+<li>由于替代效应，工资增加使得闲暇相对消费来说更昂贵了，倾向于在无差异曲线上移动到更多消费的点。换句话说这鼓励因为更高的工资而勤奋工作。</li>
+</ul>
+<p>更高的利率（表示年老消费增加），现在两种物品是年老时消费和年轻时消费：</p>
+<ul>
+<li>由于收入效应，更高的利率导致移动到更高的无差异曲线上，倾向于同时享受更多的年轻时的消费（减少储蓄）和年老时的消费</li>
+<li>由于替代效应，年轻时消费相对年老时消费来说更昂贵了，就会倾向于年老时消费（增加储蓄）</li>
+</ul>
+<h1 id="22-微观经济学前沿"><a href="#22-微观经济学前沿" class="headerlink" title="22.微观经济学前沿"></a>22.微观经济学前沿</h1><p>最后一章提出三个主题，分别是不对称信息经济学、政治经济学、行为经济学。</p>
+<ul>
+<li>不对称信息经济学：信息不对称会影响人们做出的决策<ul>
+<li>道德风险：一个没有受到完全监督的人从事不诚实或不合意行为的倾向。（简单来说，就是上班摸鱼，因为老板不知道你在干什么）<ul>
+<li>雇主可以：更好地监督、高工资（获取高工资的工人不太可能怠工，因为不想被抓住失去工作）、延期支付（工人怠工被抓后果严重）</li>
+</ul>
+</li>
+<li>逆向选择：从无信息一方的角度看，无法观察到的特征组合变为不合意的倾向。（简单来说，我不知道你的物品的某些信息，我更倾向于判定你的物品是有问题的）</li>
+<li>发信号：有信息的一方向无信息的一方披露自己私人信息所采取的行动。（有信息的一方为了获取信任）<ul>
+<li>信号成本是昂贵的，不能是免费的，否则任何人都可以使用</li>
+<li>比如学历就是一种信号</li>
+</ul>
+</li>
+<li>筛选：无信息的一方采取的引起有信息的一方披露信息的行动。（比如去看车去看房）</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ul>
+<li>政治经济学：用经济学的分析方法研究政府。<ul>
+<li>康多塞悖论：多数原则没有产生可传递的社会偏好。（这些原则没有表明社会真正想要什么结果）</li>
+<li>阿罗不可能性定理：它表明在某些假设条件之下，没有一种方案能把个人偏好加总为一组正当的社会偏好。<ul>
+<li>无论社会在把其成员的偏好加总时采用哪一种投票方案，在某些方面都是有缺陷的。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<ul>
+<li>行为经济学：经济学家运用心理学来研究人类行为<ul>
+<li>人们不总是理性的<ul>
+<li>人们过分自信</li>
+<li>人们过分重视从现实生活中观察到的细枝末节</li>
+<li>人们不愿意改变自己的观念</li>
+</ul>
+</li>
+<li>人们关注公正（特别是，对自己是公正的）</li>
+<li>人们是前后不一致的（特别是，人有自己的及时欲望）</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>Jy
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jysama.cn/2023/05/01/%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%88%86%E5%86%8C/" title="经济学原理：微观经济学分册（第七版）">https://jysama.cn/2023/05/01/微观经济学分册/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/04/20/2023%E6%9A%91%E6%9C%9F%E5%AE%9E%E4%B9%A0%E5%A4%8D%E7%9B%98/" rel="prev" title="2023暑期实习复盘面经">
+      <i class="fa fa-chevron-left"></i> 2023暑期实习复盘面经
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    
+  <div class="comments">
+    <div id="lv-container" data-id="city" data-uid="MTAyMC81NjM2Ny8zMjgzMA=="></div>
+  </div>
+  
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E5%8D%81%E5%A4%A7%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">1.十大原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E5%83%8F%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%AE%B6%E4%B8%80%E6%A0%B7%E6%80%9D%E8%80%83"><span class="nav-number">3.</span> <span class="nav-text">2.像经济学家一样思考</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E8%B4%B8%E6%98%93"><span class="nav-number">4.</span> <span class="nav-text">3.贸易</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E5%B8%82%E5%9C%BA"><span class="nav-number">5.</span> <span class="nav-text">4.市场</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E5%BC%B9%E6%80%A7"><span class="nav-number">6.</span> <span class="nav-text">5.弹性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-%E6%94%BF%E7%AD%96"><span class="nav-number">7.</span> <span class="nav-text">6.政策</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#7-%E6%B6%88%E8%B4%B9%E8%80%85%E3%80%81%E7%94%9F%E4%BA%A7%E8%80%85%E4%B8%8E%E5%B8%82%E5%9C%BA%E6%95%88%E7%8E%87"><span class="nav-number">8.</span> <span class="nav-text">7.消费者、生产者与市场效率</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#8-%E8%B5%8B%E7%A8%8E%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-number">9.</span> <span class="nav-text">8.赋税的代价</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#9-%E5%9B%BD%E9%99%85%E8%B4%B8%E6%98%93"><span class="nav-number">10.</span> <span class="nav-text">9.国际贸易</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#10-%E5%A4%96%E9%83%A8%E6%80%A7"><span class="nav-number">11.</span> <span class="nav-text">10.外部性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#11-%E5%85%AC%E5%85%B1%E7%89%A9%E5%93%81%E5%92%8C%E5%85%AC%E5%85%B1%E8%B5%84%E6%BA%90"><span class="nav-number">12.</span> <span class="nav-text">11.公共物品和公共资源</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#12-%E7%A8%8E%E5%88%B6%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="nav-number">13.</span> <span class="nav-text">12.税制的设计</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#13-%E7%94%9F%E4%BA%A7%E6%88%90%E6%9C%AC"><span class="nav-number">14.</span> <span class="nav-text">13.生产成本</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#14-%E7%AB%9E%E4%BA%89%E5%B8%82%E5%9C%BA%E4%B8%8A%E7%9A%84%E4%BC%81%E4%B8%9A"><span class="nav-number">15.</span> <span class="nav-text">14.竞争市场上的企业</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#15-%E5%9E%84%E6%96%AD"><span class="nav-number">16.</span> <span class="nav-text">15.垄断</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#16-%E5%9E%84%E6%96%AD%E7%AB%9E%E4%BA%89"><span class="nav-number">17.</span> <span class="nav-text">16.垄断竞争</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#17-%E5%AF%A1%E5%A4%B4"><span class="nav-number">18.</span> <span class="nav-text">17.寡头</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#18-%E7%94%9F%E4%BA%A7%E8%A6%81%E7%B4%A0%E5%B8%82%E5%9C%BA"><span class="nav-number">19.</span> <span class="nav-text">18.生产要素市场</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#19-%E6%94%B6%E5%85%A5%E4%B8%8E%E6%AD%A7%E8%A7%86"><span class="nav-number">20.</span> <span class="nav-text">19.收入与歧视</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#20-%E6%94%B6%E5%85%A5%E4%B8%8D%E5%B9%B3%E7%AD%89%E4%B8%8E%E8%B4%AB%E5%9B%B0"><span class="nav-number">21.</span> <span class="nav-text">20.收入不平等与贫困</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#21-%E6%B6%88%E8%B4%B9%E8%80%85%E9%80%89%E6%8B%A9%E7%90%86%E8%AE%BA"><span class="nav-number">22.</span> <span class="nav-text">21.消费者选择理论</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#22-%E5%BE%AE%E8%A7%82%E7%BB%8F%E6%B5%8E%E5%AD%A6%E5%89%8D%E6%B2%BF"><span class="nav-number">23.</span> <span class="nav-text">22.微观经济学前沿</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Jy"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Jy</p>
+  <div class="site-description" itemprop="description">Re：从零开始的写博客生活</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Jy</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">472k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">7:09</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+<script>
+NexT.utils.loadComments(document.querySelector('#lv-container'), () => {
+  window.livereOptions = {
+    refer: location.pathname.replace(CONFIG.root, '').replace('index.html', '')
+  };
+  (function(d, s) {
+    var j, e = d.getElementsByTagName(s)[0];
+    if (typeof LivereTower === 'function') { return; }
+    j = d.createElement(s);
+    j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+    j.async = true;
+    e.parentNode.insertBefore(j, e);
+  })(document, 'script');
+});
+</script>
+
+</body>
+</html>
